@@ -100,10 +100,13 @@ const GenerateStep = ({
       // Save preferences
       const { error: prefsError } = await supabase
         .from("study_preferences")
-        .upsert({
+        .upsert([{
           user_id: user.id,
-          ...preferences,
-        }, { onConflict: 'user_id' });
+          daily_study_hours: preferences.daily_study_hours,
+          session_duration: preferences.session_duration,
+          break_duration: preferences.break_duration,
+          day_time_slots: preferences.day_time_slots as any,
+        }], { onConflict: 'user_id' });
 
       if (prefsError) throw prefsError;
 
