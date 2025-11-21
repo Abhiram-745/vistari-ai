@@ -106,6 +106,7 @@ export type Database = {
           break_duration: number | null
           created_at: string | null
           daily_study_hours: number | null
+          day_time_slots: Json | null
           id: string
           preferred_end_time: string | null
           preferred_start_time: string | null
@@ -118,6 +119,7 @@ export type Database = {
           break_duration?: number | null
           created_at?: string | null
           daily_study_hours?: number | null
+          day_time_slots?: Json | null
           id?: string
           preferred_end_time?: string | null
           preferred_start_time?: string | null
@@ -130,6 +132,7 @@ export type Database = {
           break_duration?: number | null
           created_at?: string | null
           daily_study_hours?: number | null
+          day_time_slots?: Json | null
           id?: string
           preferred_end_time?: string | null
           preferred_start_time?: string | null
