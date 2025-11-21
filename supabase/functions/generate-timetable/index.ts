@@ -46,6 +46,18 @@ const inputSchema = z.object({
     duration: z.number().optional(),
     description: z.string().optional()
   })).optional(),
+  topicAnalysis: z.object({
+    priorities: z.array(z.object({
+      topic_name: z.string(),
+      priority_score: z.number(),
+      reasoning: z.string()
+    })).optional(),
+    difficult_topics: z.array(z.object({
+      topic_name: z.string(),
+      reason: z.string(),
+      study_suggestion: z.string()
+    })).optional()
+  }).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 });
@@ -95,13 +107,14 @@ serve(async (req) => {
       );
     }
 
-    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [] } = parsed.data;
+    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis } = parsed.data;
 
     console.log("Generating timetable with:", {
       subjectsCount: subjects.length,
       topicsCount: topics.length,
       testDatesCount: testDates.length,
       homeworksCount: homeworks.length,
+      hasAnalysis: !!topicAnalysis,
       dateRange: `${startDate} to ${endDate}`,
     });
 
@@ -144,6 +157,22 @@ serve(async (req) => {
       .map((slot: any) => `${slot.day} (${slot.startTime}-${slot.endTime})`)
       .join(", ");
 
+    // Add priority analysis context if available
+    const priorityContext = topicAnalysis?.priorities 
+      ? "\n\nAI-ANALYZED TOPIC PRIORITIES (1-10 scale, higher = needs more time):\n" + 
+        topicAnalysis.priorities
+          .sort((a: any, b: any) => b.priority_score - a.priority_score)
+          .map((p: any) => `${p.topic_name}: Priority ${p.priority_score}/10 - ${p.reasoning}`)
+          .join("\n")
+      : "";
+
+    const difficultTopicsContext = topicAnalysis?.difficult_topics 
+      ? "\n\nIDENTIFIED DIFFICULT TOPICS (allocate extra time):\n" + 
+        topicAnalysis.difficult_topics
+          .map((dt: any) => `${dt.topic_name}: ${dt.reason}\nStudy Suggestion: ${dt.study_suggestion}`)
+          .join("\n")
+      : "";
+
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
 
 SUBJECTS: ${subjectsContext}
@@ -153,6 +182,8 @@ TOPICS TO COVER: ${topicsContext}
 UPCOMING TESTS: ${testsContext}
 
 HOMEWORK ASSIGNMENTS: ${homeworksContext}
+${priorityContext}
+${difficultTopicsContext}
 
 STUDY PREFERENCES:
 - Daily study hours target: ${preferences.daily_study_hours}
@@ -163,17 +194,21 @@ STUDY PREFERENCES:
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 CRITICAL REQUIREMENTS:
-1. DO NOT schedule any revision for a topic AFTER its test date has passed
-2. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
-3. Include the test date in the notes field for sessions related to topics with tests
-4. MUST schedule study sessions ONLY within the specified time periods for each day
-5. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
-6. INTEGRATE homework assignments into the timetable, scheduling them before their due dates
-7. Consider homework duration estimates when scheduling
+1. USE THE AI PRIORITY SCORES to allocate study time - topics with higher priority scores should get more sessions and longer duration
+2. ALLOCATE EXTRA TIME to difficult topics identified in the analysis
+3. DO NOT schedule any revision for a topic AFTER its test date has passed
+4. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
+5. Include the test date in the notes field for sessions related to topics with tests
+6. MUST schedule study sessions ONLY within the specified time periods for each day
+7. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
+8. INTEGRATE homework assignments into the timetable, scheduling them before their due dates
+9. Consider homework duration estimates when scheduling
 
 Create a detailed, balanced study schedule that:
-1. Prioritizes topics with lower confidence levels and harder difficulty
-2. Allocates more time to subjects with upcoming tests
+1. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
+2. Allocates EXTRA sessions and time for difficult topics
+3. Prioritizes topics with lower confidence levels and harder difficulty
+4. Allocates more time to subjects with upcoming tests
 3. Includes regular breaks between study sessions
 4. ALWAYS schedules sessions within the specific time periods for each enabled day
 5. Balances all subjects to avoid burnout
