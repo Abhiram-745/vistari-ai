@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Plus } from "lucide-react";
+import { X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Subject, Topic } from "../OnboardingWizard";
+import { Badge } from "@/components/ui/badge";
 
 interface TopicsStepProps {
   subjects: Subject[];
@@ -13,22 +14,39 @@ interface TopicsStepProps {
 }
 
 const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
+  const [currentSubjectIndex, setCurrentSubjectIndex] = useState(0);
   const [topicName, setTopicName] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [confidence, setConfidence] = useState("3");
 
+  const currentSubject = subjects[currentSubjectIndex];
+  const currentSubjectId = currentSubjectIndex.toString();
+
   const addTopic = () => {
-    if (topicName.trim() && selectedSubject) {
+    if (topicName.trim()) {
       setTopics([
         ...topics,
         {
-          subject_id: selectedSubject,
+          subject_id: currentSubjectId,
           name: topicName,
           difficulty,
           confidence_level: parseInt(confidence),
         },
       ]);
+      setTopicName("");
+    }
+  };
+
+  const goToNextSubject = () => {
+    if (currentSubjectIndex < subjects.length - 1) {
+      setCurrentSubjectIndex(currentSubjectIndex + 1);
+      setTopicName("");
+    }
+  };
+
+  const goToPreviousSubject = () => {
+    if (currentSubjectIndex > 0) {
+      setCurrentSubjectIndex(currentSubjectIndex - 1);
       setTopicName("");
     }
   };
@@ -42,24 +60,48 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
     return subject?.name || "";
   };
 
+  const currentSubjectTopics = topics.filter(t => t.subject_id === currentSubjectId);
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="topic-subject">Select Subject</Label>
-          <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-            <SelectTrigger>
-              <SelectValue placeholder="Choose a subject" />
-            </SelectTrigger>
-            <SelectContent>
-              {subjects.map((subject, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  {subject.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Subject Navigation Header */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-sm">
+              Subject {currentSubjectIndex + 1} of {subjects.length}
+            </Badge>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousSubject}
+              disabled={currentSubjectIndex === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={goToNextSubject}
+              disabled={currentSubjectIndex === subjects.length - 1}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
+        <div className="text-center">
+          <h3 className="text-2xl font-bold text-primary">{currentSubject.name}</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Add topics you're studying in this subject
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
 
         <div className="space-y-2">
           <Label htmlFor="topic-name">Topic Name</Label>
@@ -68,7 +110,7 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
             placeholder="e.g., Quadratic Equations"
             value={topicName}
             onChange={(e) => setTopicName(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && selectedSubject && addTopic()}
+            onKeyPress={(e) => e.key === "Enter" && addTopic()}
           />
         </div>
 
@@ -108,38 +150,41 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
       <Button
         type="button"
         onClick={addTopic}
-        disabled={!topicName.trim() || !selectedSubject}
-        className="w-full bg-gradient-secondary hover:opacity-90"
+        disabled={!topicName.trim()}
+        className="w-full bg-gradient-primary hover:opacity-90"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Topic
+        Add Topic to {currentSubject.name}
       </Button>
 
-      {topics.length > 0 && (
+      {currentSubjectTopics.length > 0 && (
         <div className="space-y-2">
-          <Label>Your Topics ({topics.length})</Label>
+          <Label>Topics in {currentSubject.name} ({currentSubjectTopics.length})</Label>
           <div className="space-y-2">
-            {topics.map((topic, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-              >
-                <div className="flex-1">
-                  <p className="font-medium">{topic.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {getSubjectName(topic.subject_id)} • {topic.difficulty} • Confidence: {topic.confidence_level}/5
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeTopic(index)}
-                  className="text-destructive hover:text-destructive"
+            {topics.filter(t => t.subject_id === currentSubjectId).map((topic, index) => {
+              const originalIndex = topics.indexOf(topic);
+              return (
+                <div
+                  key={originalIndex}
+                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
                 >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+                  <div className="flex-1">
+                    <p className="font-medium">{topic.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {topic.difficulty} • Confidence: {topic.confidence_level}/5
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeTopic(originalIndex)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
