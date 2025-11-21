@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import SubjectsStep from "./onboarding/SubjectsStep";
 import TopicsStep from "./onboarding/TopicsStep";
+import DifficultTopicsStep from "./onboarding/DifficultTopicsStep";
 import TestDatesStep from "./onboarding/TestDatesStep";
 import PreferencesStep from "./onboarding/PreferencesStep";
 import GenerateStep from "./onboarding/GenerateStep";
@@ -54,6 +55,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   const [step, setStep] = useState(1);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicAnalysis, setTopicAnalysis] = useState<any>(null);
   const [testDates, setTestDates] = useState<TestDate[]>([]);
   const [preferences, setPreferences] = useState<StudyPreferences>({
     daily_study_hours: 2,
@@ -70,7 +72,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     session_duration: 45,
   });
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
   const handleNext = () => {
@@ -90,6 +92,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   const stepTitles = [
     "Your GCSE Subjects",
     "Topics You're Studying",
+    "AI Topic Analysis",
     "Upcoming Test Dates",
     "Study Preferences",
     "Generate Timetable",
@@ -109,9 +112,10 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
         <CardDescription>
           {step === 1 && "Add the subjects you're taking for your GCSEs"}
           {step === 2 && "Tell us which topics you're currently studying"}
-          {step === 3 && "When are your tests scheduled?"}
-          {step === 4 && "Set your study preferences"}
-          {step === 5 && "Review and generate your personalized timetable"}
+          {step === 3 && "AI will analyze your topics to prioritize difficult areas"}
+          {step === 4 && "When are your tests scheduled?"}
+          {step === 5 && "Set your study preferences"}
+          {step === 6 && "Review and generate your personalized timetable"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -122,17 +126,25 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
           <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
         )}
         {step === 3 && (
-          <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
+          <DifficultTopicsStep 
+            subjects={subjects} 
+            topics={topics} 
+            onAnalysisComplete={setTopicAnalysis}
+          />
         )}
         {step === 4 && (
-          <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
+          <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
         )}
         {step === 5 && (
+          <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
+        )}
+        {step === 6 && (
           <GenerateStep
             subjects={subjects}
             topics={topics}
             testDates={testDates}
             preferences={preferences}
+            topicAnalysis={topicAnalysis}
             onComplete={onComplete}
           />
         )}
@@ -151,7 +163,8 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
               disabled={
                 (step === 1 && subjects.length === 0) ||
                 (step === 2 && topics.length === 0) ||
-                (step === 3 && testDates.length === 0)
+                (step === 3 && !topicAnalysis) ||
+                (step === 4 && testDates.length === 0)
               }
             >
               Next

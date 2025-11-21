@@ -12,6 +12,7 @@ interface GenerateStepProps {
   topics: Topic[];
   testDates: TestDate[];
   preferences: StudyPreferences;
+  topicAnalysis?: any;
   onComplete: () => void;
 }
 
@@ -20,6 +21,7 @@ const GenerateStep = ({
   topics,
   testDates,
   preferences,
+  topicAnalysis,
   onComplete,
 }: GenerateStepProps) => {
   const [loading, setLoading] = useState(false);
@@ -121,6 +123,7 @@ const GenerateStep = ({
             })),
             preferences,
             homeworks: homeworks || [],
+            topicAnalysis,
             startDate,
             endDate,
           },

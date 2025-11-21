@@ -3,9 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { X, Plus, ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { Subject, Topic } from "../OnboardingWizard";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TopicsStepProps {
   subjects: Subject[];
@@ -18,6 +22,8 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
   const [topicName, setTopicName] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [confidence, setConfidence] = useState("3");
+  const [pastedText, setPastedText] = useState("");
+  const [isParsing, setIsParsing] = useState(false);
 
   const currentSubject = subjects[currentSubjectIndex];
   const currentSubjectId = currentSubjectIndex.toString();
@@ -48,6 +54,45 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
     if (currentSubjectIndex > 0) {
       setCurrentSubjectIndex(currentSubjectIndex - 1);
       setTopicName("");
+      setPastedText("");
+    }
+  };
+
+  const parseWithAI = async () => {
+    if (!pastedText.trim()) {
+      toast.error("Please paste some content first");
+      return;
+    }
+
+    setIsParsing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('parse-topics', {
+        body: { text: pastedText, subjectName: currentSubject.name }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      if (data?.topics && Array.isArray(data.topics)) {
+        const newTopics = data.topics.map((t: any) => ({
+          subject_id: currentSubjectId,
+          name: t.name,
+          difficulty: t.difficulty,
+          confidence_level: t.confidence_level
+        }));
+        setTopics([...topics, ...newTopics]);
+        setPastedText("");
+        toast.success(`Added ${newTopics.length} topics!`);
+      }
+    } catch (error) {
+      console.error('Parse error:', error);
+      toast.error("Failed to parse topics. Please try again.");
+    } finally {
+      setIsParsing(false);
     }
   };
 
@@ -101,7 +146,16 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+          <TabsTrigger value="ai">
+            <Sparkles className="h-4 w-4 mr-2" />
+            AI Parse
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="manual" className="space-y-4 mt-4">
 
         <div className="space-y-2">
           <Label htmlFor="topic-name">Topic Name</Label>
@@ -145,17 +199,54 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
             </Select>
           </div>
         </div>
-      </div>
 
-      <Button
-        type="button"
-        onClick={addTopic}
-        disabled={!topicName.trim()}
-        className="w-full bg-gradient-primary hover:opacity-90"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Topic to {currentSubject.name}
-      </Button>
+        <Button
+          type="button"
+          onClick={addTopic}
+          disabled={!topicName.trim()}
+          className="w-full bg-gradient-primary hover:opacity-90"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Topic to {currentSubject.name}
+        </Button>
+      </TabsContent>
+
+      <TabsContent value="ai" className="space-y-4 mt-4">
+        <div className="space-y-2">
+          <Label htmlFor="paste-text">Paste Your Checklist or Notes</Label>
+          <Textarea
+            id="paste-text"
+            placeholder={`Paste your ${currentSubject.name} topics here...\n\nExample:\n- Quadratic equations\n- Pythagoras theorem\n- Circle theorems\n- Trigonometry`}
+            value={pastedText}
+            onChange={(e) => setPastedText(e.target.value)}
+            rows={8}
+            className="resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            AI will automatically extract topics, assess difficulty, and estimate confidence levels
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          onClick={parseWithAI}
+          disabled={!pastedText.trim() || isParsing}
+          className="w-full bg-gradient-primary hover:opacity-90"
+        >
+          {isParsing ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Parsing Topics...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Parse with AI
+            </>
+          )}
+        </Button>
+      </TabsContent>
+    </Tabs>
 
       {currentSubjectTopics.length > 0 && (
         <div className="space-y-2">
