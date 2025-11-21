@@ -1,0 +1,167 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Clock, BookOpen } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
+
+interface Deadline {
+  id: string;
+  type: "test" | "homework";
+  subject: string;
+  title: string;
+  date: string;
+  testType?: string;
+}
+
+interface UpcomingDeadlinesProps {
+  userId: string;
+}
+
+export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
+  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDeadlines();
+  }, [userId]);
+
+  const fetchDeadlines = async () => {
+    const today = format(new Date(), "yyyy-MM-dd");
+
+    // Fetch test dates
+    const { data: tests, error: testsError } = await supabase
+      .from("test_dates")
+      .select("*, subjects(name)")
+      .gte("test_date", today)
+      .order("test_date", { ascending: true });
+
+    // Fetch homework
+    const { data: homework, error: homeworkError } = await supabase
+      .from("homeworks")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .gte("due_date", today)
+      .order("due_date", { ascending: true })
+      .limit(5);
+
+    if (testsError || homeworkError) {
+      console.error("Error fetching deadlines:", testsError || homeworkError);
+      setLoading(false);
+      return;
+    }
+
+    // Remove duplicate test dates (same subject + date)
+    const uniqueTests = new Map();
+    (tests || []).forEach((test: any) => {
+      const key = `${test.subjects?.name}-${test.test_date}`;
+      if (!uniqueTests.has(key)) {
+        uniqueTests.set(key, test);
+      }
+    });
+
+    // Combine and format deadlines
+    const formattedTests: Deadline[] = Array.from(uniqueTests.values())
+      .map((test: any) => ({
+        id: test.id,
+        type: "test" as const,
+        subject: test.subjects?.name || "Unknown",
+        title: test.test_type || "Test",
+        date: test.test_date,
+        testType: test.test_type,
+      }))
+      .slice(0, 5);
+
+    const formattedHomework: Deadline[] = (homework || []).map((hw: any) => ({
+      id: hw.id,
+      type: "homework" as const,
+      subject: hw.subject,
+      title: hw.title,
+      date: hw.due_date,
+    }));
+
+    // Combine and sort by date
+    const allDeadlines = [...formattedTests, ...formattedHomework]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 5);
+
+    setDeadlines(allDeadlines);
+    setLoading(false);
+  };
+
+  const getDaysUntil = (dateString: string) => {
+    const days = differenceInDays(new Date(dateString), new Date());
+    if (days === 0) return "Today";
+    if (days === 1) return "Tomorrow";
+    return `${days} days`;
+  };
+
+  const getUrgencyColor = (dateString: string) => {
+    const days = differenceInDays(new Date(dateString), new Date());
+    if (days <= 1) return "text-red-600 dark:text-red-400";
+    if (days <= 3) return "text-orange-600 dark:text-orange-400";
+    if (days <= 7) return "text-yellow-600 dark:text-yellow-400";
+    return "text-muted-foreground";
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-muted-foreground text-center">Loading deadlines...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          Upcoming Deadlines
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {deadlines.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">
+            No upcoming deadlines. You're all caught up! 🎉
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {deadlines.map((deadline) => (
+              <div
+                key={`${deadline.type}-${deadline.id}`}
+                className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+              >
+                <div className="mt-1">
+                  {deadline.type === "test" ? (
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-primary" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium truncate">{deadline.title}</p>
+                      <p className="text-sm text-muted-foreground">{deadline.subject}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-medium ${getUrgencyColor(deadline.date)}`}>
+                        {getDaysUntil(deadline.date)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(deadline.date), "dd/MM/yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

@@ -1,0 +1,166 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import SubjectsStep from "./onboarding/SubjectsStep";
+import TopicsStep from "./onboarding/TopicsStep";
+import TestDatesStep from "./onboarding/TestDatesStep";
+import PreferencesStep from "./onboarding/PreferencesStep";
+import GenerateStep from "./onboarding/GenerateStep";
+
+interface OnboardingWizardProps {
+  onComplete: () => void;
+  onCancel?: () => void;
+}
+
+export interface Subject {
+  id?: string;
+  name: string;
+  exam_board: string;
+}
+
+export interface Topic {
+  id?: string;
+  subject_id: string;
+  name: string;
+  difficulty: "easy" | "medium" | "hard";
+  confidence_level: number;
+}
+
+export interface TestDate {
+  id?: string;
+  subject_id: string;
+  test_date: string;
+  test_type: string;
+}
+
+export interface DayTimeSlot {
+  day: string;
+  startTime: string;
+  endTime: string;
+  enabled: boolean;
+}
+
+export interface StudyPreferences {
+  daily_study_hours: number;
+  day_time_slots: DayTimeSlot[];
+  break_duration: number;
+  session_duration: number;
+}
+
+const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
+  const [step, setStep] = useState(1);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [testDates, setTestDates] = useState<TestDate[]>([]);
+  const [preferences, setPreferences] = useState<StudyPreferences>({
+    daily_study_hours: 2,
+    day_time_slots: [
+      { day: "monday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "tuesday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "wednesday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "thursday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "friday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "saturday", startTime: "09:00", endTime: "17:00", enabled: true },
+      { day: "sunday", startTime: "09:00", endTime: "17:00", enabled: true },
+    ],
+    break_duration: 15,
+    session_duration: 45,
+  });
+
+  const totalSteps = 5;
+  const progress = (step / totalSteps) * 100;
+
+  const handleNext = () => {
+    if (step < totalSteps) {
+      setStep(step + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (step === 1 && onCancel) {
+      onCancel();
+    } else if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const stepTitles = [
+    "Your GCSE Subjects",
+    "Topics You're Studying",
+    "Upcoming Test Dates",
+    "Study Preferences",
+    "Generate Timetable",
+  ];
+
+  return (
+    <Card className="max-w-3xl mx-auto shadow-lg">
+      <CardHeader>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Step {step} of {totalSteps}</span>
+            <span>{Math.round(progress)}% Complete</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+        <CardTitle className="text-2xl">{stepTitles[step - 1]}</CardTitle>
+        <CardDescription>
+          {step === 1 && "Add the subjects you're taking for your GCSEs"}
+          {step === 2 && "Tell us which topics you're currently studying"}
+          {step === 3 && "When are your tests scheduled?"}
+          {step === 4 && "Set your study preferences"}
+          {step === 5 && "Review and generate your personalized timetable"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {step === 1 && (
+          <SubjectsStep subjects={subjects} setSubjects={setSubjects} />
+        )}
+        {step === 2 && (
+          <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
+        )}
+        {step === 3 && (
+          <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
+        )}
+        {step === 4 && (
+          <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
+        )}
+        {step === 5 && (
+          <GenerateStep
+            subjects={subjects}
+            topics={topics}
+            testDates={testDates}
+            preferences={preferences}
+            onComplete={onComplete}
+          />
+        )}
+
+        <div className="flex justify-between pt-4">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          {step < totalSteps && (
+            <Button
+              onClick={handleNext}
+              className="bg-gradient-primary hover:opacity-90"
+              disabled={
+                (step === 1 && subjects.length === 0) ||
+                (step === 2 && topics.length === 0) ||
+                (step === 3 && testDates.length === 0)
+              }
+            >
+              Next
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default OnboardingWizard;
