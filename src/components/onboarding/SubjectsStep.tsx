@@ -53,7 +53,11 @@ const SubjectsStep = ({ subjects, setSubjects }: SubjectsStepProps) => {
 
   const addSubject = () => {
     if (subjectName.trim() && examBoard.trim()) {
-      setSubjects([...subjects, { name: subjectName, exam_board: examBoard }]);
+      setSubjects([...subjects, { 
+        id: crypto.randomUUID(),
+        name: subjectName, 
+        exam_board: examBoard 
+      }]);
       setSubjectName("");
       setExamBoard("");
     }
