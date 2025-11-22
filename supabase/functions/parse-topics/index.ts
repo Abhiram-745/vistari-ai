@@ -12,11 +12,42 @@ serve(async (req) => {
   }
 
   try {
-    const { text, subjectName } = await req.json();
+    const { text, subjectName, images } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Build the user message content
+    const userContent: any[] = [];
+    
+    // Add text if provided
+    if (text) {
+      userContent.push({
+        type: "text",
+        text: `Subject: ${subjectName}\n\nExtract topics from this text:\n${text}`
+      });
+    }
+    
+    // Add images if provided
+    if (images && Array.isArray(images)) {
+      images.forEach((imageData: string) => {
+        userContent.push({
+          type: "image_url",
+          image_url: {
+            url: imageData
+          }
+        });
+      });
+      
+      // Add instruction for images
+      userContent.push({
+        type: "text",
+        text: images.length > 0 && !text 
+          ? `Subject: ${subjectName}\n\nExtract all study topics visible in the provided images. Look for checklists, notes, topic lists, or any educational content.` 
+          : "\n\nAlso extract any additional topics from the images provided."
+      });
     }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -30,11 +61,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant that extracts study topics from text. Extract all topics mentioned and format them as a structured list. For each topic, assess its difficulty (easy/medium/hard) based on complexity and typical GCSE difficulty. Also estimate confidence level (1-5, where 1 is low confidence/needs more study and 5 is high confidence).`
+            content: `You are a helpful assistant that extracts study topics from text and images. Extract all topics mentioned and format them as a structured list. For each topic, assess its difficulty (easy/medium/hard) based on complexity and typical GCSE/high school difficulty. Also estimate confidence level (1-5, where 1 is low confidence/needs more study and 5 is high confidence). When analyzing images, look for checklists, topic lists, notes, or any educational content.`
           },
           {
             role: 'user',
-            content: `Subject: ${subjectName}\n\nExtract topics from this text:\n${text}\n\nReturn ONLY a JSON array with this exact structure, no other text:\n[{"name": "topic name", "difficulty": "easy|medium|hard", "confidence_level": 1-5}]`
+            content: userContent
           }
         ],
         tools: [

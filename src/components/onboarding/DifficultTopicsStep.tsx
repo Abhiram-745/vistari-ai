@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, TrendingUp, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, TrendingUp, AlertCircle, Plus, X } from "lucide-react";
 import { Subject, Topic } from "../OnboardingWizard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DifficultTopicsStepProps {
   subjects: Subject[];
@@ -17,6 +18,9 @@ interface DifficultTopicsStepProps {
 const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: DifficultTopicsStepProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [manualFocusTopics, setManualFocusTopics] = useState<string[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("");
 
   const getSubjectName = (subjectId: string) => {
     const index = parseInt(subjectId);
@@ -70,6 +74,27 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
     return "outline";
   };
 
+  const availableTopics = topics.filter(
+    (t) => t.subject_id === selectedSubject && !manualFocusTopics.includes(t.name)
+  );
+
+  const addFocusTopic = () => {
+    if (selectedTopic) {
+      setManualFocusTopics([...manualFocusTopics, selectedTopic]);
+      setSelectedTopic("");
+      toast.success("Focus topic added");
+    }
+  };
+
+  const removeFocusTopic = (topicName: string) => {
+    setManualFocusTopics(manualFocusTopics.filter((t) => t !== topicName));
+  };
+
+  const getTopicSubject = (topicName: string) => {
+    const topic = topics.find((t) => t.name === topicName);
+    return topic ? getSubjectName(topic.subject_id) : "";
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -92,6 +117,117 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
 
       {analysis && (
         <div className="space-y-6">
+          {/* Manual Focus Topics Section */}
+          <Card className="border-primary/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                Add Focus Topics Manually
+              </CardTitle>
+              <CardDescription>
+                Select additional topics you want to prioritize in your study schedule
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="subject-select">Select Subject</Label>
+                  <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                    <SelectTrigger id="subject-select">
+                      <SelectValue placeholder="Choose a subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects.map((subject, index) => (
+                        <SelectItem key={index} value={index.toString()}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedSubject && (
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-select">Select Topic</Label>
+                    <Select
+                      value={selectedTopic}
+                      onValueChange={setSelectedTopic}
+                      disabled={availableTopics.length === 0}
+                    >
+                      <SelectTrigger id="topic-select">
+                        <SelectValue
+                          placeholder={
+                            availableTopics.length === 0
+                              ? "No available topics"
+                              : "Choose a topic"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTopics.map((topic, index) => (
+                          <SelectItem key={index} value={topic.name}>
+                            <div className="flex items-center gap-2">
+                              <span>{topic.name}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {topic.difficulty}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                onClick={addFocusTopic}
+                disabled={!selectedTopic}
+                className="w-full"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add to Focus List
+              </Button>
+
+              {manualFocusTopics.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <Label>Your Focus Topics ({manualFocusTopics.length})</Label>
+                  <div className="space-y-2">
+                    {manualFocusTopics.map((topicName, index) => {
+                      const topic = topics.find((t) => t.name === topicName);
+                      return (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium">{topicName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {getTopicSubject(topicName)}
+                              {topic && (
+                                <>
+                                  {" "}
+                                  • {topic.difficulty} • Confidence: {topic.confidence_level}/5
+                                </>
+                              )}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFocusTopic(topicName)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Difficult Topics Section */}
           {analysis.difficult_topics && analysis.difficult_topics.length > 0 && (
             <Card className="border-destructive/50">
