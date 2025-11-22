@@ -61,7 +61,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant that extracts study topics from text and images. Extract all topics mentioned and format them as a structured list. For each topic, assess its difficulty (easy/medium/hard) based on complexity and typical GCSE/high school difficulty. Also estimate confidence level (1-5, where 1 is low confidence/needs more study and 5 is high confidence). When analyzing images, look for checklists, topic lists, notes, or any educational content.`
+            content: `You are a helpful assistant that extracts study topics from text and images. Extract all topics mentioned and format them as a structured list. When analyzing images, look for checklists, topic lists, notes, or any educational content. Focus on identifying clear topic names only.`
           },
           {
             role: 'user',
@@ -73,7 +73,7 @@ serve(async (req) => {
             type: "function",
             function: {
               name: "extract_topics",
-              description: "Extract study topics from text with difficulty and confidence levels",
+              description: "Extract study topics from text and images",
               parameters: {
                 type: "object",
                 properties: {
@@ -82,11 +82,9 @@ serve(async (req) => {
                     items: {
                       type: "object",
                       properties: {
-                        name: { type: "string" },
-                        difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
-                        confidence_level: { type: "integer", minimum: 1, maximum: 5 }
+                        name: { type: "string" }
                       },
-                      required: ["name", "difficulty", "confidence_level"],
+                      required: ["name"],
                       additionalProperties: false
                     }
                   }

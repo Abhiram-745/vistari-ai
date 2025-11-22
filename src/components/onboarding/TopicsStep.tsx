@@ -20,11 +20,10 @@ interface TopicsStepProps {
 const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
   const [currentSubjectIndex, setCurrentSubjectIndex] = useState(0);
   const [topicName, setTopicName] = useState("");
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
-  const [confidence, setConfidence] = useState("3");
   const [pastedText, setPastedText] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [additionalNotes, setAdditionalNotes] = useState("");
 
   const currentSubject = subjects[currentSubjectIndex];
   const currentSubjectId = currentSubjectIndex.toString();
@@ -36,8 +35,6 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
         {
           subject_id: currentSubjectId,
           name: topicName,
-          difficulty,
-          confidence_level: parseInt(confidence),
         },
       ]);
       setTopicName("");
@@ -129,12 +126,11 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
         const newTopics = data.topics.map((t: any) => ({
           subject_id: currentSubjectId,
           name: t.name,
-          difficulty: t.difficulty,
-          confidence_level: t.confidence_level
         }));
         setTopics([...topics, ...newTopics]);
         setPastedText("");
         setImages([]);
+        setAdditionalNotes("");
         toast.success(`Added ${newTopics.length} topics!`);
       }
     } catch (error) {
@@ -217,38 +213,6 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="difficulty">Difficulty</Label>
-            <Select value={difficulty} onValueChange={(v) => setDifficulty(v as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confidence">Confidence (1-5)</Label>
-            <Select value={confidence} onValueChange={setConfidence}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <SelectItem key={n} value={n.toString()}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         <Button
           type="button"
           onClick={addTopic}
@@ -294,7 +258,7 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
             <span className="text-xs text-muted-foreground">or paste images directly (Ctrl+V)</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            AI will automatically extract topics, assess difficulty, and estimate confidence levels
+            AI will automatically extract topics from your checklist
           </p>
         </div>
 
@@ -358,9 +322,6 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
                 >
                   <div className="flex-1">
                     <p className="font-medium">{topic.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {topic.difficulty} • Confidence: {topic.confidence_level}/5
-                    </p>
                   </div>
                   <Button
                     variant="ghost"

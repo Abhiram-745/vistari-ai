@@ -153,12 +153,7 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
                     <SelectContent>
                       {availableTopics.map((topic, index) => (
                         <SelectItem key={index} value={topic.name}>
-                          <div className="flex items-center gap-2">
-                            <span>{topic.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {topic.difficulty}
-                            </Badge>
-                          </div>
+                          {topic.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -190,12 +185,6 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
                           <p className="font-medium">{topicName}</p>
                           <p className="text-xs text-muted-foreground">
                             {getTopicSubject(topicName)}
-                            {topic && (
-                              <>
-                                {" "}
-                                • {topic.difficulty} • Confidence: {topic.confidence_level}/5
-                              </>
-                            )}
                           </p>
                         </div>
                         <Button
