@@ -18,7 +18,7 @@ interface DifficultTopicsStepProps {
 const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: DifficultTopicsStepProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
-  const [manualFocusTopics, setManualFocusTopics] = useState<string[]>([]);
+  const [difficultTopics, setDifficultTopics] = useState<string[]>([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
 
@@ -28,20 +28,22 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
   };
 
   const analyzeTopics = async () => {
-    if (topics.length === 0) {
-      toast.error("Please add some topics first");
+    if (difficultTopics.length === 0) {
+      toast.error("Please select topics you find difficult or want to focus on");
       return;
     }
 
     setIsAnalyzing(true);
     try {
-      const topicsWithSubjects = topics.map(t => ({
-        ...t,
-        subject: getSubjectName(t.subject_id)
-      }));
+      const selectedTopicsData = topics
+        .filter(t => difficultTopics.includes(t.name))
+        .map(t => ({
+          ...t,
+          subject: getSubjectName(t.subject_id)
+        }));
 
       const { data, error } = await supabase.functions.invoke('analyze-difficulty', {
-        body: { topics: topicsWithSubjects }
+        body: { topics: selectedTopicsData, focusTopics: difficultTopics }
       });
 
       if (error) throw error;
@@ -62,12 +64,6 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
     }
   };
 
-  useEffect(() => {
-    if (!analysis && topics.length > 0) {
-      analyzeTopics();
-    }
-  }, []);
-
   const getPriorityColor = (score: number) => {
     if (score >= 8) return "destructive";
     if (score >= 5) return "secondary";
@@ -75,19 +71,19 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
   };
 
   const availableTopics = topics.filter(
-    (t) => t.subject_id === selectedSubject && !manualFocusTopics.includes(t.name)
+    (t) => t.subject_id === selectedSubject && !difficultTopics.includes(t.name)
   );
 
-  const addFocusTopic = () => {
+  const addDifficultTopic = () => {
     if (selectedTopic) {
-      setManualFocusTopics([...manualFocusTopics, selectedTopic]);
+      setDifficultTopics([...difficultTopics, selectedTopic]);
       setSelectedTopic("");
-      toast.success("Focus topic added");
+      toast.success("Topic added to focus list");
     }
   };
 
-  const removeFocusTopic = (topicName: string) => {
-    setManualFocusTopics(manualFocusTopics.filter((t) => t !== topicName));
+  const removeDifficultTopic = (topicName: string) => {
+    setDifficultTopics(difficultTopics.filter((t) => t !== topicName));
   };
 
   const getTopicSubject = (topicName: string) => {
@@ -104,131 +100,132 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
         </div>
         <h3 className="text-2xl font-bold">Study Priority Analysis</h3>
         <p className="text-muted-foreground">
-          AI is analyzing your topics to optimize your study timetable
+          Select topics you find difficult or want to focus on
         </p>
       </div>
 
-      {isAnalyzing && !analysis && (
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Analyzing {topics.length} topics...</p>
-        </div>
-      )}
+      {!analysis && (
+        <Card className="border-primary/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-primary" />
+              Topics I Find Difficult or Want to Focus On
+            </CardTitle>
+            <CardDescription>
+              Select topics that are challenging or require extra attention. AI will analyze these to optimize your study schedule.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="subject-select">Select Subject</Label>
+                <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                  <SelectTrigger id="subject-select">
+                    <SelectValue placeholder="Choose a subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subject, index) => (
+                      <SelectItem key={index} value={index.toString()}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      {analysis && (
-        <div className="space-y-6">
-          {/* Manual Focus Topics Section */}
-          <Card className="border-primary/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5 text-primary" />
-                Add Focus Topics Manually
-              </CardTitle>
-              <CardDescription>
-                Select additional topics you want to prioritize in your study schedule
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {selectedSubject && (
                 <div className="space-y-2">
-                  <Label htmlFor="subject-select">Select Subject</Label>
-                  <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                    <SelectTrigger id="subject-select">
-                      <SelectValue placeholder="Choose a subject" />
+                  <Label htmlFor="topic-select">Select Topic</Label>
+                  <Select
+                    value={selectedTopic}
+                    onValueChange={setSelectedTopic}
+                    disabled={availableTopics.length === 0}
+                  >
+                    <SelectTrigger id="topic-select">
+                      <SelectValue
+                        placeholder={
+                          availableTopics.length === 0
+                            ? "No available topics"
+                            : "Choose a topic"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {subjects.map((subject, index) => (
-                        <SelectItem key={index} value={index.toString()}>
-                          {subject.name}
+                      {availableTopics.map((topic, index) => (
+                        <SelectItem key={index} value={topic.name}>
+                          <div className="flex items-center gap-2">
+                            <span>{topic.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {topic.difficulty}
+                            </Badge>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-
-                {selectedSubject && (
-                  <div className="space-y-2">
-                    <Label htmlFor="topic-select">Select Topic</Label>
-                    <Select
-                      value={selectedTopic}
-                      onValueChange={setSelectedTopic}
-                      disabled={availableTopics.length === 0}
-                    >
-                      <SelectTrigger id="topic-select">
-                        <SelectValue
-                          placeholder={
-                            availableTopics.length === 0
-                              ? "No available topics"
-                              : "Choose a topic"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableTopics.map((topic, index) => (
-                          <SelectItem key={index} value={topic.name}>
-                            <div className="flex items-center gap-2">
-                              <span>{topic.name}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {topic.difficulty}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                type="button"
-                onClick={addFocusTopic}
-                disabled={!selectedTopic}
-                className="w-full"
-                variant="outline"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add to Focus List
-              </Button>
-
-              {manualFocusTopics.length > 0 && (
-                <div className="space-y-2 mt-4">
-                  <Label>Your Focus Topics ({manualFocusTopics.length})</Label>
-                  <div className="space-y-2">
-                    {manualFocusTopics.map((topicName, index) => {
-                      const topic = topics.find((t) => t.name === topicName);
-                      return (
-                        <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-medium">{topicName}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {getTopicSubject(topicName)}
-                              {topic && (
-                                <>
-                                  {" "}
-                                  • {topic.difficulty} • Confidence: {topic.confidence_level}/5
-                                </>
-                              )}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeFocusTopic(topicName)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Difficult Topics Section */}
+            <Button
+              type="button"
+              onClick={addDifficultTopic}
+              disabled={!selectedTopic}
+              className="w-full"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add to Focus List
+            </Button>
+
+            {difficultTopics.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <Label>Your Focus Topics ({difficultTopics.length})</Label>
+                <div className="space-y-2">
+                  {difficultTopics.map((topicName, index) => {
+                    const topic = topics.find((t) => t.name === topicName);
+                    return (
+                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium">{topicName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {getTopicSubject(topicName)}
+                            {topic && (
+                              <>
+                                {" "}
+                                • {topic.difficulty} • Confidence: {topic.confidence_level}/5
+                              </>
+                            )}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeDifficultTopic(topicName)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {isAnalyzing && (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Analyzing {difficultTopics.length} focus topics...</p>
+        </div>
+      )}
+
+      {analysis && (
+        <div className="space-y-6">
+          {/* Difficult Topics Results */}
           {analysis.difficult_topics && analysis.difficult_topics.length > 0 && (
             <Card className="border-destructive/50">
               <CardHeader>
@@ -298,14 +295,14 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
         </div>
       )}
 
-      {!isAnalyzing && !analysis && (
+      {!analysis && !isAnalyzing && (
         <Button
           onClick={analyzeTopics}
           className="w-full bg-gradient-primary hover:opacity-90"
-          disabled={topics.length === 0}
+          disabled={difficultTopics.length === 0}
         >
           <Sparkles className="h-4 w-4 mr-2" />
-          Analyze Topics
+          Analyze {difficultTopics.length} Focus Topics
         </Button>
       )}
     </div>
