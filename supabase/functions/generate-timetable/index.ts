@@ -201,22 +201,28 @@ CRITICAL REQUIREMENTS:
 5. Include the test date in the notes field for sessions related to topics with tests
 6. MUST schedule study sessions ONLY within the specified time periods for each day
 7. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
-8. INTEGRATE homework assignments into the timetable, scheduling them before their due dates
-9. Consider homework duration estimates when scheduling
+8. **HOMEWORK INTEGRATION (CRITICAL)**: 
+   - MUST schedule ALL homework assignments into the timetable as dedicated sessions
+   - Homework sessions MUST be completed BEFORE their due date (leave at least 1-2 days buffer)
+   - If homework has duration estimate, use that; otherwise allocate 45-60 minutes per homework
+   - Homework sessions should be type "homework" and include the homework title and due date in notes
+   - DO NOT skip homework - it's as important as study sessions
+   - Spread larger homework across multiple sessions if needed (e.g., 2-hour homework = two 60-min sessions)
+   - Schedule homework earlier rather than later (don't procrastinate)
 
 Create a detailed, balanced study schedule that:
-1. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
-2. Allocates EXTRA sessions and time for difficult topics
-3. Prioritizes topics with lower confidence levels and harder difficulty
-4. Allocates more time to subjects with upcoming tests
-3. Includes regular breaks between study sessions
-4. ALWAYS schedules sessions within the specific time periods for each enabled day
-5. Balances all subjects to avoid burnout
-6. Includes revision of previously covered material
-7. STOPS scheduling revision for each topic after its test date
-8. Ensures consistent daily coverage on all enabled study days
-9. Schedules homework tasks before their due dates with appropriate time allocation
-10. Marks homework sessions with type "homework" in the schedule
+1. **FIRST schedules ALL homework assignments** - these are mandatory deadlines and must be included
+2. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
+3. Allocates EXTRA sessions and time for difficult topics
+4. Prioritizes topics with lower confidence levels and harder difficulty
+5. Allocates more time to subjects with upcoming tests
+6. Includes regular breaks between study sessions
+7. ALWAYS schedules sessions within the specific time periods for each enabled day
+8. Balances all subjects to avoid burnout
+9. Includes revision of previously covered material
+10. STOPS scheduling revision for each topic after its test date
+11. Ensures consistent daily coverage on all enabled study days
+12. For homework sessions: use title as topic, subject from homework, type "homework", and include due date in notes
 
 Return a JSON object with the following structure:
 {
@@ -226,15 +232,17 @@ Return a JSON object with the following structure:
         "time": "HH:MM",
         "duration": minutes,
         "subject": "subject name",
-        "topic": "topic name",
+        "topic": "topic name or homework title",
         "type": "study|break|revision|homework",
-        "notes": "any specific instructions (include test date if applicable)",
+        "notes": "any specific instructions (MUST include due date for homework, test date for topics with tests)",
         "testDate": "YYYY-MM-DD" (optional, only if this topic has an associated test),
-        "homeworkId": "homework-id" (optional, only for homework tasks)
+        "homeworkDueDate": "YYYY-MM-DD" (required for homework type)
       }
     ]
   }
 }
+
+**FINAL REMINDER**: DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session before its due date.
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
