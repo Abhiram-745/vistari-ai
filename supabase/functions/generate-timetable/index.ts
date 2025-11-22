@@ -155,17 +155,17 @@ serve(async (req) => {
       .map((slot: any) => `${slot.day} (${slot.startTime}-${slot.endTime})`)
       .join(", ");
 
-    // Add priority analysis context if available
+    // Add priority analysis context if available - FOCUS topics get MORE study time with MULTIPLE sessions
     const priorityContext = topicAnalysis?.priorities 
-      ? "\n\nAI-ANALYZED TOPIC PRIORITIES (1-10 scale, higher = needs more time):\n" + 
+      ? "\n\n**FOCUS TOPICS** (these topics need MORE study time - schedule MULTIPLE sessions for each):\n" + 
         topicAnalysis.priorities
           .sort((a: any, b: any) => b.priority_score - a.priority_score)
-          .map((p: any) => `${p.topic_name}: Priority ${p.priority_score}/10 - ${p.reasoning}`)
+          .map((p: any) => `${p.topic_name}: Priority ${p.priority_score}/10 - ${p.reasoning}\n  → MUST schedule AT LEAST ${Math.max(3, Math.ceil(p.priority_score / 2))} sessions for this topic throughout the timetable`)
           .join("\n")
       : "";
 
     const difficultTopicsContext = topicAnalysis?.difficult_topics 
-      ? "\n\nIDENTIFIED DIFFICULT TOPICS (allocate extra time):\n" + 
+      ? "\n\n**ADDITIONAL FOCUS CONTEXT** (allocate extra time and multiple sessions):\n" + 
         topicAnalysis.difficult_topics
           .map((dt: any) => `${dt.topic_name}: ${dt.reason}\nStudy Suggestion: ${dt.study_suggestion}`)
           .join("\n")
@@ -175,7 +175,7 @@ serve(async (req) => {
 
 SUBJECTS: ${subjectsContext}
 
-TOPICS TO COVER: ${topicsContext}
+**ALL TOPICS TO COVER** (schedule ALL of these topics in the timetable): ${topicsContext}
 
 UPCOMING TESTS: ${testsContext}
 
@@ -191,10 +191,15 @@ STUDY PREFERENCES:
 
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
-CRITICAL REQUIREMENTS:
-1. USE THE AI PRIORITY SCORES to allocate study time - topics with higher priority scores should get more sessions and longer duration
-2. ALLOCATE EXTRA TIME to difficult topics identified in the analysis
-3. DO NOT schedule any revision for a topic AFTER its test date has passed
+**CRITICAL REQUIREMENTS:**
+1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
+2. **FOCUS TOPICS GET MULTIPLE SESSIONS**: Topics listed in "FOCUS TOPICS" section need MORE study time:
+   - Schedule the EXACT number of sessions specified for each focus topic (AT LEAST 3-5 sessions per focus topic)
+   - Distribute these sessions throughout the study period (not all on the same day)
+   - Each focus topic session should be ${preferences.session_duration} minutes
+   - Space out focus topic sessions - don't cluster them all together
+3. **REGULAR TOPICS GET STANDARD TIME**: Topics NOT in the focus list still get scheduled, but with fewer sessions (1-2 sessions each)
+4. DO NOT schedule any revision for a topic AFTER its test date has passed
 4. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
 5. Include the test date in the notes field for sessions related to topics with tests
 6. MUST schedule study sessions ONLY within the specified time periods for each day
@@ -222,15 +227,19 @@ Create a detailed, balanced study schedule that:
    - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
    - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
    - Use type="homework", include homeworkDueDate, use homework title as topic
-2. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
-3. Allocates EXTRA sessions and time for topics identified in the focus list
-4. Allocates more time to subjects with upcoming tests
-5. Includes regular breaks between study sessions
-6. ALWAYS schedules sessions within the specific time periods for each enabled day
-7. Balances all subjects to avoid burnout
-8. Includes revision of previously covered material
-9. STOPS scheduling revision for each topic after its test date
-10. Ensures consistent daily coverage on all enabled study days
+2. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
+3. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
+   - AT LEAST 3-5 study sessions each (the exact number is specified for each focus topic)
+   - Sessions distributed throughout the timetable period (spread across different days/weeks)
+   - Example: If a focus topic needs 4 sessions, schedule them on 4 different days
+4. **STANDARD SESSIONS FOR REGULAR TOPICS**: Non-focus topics get 1-2 sessions each
+5. Allocates more time to subjects with upcoming tests
+6. Includes regular breaks between study sessions
+7. ALWAYS schedules sessions within the specific time periods for each enabled day
+8. Balances all subjects to avoid burnout
+9. Includes revision of previously covered material
+10. STOPS scheduling revision for each topic after its test date
+11. Ensures consistent daily coverage on all enabled study days
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
