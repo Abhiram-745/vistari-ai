@@ -130,35 +130,35 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {reflections.length === 0 ? (
+          <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Complete study sessions and add reflections to generate AI insights about your learning patterns!
+              {reflections.length === 0 
+                ? "Complete study sessions and add reflections to generate AI insights!"
+                : `${reflections.length} reflections recorded`
+              }
             </p>
-          ) : (
+            <Button
+              onClick={generateInsights}
+              disabled={loading || reflections.length === 0}
+              className="gap-2"
+              size="sm"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Do Mindprint
+                </>
+              )}
+            </Button>
+          </div>
+
+          {reflections.length === 0 ? null : (
             <>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {reflections.length} reflections recorded
-                </p>
-                <Button
-                  onClick={generateInsights}
-                  disabled={loading}
-                  className="gap-2"
-                  size="sm"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      Generate AI Insights
-                    </>
-                  )}
-                </Button>
-              </div>
 
               {insights && (
                 <div className="space-y-6 pt-4 border-t">
@@ -289,10 +289,10 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                           ))}
                         </ul>
                       </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </div>
-              )}
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            )}
             </>
           )}
         </CardContent>
