@@ -110,7 +110,14 @@ export const TimetableEditDialog = ({
             topics,
             testDates,
             preferences,
-            homeworks: homeworks || [],
+            homeworks: homeworks?.map(({ id, title, subject, due_date, duration, description }) => ({
+              id,
+              title,
+              subject,
+              due_date,
+              duration,
+              description
+            })) || [],
             startDate,
             endDate,
           },
