@@ -343,12 +343,20 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     // Extract JSON from markdown code blocks if present
     let scheduleData;
     try {
-      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/) || 
-                       aiResponse.match(/```\n([\s\S]*?)\n```/);
-      const jsonString = jsonMatch ? jsonMatch[1] : aiResponse;
+      // Try multiple patterns for markdown code fences
+      let jsonString = aiResponse;
+      
+      // Remove markdown code fences if present (supports various formats)
+      if (aiResponse.includes('```')) {
+        jsonString = aiResponse
+          .replace(/^```(?:json)?\s*/i, '') // Remove opening fence
+          .replace(/\s*```\s*$/i, '')        // Remove closing fence
+          .trim();
+      }
+      
       scheduleData = JSON.parse(jsonString);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", aiResponse);
+      console.error("Failed to parse AI response:", aiResponse.substring(0, 500));
       throw new Error("Invalid AI response format");
     }
 
