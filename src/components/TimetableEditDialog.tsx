@@ -164,7 +164,7 @@ export const TimetableEditDialog = ({
           Edit & Regenerate
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Timetable Configuration</DialogTitle>
           <DialogDescription>
@@ -173,7 +173,7 @@ export const TimetableEditDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="subjects" className="w-full">
+        <Tabs defaultValue="subjects" className="w-full flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="subjects">Subjects</TabsTrigger>
             <TabsTrigger value="topics">Topics</TabsTrigger>
@@ -182,23 +182,23 @@ export const TimetableEditDialog = ({
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="subjects" className="space-y-4">
+          <TabsContent value="subjects" className="space-y-4 overflow-y-auto flex-1 pr-2">
             <SubjectsStep subjects={subjects} setSubjects={setSubjects} />
           </TabsContent>
 
-          <TabsContent value="topics" className="space-y-4">
+          <TabsContent value="topics" className="space-y-4 overflow-y-auto flex-1 pr-2">
             <TopicsEditStep subjects={subjects} topics={topics} setTopics={setTopics} />
           </TabsContent>
 
-          <TabsContent value="tests" className="space-y-4">
+          <TabsContent value="tests" className="space-y-4 overflow-y-auto flex-1 pr-2">
             <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
           </TabsContent>
 
-          <TabsContent value="homework" className="space-y-4">
+          <TabsContent value="homework" className="space-y-4 overflow-y-auto flex-1 pr-2">
             <HomeworkEditStep subjects={subjects} />
           </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-4">
+          <TabsContent value="preferences" className="space-y-4 overflow-y-auto flex-1 pr-2">
             <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
           </TabsContent>
         </Tabs>
