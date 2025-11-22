@@ -145,8 +145,8 @@ serve(async (req) => {
       .join("; ");
 
     const homeworksContext = homeworks.length > 0 
-      ? "\n\n**HOMEWORK ASSIGNMENTS (MUST BE SCHEDULED):**\n" + homeworks
-          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}${hw.duration ? `, Est. ${hw.duration} mins` : ', Est. 45-60 mins'} - MUST SCHEDULE BEFORE DUE DATE`)
+      ? "\n\n**HOMEWORK ASSIGNMENTS (MUST BE SCHEDULED WITH EXACT DURATIONS):**\n" + homeworks
+          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}, DURATION: ${hw.duration || 60} minutes - MUST schedule EXACTLY ${hw.duration || 60} minutes BEFORE due date`)
           .join("\n")
       : "\n\nNo homework assignments";
 
@@ -155,19 +155,23 @@ serve(async (req) => {
       .map((slot: any) => `${slot.day} (${slot.startTime}-${slot.endTime})`)
       .join(", ");
 
-    // Add priority analysis context if available - FOCUS topics get MORE study time with MULTIPLE sessions
+    // Add priority analysis context if available - FOCUS topics get SIGNIFICANTLY MORE study time with MULTIPLE sessions
     const priorityContext = topicAnalysis?.priorities 
-      ? "\n\n**FOCUS TOPICS** (these topics need MORE study time - schedule MULTIPLE sessions for each):\n" + 
+      ? "\n\n**FOCUS TOPICS** (these topics need SIGNIFICANTLY MORE study time - allocate 60-90 minute sessions and schedule MULTIPLE sessions):\n" + 
         topicAnalysis.priorities
           .sort((a: any, b: any) => b.priority_score - a.priority_score)
-          .map((p: any) => `${p.topic_name}: Priority ${p.priority_score}/10 - ${p.reasoning}\n  → MUST schedule AT LEAST ${Math.max(3, Math.ceil(p.priority_score / 2))} sessions for this topic throughout the timetable`)
+          .map((p: any) => {
+            const sessions = Math.max(4, Math.ceil(p.priority_score / 1.5));
+            const duration = Math.min(90, 45 + (p.priority_score * 5));
+            return `${p.topic_name}: Priority ${p.priority_score}/10 - ${p.reasoning}\n  → MUST schedule ${sessions} sessions of ${duration} minutes EACH for this topic throughout the timetable`;
+          })
           .join("\n")
       : "";
 
     const difficultTopicsContext = topicAnalysis?.difficult_topics 
-      ? "\n\n**ADDITIONAL FOCUS CONTEXT** (allocate extra time and multiple sessions):\n" + 
+      ? "\n\n**ADDITIONAL FOCUS CONTEXT** (allocate extra time and multiple long sessions):\n" + 
         topicAnalysis.difficult_topics
-          .map((dt: any) => `${dt.topic_name}: ${dt.reason}\nStudy Suggestion: ${dt.study_suggestion}`)
+          .map((dt: any) => `${dt.topic_name}: ${dt.reason}\nStudy Suggestion: ${dt.study_suggestion}\n  → These need longer sessions (60-90 mins each)`)
           .join("\n")
       : "";
 
@@ -193,25 +197,29 @@ TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 **CRITICAL REQUIREMENTS:**
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
-2. **FOCUS TOPICS GET MULTIPLE SESSIONS**: Topics listed in "FOCUS TOPICS" section need MORE study time:
-   - Schedule the EXACT number of sessions specified for each focus topic (AT LEAST 3-5 sessions per focus topic)
+2. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
+   - Schedule the EXACT number of sessions specified for each focus topic (typically 4-6 sessions per focus topic)
+   - Each focus topic session should be the EXACT duration specified (60-90 minutes for high-priority topics)
    - Distribute these sessions throughout the study period (not all on the same day)
-   - Each focus topic session should be ${preferences.session_duration} minutes
    - Space out focus topic sessions - don't cluster them all together
-3. **REGULAR TOPICS GET STANDARD TIME**: Topics NOT in the focus list still get scheduled, but with fewer sessions (1-2 sessions each)
-4. DO NOT schedule any revision for a topic AFTER its test date has passed
-4. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
-5. Include the test date in the notes field for sessions related to topics with tests
-6. MUST schedule study sessions ONLY within the specified time periods for each day
-7. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
-8. **HOMEWORK INTEGRATION (CRITICAL)**: 
+3. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session of ${preferences.session_duration} minutes each
+4. **HOMEWORK USES EXACT DURATION**: Each homework session MUST use its specified duration (not default session duration)
+   - If homework specifies 150 minutes, the session must be 150 minutes
+   - If homework specifies 60 minutes, the session must be 60 minutes
+   - Large homework (>90 mins) can be split into multiple sessions on different days if needed
+5. DO NOT schedule any revision for a topic AFTER its test date has passed
+6. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
+7. Include the test date in the notes field for sessions related to topics with tests
+8. MUST schedule study sessions ONLY within the specified time periods for each day
+9. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
+10. **HOMEWORK INTEGRATION (CRITICAL)**: 
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
    - Homework is NOT optional - it has hard deadlines and MUST be scheduled
    - **CRITICAL SCHEDULING RULE**: Schedule homework AT LEAST 1-3 days BEFORE the due date, NEVER on the due date itself
    - For homework due on date X, schedule it on date X-1, X-2, or X-3 (earlier is better)
    - Example: If homework is due 2025-11-24, schedule it on 2025-11-23, 2025-11-22, or 2025-11-21 - NOT on 2025-11-24
-   - If homework duration is provided, use it; otherwise allocate 45-60 minutes per homework
-   - Break large homework (>90 mins) into multiple sessions across different days
+   - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration
+   - Break large homework (>120 mins) into 2-3 sessions across different days, each using portion of total duration
    - Homework sessions MUST use type="homework" and include homeworkDueDate field
    - Topic field should contain the homework title
    - Subject field should match the homework subject
@@ -226,13 +234,16 @@ Create a detailed, balanced study schedule that:
    - Count the homework assignments and ensure you create exactly that many homework sessions
    - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
    - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
+   - **USE EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, etc.)
+   - Split large homework (>120 mins) into 2-3 smaller sessions if needed
    - Use type="homework", include homeworkDueDate, use homework title as topic
 2. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
-3. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
-   - AT LEAST 3-5 study sessions each (the exact number is specified for each focus topic)
+3. **MULTIPLE LONG SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
+   - The EXACT number of study sessions specified (typically 4-6 sessions each)
+   - Each session using the EXACT duration specified (typically 60-90 minutes per session)
    - Sessions distributed throughout the timetable period (spread across different days/weeks)
-   - Example: If a focus topic needs 4 sessions, schedule them on 4 different days
-4. **STANDARD SESSIONS FOR REGULAR TOPICS**: Non-focus topics get 1-2 sessions each
+   - Example: If a focus topic needs 5 sessions of 75 minutes each, schedule them on 5 different days with 75-minute duration
+4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session of ${preferences.session_duration} minutes each
 5. Allocates more time to subjects with upcoming tests
 6. Includes regular breaks between study sessions
 7. ALWAYS schedules sessions within the specific time periods for each enabled day
@@ -243,7 +254,12 @@ Create a detailed, balanced study schedule that:
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
-2. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
+2. Each homework session uses the EXACT duration specified for that homework
+3. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
+
+**FOCUS vs REGULAR TOPICS CHECK**: Before finalizing, verify:
+1. Focus topics have 4-6 sessions EACH with longer durations (60-90 mins per session)
+2. Regular (non-focus) topics have ONLY 1 session EACH with standard duration (${preferences.session_duration} mins)
 
 Return a JSON object with the following structure:
 {
