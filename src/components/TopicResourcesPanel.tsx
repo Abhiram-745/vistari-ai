@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Link2, FileText, ExternalLink, BookOpen } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronDown, ChevronRight, Link2, FileText, ExternalLink, BookOpen, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -52,6 +53,7 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
   const [topicsData, setTopicsData] = useState<TopicWithResources[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchTopicsWithResources();
@@ -123,6 +125,15 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
     setExpandedTopics(newExpanded);
   };
 
+  // Filter topics based on search query
+  const filteredTopics = topicsData.filter((topic) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      topic.topicName.toLowerCase().includes(query) ||
+      topic.subject.toLowerCase().includes(query)
+    );
+  });
+
   if (loading) {
     return (
       <Card>
@@ -153,14 +164,27 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
         </p>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[500px] pr-4">
-          {topicsData.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No topics found in this timetable
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {topicsData.map((topic) => {
+        <div className="space-y-4">
+          {/* Search filter */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search topics or subjects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <ScrollArea className="h-[450px] pr-4">
+            {filteredTopics.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "No topics match your search" : "No topics found in this timetable"}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredTopics.map((topic) => {
                 const topicKey = `${topic.subject}-${topic.topicName}`;
                 const isExpanded = expandedTopics.has(topicKey);
 
@@ -260,6 +284,7 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
             </div>
           )}
         </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
