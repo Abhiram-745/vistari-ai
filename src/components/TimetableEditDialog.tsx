@@ -15,6 +15,7 @@ import SubjectsStep from "./onboarding/SubjectsStep";
 import TopicsStep from "./onboarding/TopicsStep";
 import TestDatesStep from "./onboarding/TestDatesStep";
 import PreferencesStep from "./onboarding/PreferencesStep";
+import HomeworkEditStep from "./onboarding/HomeworkEditStep";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Subject, Topic, TestDate, StudyPreferences } from "./OnboardingWizard";
 
@@ -161,10 +162,11 @@ export const TimetableEditDialog = ({
         </DialogHeader>
 
         <Tabs defaultValue="subjects" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="subjects">Subjects</TabsTrigger>
             <TabsTrigger value="topics">Topics</TabsTrigger>
             <TabsTrigger value="tests">Tests</TabsTrigger>
+            <TabsTrigger value="homework">Homework</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
 
@@ -178,6 +180,10 @@ export const TimetableEditDialog = ({
 
           <TabsContent value="tests" className="space-y-4">
             <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
+          </TabsContent>
+
+          <TabsContent value="homework" className="space-y-4">
+            <HomeworkEditStep subjects={subjects} />
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-4">
