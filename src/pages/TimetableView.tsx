@@ -404,34 +404,36 @@ const TimetableView = () => {
 
           {/* Right side - Calendar and Topics */}
           <div className="lg:w-96 space-y-6">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle>Select a Date</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  modifiers={{
-                    hasSession: scheduleDates,
-                  }}
-                  modifiersClassNames={{
-                    hasSession: "bg-primary/20 font-bold",
-                  }}
-                  disabled={(date) => {
-                    const dateStr = format(date, 'yyyy-MM-dd');
-                    return !sortedDates.includes(dateStr);
-                  }}
-                  className="rounded-md border"
-                />
-              </CardContent>
-            </Card>
+            <div className="lg:sticky lg:top-24 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select a Date</CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    modifiers={{
+                      hasSession: scheduleDates,
+                    }}
+                    modifiersClassNames={{
+                      hasSession: "bg-primary/20 font-bold",
+                    }}
+                    disabled={(date) => {
+                      const dateStr = format(date, 'yyyy-MM-dd');
+                      return !sortedDates.includes(dateStr);
+                    }}
+                    className="rounded-md border"
+                  />
+                </CardContent>
+              </Card>
 
-            <TopicResourcesPanel
-              timetableId={timetable.id}
-              schedule={timetable.schedule}
-            />
+              <TopicResourcesPanel
+                timetableId={timetable.id}
+                schedule={timetable.schedule}
+              />
+            </div>
           </div>
         </div>
       </main>
