@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Plus, ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { X, Plus, ChevronLeft, ChevronRight, Sparkles, Loader2, Image as ImageIcon } from "lucide-react";
 import { Subject, Topic } from "../OnboardingWizard";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
   const [confidence, setConfidence] = useState("3");
   const [pastedText, setPastedText] = useState("");
   const [isParsing, setIsParsing] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
 
   const currentSubject = subjects[currentSubjectIndex];
   const currentSubjectId = currentSubjectIndex.toString();
@@ -58,16 +59,63 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
     }
   };
 
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setImages(prev => [...prev, base64]);
+            toast.success("Image pasted successfully");
+          };
+          reader.readAsDataURL(blob);
+        }
+      }
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64 = event.target?.result as string;
+          setImages(prev => [...prev, base64]);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    toast.success(`${files.length} image(s) uploaded successfully`);
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const parseWithAI = async () => {
-    if (!pastedText.trim()) {
-      toast.error("Please paste some content first");
+    if (!pastedText.trim() && images.length === 0) {
+      toast.error("Please paste some content or upload images first");
       return;
     }
 
     setIsParsing(true);
     try {
       const { data, error } = await supabase.functions.invoke('parse-topics', {
-        body: { text: pastedText, subjectName: currentSubject.name }
+        body: { 
+          text: pastedText, 
+          subjectName: currentSubject.name,
+          images: images.length > 0 ? images : undefined
+        }
       });
 
       if (error) throw error;
@@ -86,6 +134,7 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
         }));
         setTopics([...topics, ...newTopics]);
         setPastedText("");
+        setImages([]);
         toast.success(`Added ${newTopics.length} topics!`);
       }
     } catch (error) {
@@ -219,18 +268,66 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
             placeholder={`Paste your ${currentSubject.name} topics here...\n\nExample:\n- Quadratic equations\n- Pythagoras theorem\n- Circle theorems\n- Trigonometry`}
             value={pastedText}
             onChange={(e) => setPastedText(e.target.value)}
-            rows={8}
+            onPaste={handlePaste}
+            rows={6}
             className="resize-none"
           />
+          <div className="flex items-center gap-2">
+            <Input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('image-upload')?.click()}
+              className="gap-2"
+            >
+              <ImageIcon className="h-4 w-4" />
+              Upload Images
+            </Button>
+            <span className="text-xs text-muted-foreground">or paste images directly (Ctrl+V)</span>
+          </div>
           <p className="text-xs text-muted-foreground">
             AI will automatically extract topics, assess difficulty, and estimate confidence levels
           </p>
         </div>
 
+        {images.length > 0 && (
+          <div className="space-y-2">
+            <Label>Uploaded Images ({images.length})</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {images.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img
+                    src={img}
+                    alt={`Upload ${idx + 1}`}
+                    className="w-full h-20 object-cover rounded-md border border-border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeImage(idx)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Button
           type="button"
           onClick={parseWithAI}
-          disabled={!pastedText.trim() || isParsing}
+          disabled={(!pastedText.trim() && images.length === 0) || isParsing}
           className="w-full bg-gradient-primary hover:opacity-90"
         >
           {isParsing ? (
