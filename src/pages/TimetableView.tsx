@@ -31,6 +31,7 @@ interface TimetableSession {
   type: string;
   notes?: string;
   testDate?: string;
+  homeworkDueDate?: string;
   completed?: boolean;
 }
 
@@ -316,6 +317,8 @@ const TimetableView = () => {
                               ? "bg-primary/10 border-primary opacity-60"
                               : session.type === "break"
                               ? "bg-muted/30 border-muted-foreground"
+                              : session.type === "homework"
+                              ? "bg-purple-50 dark:bg-purple-950/20 border-purple-500"
                               : session.type === "revision"
                               ? "bg-blue-50 dark:bg-blue-950/20 border-blue-500"
                               : session.testDate
@@ -340,6 +343,8 @@ const TimetableView = () => {
                                   className={`text-xs px-2 py-1 rounded ${
                                     session.type === "break"
                                       ? "bg-muted text-muted-foreground"
+                                      : session.type === "homework"
+                                      ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
                                       : session.type === "revision"
                                       ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                                       : "bg-primary/10 text-primary"
@@ -359,6 +364,11 @@ const TimetableView = () => {
                               {session.testDate && (
                                 <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-1">
                                   📝 Test: {format(new Date(session.testDate), "dd/MM/yyyy")}
+                                </p>
+                              )}
+                              {session.homeworkDueDate && (
+                                <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mt-1">
+                                  📚 Due: {format(new Date(session.homeworkDueDate), "dd/MM/yyyy")}
                                 </p>
                               )}
                               {session.notes && (
