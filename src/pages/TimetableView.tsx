@@ -72,6 +72,7 @@ const TimetableView = () => {
     index: number;
     session: TimetableSession;
   } | null>(null);
+  const [resourcesRefreshKey, setResourcesRefreshKey] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -444,6 +445,7 @@ const TimetableView = () => {
               </Card>
 
               <TopicResourcesPanel
+                key={resourcesRefreshKey}
                 timetableId={timetable.id}
                 schedule={timetable.schedule}
               />
@@ -457,7 +459,12 @@ const TimetableView = () => {
       {selectedSession && (
         <SessionResourceDialog
           open={!!selectedSession}
-          onOpenChange={(open) => !open && setSelectedSession(null)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedSession(null);
+              setResourcesRefreshKey(prev => prev + 1);
+            }
+          }}
           timetableId={timetable.id}
           sessionId={`${selectedSession.date}-${selectedSession.index}`}
           sessionDetails={{
