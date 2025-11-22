@@ -12,7 +12,7 @@ import {
 import { Settings, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import SubjectsStep from "./onboarding/SubjectsStep";
-import TopicsStep from "./onboarding/TopicsStep";
+import TopicsEditStep from "./onboarding/TopicsEditStep";
 import TestDatesStep from "./onboarding/TestDatesStep";
 import PreferencesStep from "./onboarding/PreferencesStep";
 import HomeworkEditStep from "./onboarding/HomeworkEditStep";
@@ -175,7 +175,7 @@ export const TimetableEditDialog = ({
           </TabsContent>
 
           <TabsContent value="topics" className="space-y-4">
-            <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
+            <TopicsEditStep subjects={subjects} topics={topics} setTopics={setTopics} />
           </TabsContent>
 
           <TabsContent value="tests" className="space-y-4">
