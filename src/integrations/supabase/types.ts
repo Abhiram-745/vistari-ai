@@ -148,6 +148,38 @@ export type Database = {
           },
         ]
       }
+      study_insights: {
+        Row: {
+          created_at: string
+          id: string
+          insights_data: Json
+          timetable_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insights_data?: Json
+          timetable_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insights_data?: Json
+          timetable_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_insights_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_preferences: {
         Row: {
           break_duration: number | null
@@ -314,6 +346,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      topic_reflections: {
+        Row: {
+          created_at: string
+          id: string
+          reflection_data: Json
+          session_date: string
+          session_index: number
+          subject: string
+          timetable_id: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reflection_data?: Json
+          session_date: string
+          session_index: number
+          subject: string
+          timetable_id: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reflection_data?: Json
+          session_date?: string
+          session_index?: number
+          subject?: string
+          timetable_id?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_reflections_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       topics: {
         Row: {
