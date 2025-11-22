@@ -34,7 +34,8 @@ const inputSchema = z.object({
       enabled: z.boolean()
     })),
     session_duration: z.number().min(15).max(180),
-    break_duration: z.number().min(5).max(60)
+    break_duration: z.number().min(5).max(60),
+    aiNotes: z.string().optional()
   }),
   homeworks: z.array(z.object({
     id: z.string().uuid().optional(),
@@ -56,6 +57,7 @@ const inputSchema = z.object({
       study_suggestion: z.string()
     })).optional()
   }).optional(),
+  aiNotes: z.string().optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 });
@@ -99,13 +101,13 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Invalid input data',
-          details: parsed.error.errors 
+      details: parsed.error.errors 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis } = parsed.data;
+    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes } = parsed.data;
 
     console.log("Generating timetable with:", {
       subjectsCount: subjects.length,
@@ -175,6 +177,10 @@ serve(async (req) => {
           .join("\n")
       : "";
 
+    const userNotesContext = aiNotes 
+      ? `\n\n**USER'S CUSTOM INSTRUCTIONS** (MUST FOLLOW THESE REQUIREMENTS):\n${aiNotes}\n`
+      : "";
+
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
 
 SUBJECTS: ${subjectsContext}
@@ -186,6 +192,7 @@ UPCOMING TESTS: ${testsContext}
 HOMEWORK ASSIGNMENTS: ${homeworksContext}
 ${priorityContext}
 ${difficultTopicsContext}
+${userNotesContext}
 
 STUDY PREFERENCES:
 - Daily study hours target: ${preferences.daily_study_hours}
@@ -202,6 +209,7 @@ STUDY PREFERENCES:
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 **CRITICAL REQUIREMENTS:**
+${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
    - Schedule the EXACT number of sessions specified for each focus topic (typically 4-6 sessions per focus topic)

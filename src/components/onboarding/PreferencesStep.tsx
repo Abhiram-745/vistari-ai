@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { StudyPreferences, DayTimeSlot } from "../OnboardingWizard";
 import { Card } from "@/components/ui/card";
 
@@ -141,6 +142,26 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
               );
             })}
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="ai-notes">Notes for AI (Optional)</Label>
+          <Textarea
+            id="ai-notes"
+            placeholder="Add any special instructions for the AI, like 'Exclude trigonometry topics as I've already revised them' or 'Focus more on evenings than mornings'"
+            value={preferences.aiNotes || ""}
+            onChange={(e) =>
+              setPreferences({
+                ...preferences,
+                aiNotes: e.target.value,
+              })
+            }
+            rows={4}
+            className="resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            Tell the AI how you want your timetable structured - topics to exclude, time preferences, or any other custom requirements
+          </p>
         </div>
       </div>
     </div>
