@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import { TimetableEditDialog } from "@/components/TimetableEditDialog";
 import { SessionResourceDialog } from "@/components/SessionResourceDialog";
+import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 
 interface TimetableSession {
   time: string;
@@ -401,8 +402,8 @@ const TimetableView = () => {
           })}
           </div>
 
-          {/* Right side - Calendar */}
-          <div className="lg:w-96">
+          {/* Right side - Calendar and Topics */}
+          <div className="lg:w-96 space-y-6">
             <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle>Select a Date</CardTitle>
@@ -426,6 +427,11 @@ const TimetableView = () => {
                 />
               </CardContent>
             </Card>
+
+            <TopicResourcesPanel
+              timetableId={timetable.id}
+              schedule={timetable.schedule}
+            />
           </div>
         </div>
       </main>
