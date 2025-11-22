@@ -48,6 +48,7 @@ export interface StudyPreferences {
   day_time_slots: DayTimeSlot[];
   break_duration: number;
   session_duration: number;
+  duration_mode: "fixed" | "flexible";
   aiNotes?: string;
 }
 
@@ -70,6 +71,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     ],
     break_duration: 15,
     session_duration: 45,
+    duration_mode: "flexible",
   });
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
 

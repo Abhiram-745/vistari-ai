@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StudyPreferences, DayTimeSlot } from "../OnboardingWizard";
 import { Card } from "@/components/ui/card";
 
@@ -59,41 +60,83 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="session-duration">Session Duration (mins)</Label>
-            <Input
-              id="session-duration"
-              type="number"
-              min="15"
-              max="120"
-              value={preferences.session_duration}
-              onChange={(e) =>
-                setPreferences({
-                  ...preferences,
-                  session_duration: parseInt(e.target.value) || 45,
-                })
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="break-duration">Break Duration (mins)</Label>
-            <Input
-              id="break-duration"
-              type="number"
-              min="5"
-              max="60"
-              value={preferences.break_duration}
-              onChange={(e) =>
-                setPreferences({
-                  ...preferences,
-                  break_duration: parseInt(e.target.value) || 15,
-                })
-              }
-            />
-          </div>
+        <div className="space-y-3">
+          <Label>Session & Break Duration Mode</Label>
+          <RadioGroup
+            value={preferences.duration_mode}
+            onValueChange={(value: "fixed" | "flexible") =>
+              setPreferences({
+                ...preferences,
+                duration_mode: value,
+              })
+            }
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="flexible" id="flexible" />
+              <Label htmlFor="flexible" className="font-normal cursor-pointer">
+                Flexible - AI tailors session length based on task type (homework, focus topics, etc.)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="fixed" id="fixed" />
+              <Label htmlFor="fixed" className="font-normal cursor-pointer">
+                Fixed - Use specific durations for all sessions
+              </Label>
+            </div>
+          </RadioGroup>
         </div>
+
+        {preferences.duration_mode === "fixed" && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="session-duration">Session Duration (mins)</Label>
+              <Input
+                id="session-duration"
+                type="number"
+                min="15"
+                max="120"
+                value={preferences.session_duration}
+                onChange={(e) =>
+                  setPreferences({
+                    ...preferences,
+                    session_duration: parseInt(e.target.value) || 45,
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="break-duration">Break Duration (mins)</Label>
+              <Input
+                id="break-duration"
+                type="number"
+                min="5"
+                max="60"
+                value={preferences.break_duration}
+                onChange={(e) =>
+                  setPreferences({
+                    ...preferences,
+                    break_duration: parseInt(e.target.value) || 15,
+                  })
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        {preferences.duration_mode === "flexible" && (
+          <Card className="p-3 bg-muted">
+            <p className="text-sm text-muted-foreground">
+              With flexible mode, the AI will automatically adjust session lengths:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Homework: Uses exact estimated duration</li>
+                <li>Focus topics: 60-90 minute sessions</li>
+                <li>Regular topics: 30-45 minute sessions</li>
+                <li>Breaks: 10-15 minutes between sessions</li>
+              </ul>
+            </p>
+          </Card>
+        )}
 
         <div className="space-y-3">
           <Label>Study Days & Time Periods</Label>

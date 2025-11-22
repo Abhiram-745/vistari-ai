@@ -34,7 +34,10 @@ interface TimetableEditDialogProps {
 const migratePreferences = (prefs: any): StudyPreferences => {
   // If already in new format with day_time_slots, return as is
   if (prefs.day_time_slots && Array.isArray(prefs.day_time_slots)) {
-    return prefs;
+    return {
+      ...prefs,
+      duration_mode: prefs.duration_mode || "flexible",
+    };
   }
 
   // Otherwise, convert old format to new format
@@ -47,6 +50,7 @@ const migratePreferences = (prefs: any): StudyPreferences => {
     daily_study_hours: prefs.daily_study_hours || 2,
     session_duration: prefs.session_duration || 45,
     break_duration: prefs.break_duration || 15,
+    duration_mode: prefs.duration_mode || "flexible",
     day_time_slots: weekDays.map(day => ({
       day,
       startTime,
