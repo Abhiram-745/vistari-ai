@@ -23,6 +23,8 @@ import Header from "@/components/Header";
 import { TimetableEditDialog } from "@/components/TimetableEditDialog";
 import { SessionResourceDialog } from "@/components/SessionResourceDialog";
 import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
+import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
+import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 
 interface TimetableSession {
   time: string;
@@ -61,6 +63,11 @@ const TimetableView = () => {
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [selectedSession, setSelectedSession] = useState<{
+    date: string;
+    index: number;
+    session: TimetableSession;
+  } | null>(null);
+  const [reflectionSession, setReflectionSession] = useState<{
     date: string;
     index: number;
     session: TimetableSession;
@@ -125,11 +132,18 @@ const TimetableView = () => {
       toast.error("Failed to update progress");
     } else {
       setTimetable({ ...timetable, schedule: updatedSchedule });
-      toast.success(session.completed ? "Session marked as complete!" : "Session marked as incomplete");
       
       // Update study streak when marking complete
       if (session.completed && session.type !== "break") {
         await updateStudyStreak(date, session.duration);
+        // Open reflection dialog for study sessions
+        if (session.type === "study") {
+          setReflectionSession({ date, index: sessionIndex, session });
+        } else {
+          toast.success("Session marked as complete!");
+        }
+      } else {
+        toast.success("Session marked as incomplete");
       }
     }
   };
@@ -433,6 +447,8 @@ const TimetableView = () => {
                 timetableId={timetable.id}
                 schedule={timetable.schedule}
               />
+
+              <StudyInsightsPanel timetableId={timetable.id} />
             </div>
           </div>
         </div>
@@ -450,6 +466,23 @@ const TimetableView = () => {
             date: format(new Date(selectedSession.date), "EEEE, dd/MM/yyyy"),
             time: selectedSession.session.time,
           }}
+        />
+      )}
+
+      {reflectionSession && (
+        <TopicReflectionDialog
+          open={!!reflectionSession}
+          onOpenChange={(open) => {
+            if (!open) {
+              setReflectionSession(null);
+              toast.success("Session marked as complete!");
+            }
+          }}
+          timetableId={timetable.id}
+          sessionDate={reflectionSession.date}
+          sessionIndex={reflectionSession.index}
+          subject={reflectionSession.session.subject}
+          topic={reflectionSession.session.topic}
         />
       )}
     </div>
