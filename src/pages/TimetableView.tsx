@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import { TimetableEditDialog } from "@/components/TimetableEditDialog";
+import { SessionResourceDialog } from "@/components/SessionResourceDialog";
 
 interface TimetableSession {
   time: string;
@@ -57,6 +58,11 @@ const TimetableView = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [selectedSession, setSelectedSession] = useState<{
+    date: string;
+    index: number;
+    session: TimetableSession;
+  } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -301,6 +307,10 @@ const TimetableView = () => {
                       sessions.map((session, idx) => (
                         <div
                           key={idx}
+                          onClick={() =>
+                            session.type !== "break" &&
+                            setSelectedSession({ date, index: idx, session })
+                          }
                           className={`p-4 rounded-lg border-l-4 ${
                             session.completed
                               ? "bg-primary/10 border-primary opacity-60"
@@ -311,6 +321,10 @@ const TimetableView = () => {
                               : session.testDate
                               ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500"
                               : "bg-primary/5 border-primary"
+                          } ${
+                            session.type !== "break"
+                              ? "cursor-pointer hover:shadow-md transition-shadow"
+                              : ""
                           }`}
                         >
                           <div className="flex items-start justify-between gap-4">
@@ -354,7 +368,7 @@ const TimetableView = () => {
                               )}
                             </div>
                             {session.type !== "break" && (
-                              <div className="flex items-center">
+                              <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                   checked={session.completed || false}
                                   onCheckedChange={() => toggleSessionComplete(date, idx)}
@@ -405,6 +419,21 @@ const TimetableView = () => {
           </div>
         </div>
       </main>
+
+      {selectedSession && (
+        <SessionResourceDialog
+          open={!!selectedSession}
+          onOpenChange={(open) => !open && setSelectedSession(null)}
+          timetableId={timetable.id}
+          sessionId={`${selectedSession.date}-${selectedSession.index}`}
+          sessionDetails={{
+            subject: selectedSession.session.subject,
+            topic: selectedSession.session.topic,
+            date: format(new Date(selectedSession.date), "EEEE, dd/MM/yyyy"),
+            time: selectedSession.session.time,
+          }}
+        />
+      )}
     </div>
   );
 };

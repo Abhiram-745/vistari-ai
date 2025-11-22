@@ -101,6 +101,53 @@ export type Database = {
         }
         Relationships: []
       }
+      session_resources: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          session_id: string
+          timetable_id: string
+          title: string
+          type: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_id: string
+          timetable_id: string
+          title: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_id?: string
+          timetable_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_resources_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_preferences: {
         Row: {
           break_duration: number | null
