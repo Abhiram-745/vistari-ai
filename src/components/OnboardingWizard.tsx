@@ -9,6 +9,7 @@ import TopicsStep from "./onboarding/TopicsStep";
 import DifficultTopicsStep from "./onboarding/DifficultTopicsStep";
 import TestDatesStep from "./onboarding/TestDatesStep";
 import PreferencesStep from "./onboarding/PreferencesStep";
+import HomeworkStep, { Homework } from "./onboarding/HomeworkStep";
 import GenerateStep from "./onboarding/GenerateStep";
 
 interface OnboardingWizardProps {
@@ -71,8 +72,9 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     break_duration: 15,
     session_duration: 45,
   });
+  const [homeworks, setHomeworks] = useState<Homework[]>([]);
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (step / totalSteps) * 100;
 
   const handleNext = () => {
@@ -95,6 +97,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     "AI Topic Analysis",
     "Upcoming Test Dates",
     "Study Preferences",
+    "Homework Assignments",
     "Generate Timetable",
   ];
 
@@ -115,7 +118,8 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
           {step === 3 && "AI will analyze your topics to prioritize difficult areas"}
           {step === 4 && "When are your tests scheduled?"}
           {step === 5 && "Set your study preferences"}
-          {step === 6 && "Review and generate your personalized timetable"}
+          {step === 6 && "Add any homework assignments to include in your timetable"}
+          {step === 7 && "Review and generate your personalized timetable"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -139,11 +143,15 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
           <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
         )}
         {step === 6 && (
+          <HomeworkStep subjects={subjects} homeworks={homeworks} setHomeworks={setHomeworks} />
+        )}
+        {step === 7 && (
           <GenerateStep
             subjects={subjects}
             topics={topics}
             testDates={testDates}
             preferences={preferences}
+            homeworks={homeworks}
             topicAnalysis={topicAnalysis}
             onComplete={onComplete}
           />

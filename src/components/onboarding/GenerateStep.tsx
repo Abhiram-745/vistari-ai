@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Subject, Topic, TestDate, StudyPreferences } from "../OnboardingWizard";
+import { Homework } from "./HomeworkStep";
 
 interface GenerateStepProps {
   subjects: Subject[];
   topics: Topic[];
   testDates: TestDate[];
   preferences: StudyPreferences;
+  homeworks: Homework[];
   topicAnalysis?: any;
   onComplete: () => void;
 }
@@ -21,6 +23,7 @@ const GenerateStep = ({
   topics,
   testDates,
   preferences,
+  homeworks,
   topicAnalysis,
   onComplete,
 }: GenerateStepProps) => {
@@ -41,14 +44,24 @@ const GenerateStep = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Fetch user's homework
-      const { data: homeworks, error: homeworkError } = await supabase
-        .from("homeworks")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("completed", false);
+      // Save homeworks to database
+      if (homeworks.length > 0) {
+        const { error: homeworkError } = await supabase
+          .from("homeworks")
+          .insert(
+            homeworks.map((hw) => ({
+              user_id: user.id,
+              subject: hw.subject,
+              title: hw.title,
+              description: hw.description,
+              due_date: hw.due_date,
+              duration: hw.duration,
+              completed: false,
+            }))
+          );
 
-      if (homeworkError) throw homeworkError;
+        if (homeworkError) throw homeworkError;
+      }
 
       // Save subjects
       const { data: savedSubjects, error: subjectsError } = await supabase
@@ -176,6 +189,7 @@ const GenerateStep = ({
           <li>• {subjects.length} subjects</li>
           <li>• {topics.length} topics to cover</li>
           <li>• {testDates.length} upcoming tests</li>
+          <li>• {homeworks.length} homework assignments</li>
           <li>• {preferences.daily_study_hours} hours study per day</li>
           <li>• {preferences.day_time_slots.filter(s => s.enabled).length} study days per week</li>
         </ul>
