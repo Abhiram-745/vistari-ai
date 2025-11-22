@@ -190,8 +190,14 @@ ${difficultTopicsContext}
 STUDY PREFERENCES:
 - Daily study hours target: ${preferences.daily_study_hours}
 - Available study times per day: ${enabledDays}
-- Session duration: ${preferences.session_duration} minutes
+- Default session duration: ${preferences.session_duration} minutes (this is a guideline, NOT a fixed requirement)
 - Break duration: ${preferences.break_duration} minutes
+
+**IMPORTANT: Session durations should be FLEXIBLE and vary based on task type:**
+- Homework: Use the EXACT duration specified for each homework assignment
+- Focus topics: Use LONGER sessions (60-90 minutes) regardless of default setting
+- Regular topics: Use SHORTER sessions (30-45 minutes) regardless of default setting
+- The ${preferences.session_duration} minute default is just a guideline - adjust durations intelligently
 
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
@@ -199,15 +205,20 @@ TIMETABLE PERIOD: ${startDate} to ${endDate}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
    - Schedule the EXACT number of sessions specified for each focus topic (typically 4-6 sessions per focus topic)
-   - Each focus topic session should be the EXACT duration specified (60-90 minutes for high-priority topics)
+   - Each focus topic session should be LONGER (60-90 minutes) - NOT the default session duration
    - Distribute these sessions throughout the study period (not all on the same day)
    - Space out focus topic sessions - don't cluster them all together
-3. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session of ${preferences.session_duration} minutes each
-4. **HOMEWORK USES EXACT DURATION**: Each homework session MUST use its specified duration (not default session duration)
+3. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session of 30-45 minutes each (SHORTER than default)
+4. **HOMEWORK USES EXACT DURATION**: Each homework session MUST use its specified duration (ignore default session duration)
    - If homework specifies 150 minutes, the session must be 150 minutes
-   - If homework specifies 60 minutes, the session must be 60 minutes
-   - Large homework (>90 mins) can be split into multiple sessions on different days if needed
-5. DO NOT schedule any revision for a topic AFTER its test date has passed
+   - If homework specifies 30 minutes, the session must be 30 minutes
+   - Large homework (>120 mins) can be split into multiple sessions on different days if needed
+5. **FLEXIBLE DURATIONS**: Do NOT always use the default ${preferences.session_duration} minute duration - vary it intelligently:
+   - Homework: exact duration specified
+   - Focus topics: 60-90 minutes per session
+   - Regular topics: 30-45 minutes per session
+   - Breaks: ${preferences.break_duration} minutes
+6. DO NOT schedule any revision for a topic AFTER its test date has passed
 6. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
 7. Include the test date in the notes field for sessions related to topics with tests
 8. MUST schedule study sessions ONLY within the specified time periods for each day
@@ -218,7 +229,7 @@ TIMETABLE PERIOD: ${startDate} to ${endDate}
    - **CRITICAL SCHEDULING RULE**: Schedule homework AT LEAST 1-3 days BEFORE the due date, NEVER on the due date itself
    - For homework due on date X, schedule it on date X-1, X-2, or X-3 (earlier is better)
    - Example: If homework is due 2025-11-24, schedule it on 2025-11-23, 2025-11-22, or 2025-11-21 - NOT on 2025-11-24
-   - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration
+   - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration (e.g., 150, 60, 30 mins)
    - Break large homework (>120 mins) into 2-3 sessions across different days, each using portion of total duration
    - Homework sessions MUST use type="homework" and include homeworkDueDate field
    - Topic field should contain the homework title
@@ -234,32 +245,38 @@ Create a detailed, balanced study schedule that:
    - Count the homework assignments and ensure you create exactly that many homework sessions
    - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
    - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
-   - **USE EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, etc.)
+   - **USE EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins, etc.)
    - Split large homework (>120 mins) into 2-3 smaller sessions if needed
    - Use type="homework", include homeworkDueDate, use homework title as topic
 2. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
 3. **MULTIPLE LONG SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
    - The EXACT number of study sessions specified (typically 4-6 sessions each)
-   - Each session using the EXACT duration specified (typically 60-90 minutes per session)
+   - Each session using LONGER duration (60-90 minutes per session) - NOT the default duration
    - Sessions distributed throughout the timetable period (spread across different days/weeks)
-   - Example: If a focus topic needs 5 sessions of 75 minutes each, schedule them on 5 different days with 75-minute duration
-4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session of ${preferences.session_duration} minutes each
-5. Allocates more time to subjects with upcoming tests
-6. Includes regular breaks between study sessions
-7. ALWAYS schedules sessions within the specific time periods for each enabled day
-8. Balances all subjects to avoid burnout
-9. Includes revision of previously covered material
-10. STOPS scheduling revision for each topic after its test date
-11. Ensures consistent daily coverage on all enabled study days
+   - Example: If a focus topic needs 5 sessions, schedule them on 5 different days with 60-90 minute durations
+4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session of 30-45 minutes each (SHORTER than default)
+5. **USE FLEXIBLE DURATIONS**: Session lengths should vary intelligently:
+   - Homework: exact specified duration (30-150+ mins)
+   - Focus topics: 60-90 minutes per session
+   - Regular topics: 30-45 minutes per session
+   - Do NOT always use the default ${preferences.session_duration} minute duration
+6. Allocates more time to subjects with upcoming tests
+7. Includes regular breaks between study sessions
+8. ALWAYS schedules sessions within the specific time periods for each enabled day
+9. Balances all subjects to avoid burnout
+10. Includes revision of previously covered material
+11. STOPS scheduling revision for each topic after its test date
+12. Ensures consistent daily coverage on all enabled study days
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
-2. Each homework session uses the EXACT duration specified for that homework
+2. Each homework session uses the EXACT duration specified for that homework (NOT default duration)
 3. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
 
 **FOCUS vs REGULAR TOPICS CHECK**: Before finalizing, verify:
-1. Focus topics have 4-6 sessions EACH with longer durations (60-90 mins per session)
-2. Regular (non-focus) topics have ONLY 1 session EACH with standard duration (${preferences.session_duration} mins)
+1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session) - NOT default duration
+2. Regular (non-focus) topics have ONLY 1 session EACH with SHORTER duration (30-45 mins) - NOT default duration
+3. Session durations are VARIED and appropriate for each task type
 
 Return a JSON object with the following structure:
 {
