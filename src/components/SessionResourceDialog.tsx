@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Link2, FileText, Trash2, ExternalLink } from "lucide-react";
+import { Link2, FileText, Trash2, ExternalLink, Edit2, Check, X } from "lucide-react";
 
 interface SessionResource {
   id: string;
@@ -53,8 +53,16 @@ export const SessionResourceDialog = ({
   const [resources, setResources] = useState<SessionResource[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   const [newResource, setNewResource] = useState({
+    title: "",
+    url: "",
+    notes: "",
+    type: "link",
+  });
+
+  const [editForm, setEditForm] = useState({
     title: "",
     url: "",
     notes: "",
@@ -133,6 +141,51 @@ export const SessionResourceDialog = ({
       toast.error("Failed to delete resource");
     } else {
       toast.success("Resource deleted");
+      fetchResources();
+    }
+  };
+
+  const startEditing = (resource: SessionResource) => {
+    setEditingId(resource.id);
+    setEditForm({
+      title: resource.title,
+      url: resource.url || "",
+      notes: resource.notes || "",
+      type: resource.type,
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditForm({ title: "", url: "", notes: "", type: "link" });
+  };
+
+  const saveEdit = async (resourceId: string) => {
+    if (!editForm.title.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+
+    if (editForm.type === "link" && !editForm.url.trim()) {
+      toast.error("Please enter a URL for links");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("session_resources")
+      .update({
+        title: editForm.title.trim(),
+        url: editForm.url.trim() || null,
+        notes: editForm.notes.trim() || null,
+        type: editForm.type,
+      })
+      .eq("id", resourceId);
+
+    if (error) {
+      toast.error("Failed to update resource");
+    } else {
+      toast.success("Resource updated!");
+      setEditingId(null);
       fetchResources();
     }
   };
@@ -243,49 +296,141 @@ export const SessionResourceDialog = ({
                     key={resource.id}
                     className="p-4 border rounded-lg bg-card hover:bg-accent/5 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 flex-1">
-                        {resource.type === "link" ? (
-                          <Link2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <FileText className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{resource.title}</h4>
-                            {resource.type === "link" && resource.url && (
-                              <a
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:text-primary/80"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            )}
+                    {editingId === resource.id ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div>
+                          <Label>Type</Label>
+                          <Select
+                            value={editForm.type}
+                            onValueChange={(value) =>
+                              setEditForm({ ...editForm, type: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="link">Link</SelectItem>
+                              <SelectItem value="note">Note</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label>Title</Label>
+                          <Input
+                            value={editForm.title}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, title: e.target.value })
+                            }
+                            placeholder="e.g. Khan Academy Video"
+                            maxLength={200}
+                          />
+                        </div>
+
+                        {editForm.type === "link" && (
+                          <div>
+                            <Label>URL</Label>
+                            <Input
+                              type="url"
+                              value={editForm.url}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, url: e.target.value })
+                              }
+                              placeholder="https://..."
+                              maxLength={500}
+                            />
                           </div>
-                          {resource.url && resource.type === "link" && (
-                            <p className="text-xs text-muted-foreground break-all mb-2">
-                              {resource.url}
-                            </p>
-                          )}
-                          {resource.notes && (
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                              {resource.notes}
-                            </p>
-                          )}
+                        )}
+
+                        <div>
+                          <Label>Notes</Label>
+                          <Textarea
+                            value={editForm.notes}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, notes: e.target.value })
+                            }
+                            placeholder="Add any additional notes..."
+                            rows={3}
+                            maxLength={1000}
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => saveEdit(resource.id)}
+                            size="sm"
+                            className="flex-1"
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            onClick={cancelEditing}
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Cancel
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteResource(resource.id)}
-                        className="flex-shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    ) : (
+                      // View mode
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1">
+                          {resource.type === "link" ? (
+                            <Link2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-medium">{resource.title}</h4>
+                              {resource.type === "link" && resource.url && (
+                                <a
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-primary/80"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              )}
+                            </div>
+                            {resource.url && resource.type === "link" && (
+                              <p className="text-xs text-muted-foreground break-all mb-2">
+                                {resource.url}
+                              </p>
+                            )}
+                            {resource.notes && (
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                {resource.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => startEditing(resource)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteResource(resource.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
