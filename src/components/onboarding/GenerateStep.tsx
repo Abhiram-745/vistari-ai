@@ -138,7 +138,7 @@ const GenerateStep = ({
               subject_id: subjectIdMap[td.subject_id],
             })),
             preferences,
-            homeworks: homeworks || [],
+            homeworks: homeworks.map(({ id, ...hw }) => hw) || [],
             topicAnalysis,
             startDate,
             endDate,
