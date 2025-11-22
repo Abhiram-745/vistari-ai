@@ -145,10 +145,10 @@ serve(async (req) => {
       .join("; ");
 
     const homeworksContext = homeworks.length > 0 
-      ? homeworks
-          .map((hw: any) => `${hw.title} (${hw.subject}) - Due: ${hw.due_date}${hw.duration ? `, Est. ${hw.duration} mins` : ''}`)
-          .join("; ")
-      : "No homework assignments";
+      ? "\n\n**HOMEWORK ASSIGNMENTS (MUST BE SCHEDULED):**\n" + homeworks
+          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}${hw.duration ? `, Est. ${hw.duration} mins` : ', Est. 45-60 mins'} - MUST SCHEDULE BEFORE DUE DATE`)
+          .join("\n")
+      : "\n\nNo homework assignments";
 
     const enabledDays = preferences.day_time_slots
       .filter((slot: any) => slot.enabled)
@@ -200,16 +200,24 @@ CRITICAL REQUIREMENTS:
 6. MUST schedule study sessions ONLY within the specified time periods for each day
 7. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
 8. **HOMEWORK INTEGRATION (CRITICAL)**: 
-   - MUST schedule ALL homework assignments into the timetable as dedicated sessions
-   - Homework sessions MUST be completed BEFORE their due date (leave at least 1-2 days buffer)
-   - If homework has duration estimate, use that; otherwise allocate 45-60 minutes per homework
-   - Homework sessions should be type "homework" and include the homework title and due date in notes
-   - DO NOT skip homework - it's as important as study sessions
-   - Spread larger homework across multiple sessions if needed (e.g., 2-hour homework = two 60-min sessions)
-   - Schedule homework earlier rather than later (don't procrastinate)
+   - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
+   - Homework is NOT optional - it has hard deadlines and MUST be scheduled
+   - Schedule homework 2-3 days BEFORE the due date to provide buffer time
+   - If homework duration is provided, use it; otherwise allocate 45-60 minutes per homework
+   - Break large homework (>90 mins) into multiple sessions across different days
+   - Homework sessions MUST use type="homework" and include homeworkDueDate field
+   - Topic field should contain the homework title
+   - Subject field should match the homework subject
+   - Notes field should describe the homework (e.g., "Complete algebra homework - Due: YYYY-MM-DD")
+   - **VERIFICATION**: The number of homework sessions in the schedule MUST equal the number of homework assignments provided
+   - Schedule homework earlier rather than later - front-load homework in the schedule
 
 Create a detailed, balanced study schedule that:
-1. **FIRST schedules ALL homework assignments** - these are mandatory deadlines and must be included
+1. **FIRST AND FOREMOST: Schedule ALL homework assignments** 
+   - Homework has HARD DEADLINES and is MANDATORY
+   - Count the homework assignments and ensure you create exactly that many homework sessions
+   - Schedule each homework 2-3 days before its due date
+   - Use type="homework", include homeworkDueDate, use homework title as topic
 2. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
 3. Allocates EXTRA sessions and time for topics identified in the focus list
 4. Allocates more time to subjects with upcoming tests
@@ -219,7 +227,8 @@ Create a detailed, balanced study schedule that:
 8. Includes revision of previously covered material
 9. STOPS scheduling revision for each topic after its test date
 10. Ensures consistent daily coverage on all enabled study days
-11. For homework sessions: use title as topic, subject from homework, type "homework", and include due date in notes
+
+**HOMEWORK COMPLETION CHECK**: Before finalizing, verify that you've created a homework session for EACH homework assignment listed above.
 
 Return a JSON object with the following structure:
 {
@@ -239,7 +248,18 @@ Return a JSON object with the following structure:
   }
 }
 
-**FINAL REMINDER**: DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session before its due date.
+**HOMEWORK SESSION EXAMPLE** (use this format):
+{
+  "time": "14:00",
+  "duration": 60,
+  "subject": "Mathematics",
+  "topic": "Complete Chapter 5 exercises",
+  "type": "homework",
+  "notes": "Homework assignment - Complete all questions from Chapter 5",
+  "homeworkDueDate": "2025-11-25"
+}
+
+**FINAL REMINDER**: DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session before its due date. Count them: if there are 3 homework assignments, there must be 3 homework sessions in your schedule.
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
