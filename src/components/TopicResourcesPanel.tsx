@@ -76,7 +76,7 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
 
       Object.entries(schedule).forEach(([date, sessions]) => {
         sessions.forEach((session, index) => {
-          if (session.type !== "break") {
+          if (session.type !== "break" && session.type !== "homework") {
             const topicKey = `${session.subject}-${session.topic}`;
             const sessionId = `${date}-${index}`;
 
