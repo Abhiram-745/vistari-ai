@@ -48,6 +48,7 @@ export interface StudyPreferences {
   day_time_slots: DayTimeSlot[];
   break_duration: number;
   session_duration: number;
+  aiNotes?: string;
 }
 
 const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {

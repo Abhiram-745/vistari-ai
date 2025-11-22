@@ -118,6 +118,7 @@ export const TimetableEditDialog = ({
               duration,
               description
             })) || [],
+            aiNotes: preferences.aiNotes || "",
             startDate,
             endDate,
           },

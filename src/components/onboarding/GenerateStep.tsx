@@ -138,6 +138,7 @@ const GenerateStep = ({
             preferences,
             homeworks: homeworks.map(({ id, ...hw }) => hw) || [],
             topicAnalysis,
+            aiNotes: preferences.aiNotes || "",
             startDate,
             endDate,
           },
