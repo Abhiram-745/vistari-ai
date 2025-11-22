@@ -90,8 +90,6 @@ const GenerateStep = ({
           topics.map((t) => ({
             subject_id: subjectIdMap[t.subject_id],
             name: t.name,
-            difficulty: t.difficulty,
-            confidence_level: t.confidence_level,
           }))
         );
 

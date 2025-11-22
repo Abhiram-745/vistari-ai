@@ -18,9 +18,7 @@ const inputSchema = z.object({
   })).max(20),
   topics: z.array(z.object({
     name: z.string().max(200),
-    subject_id: z.string().uuid(),
-    difficulty: z.string().max(20),
-    confidence_level: z.number().min(1).max(5)
+    subject_id: z.string().uuid()
   })).max(500),
   testDates: z.array(z.object({
     subject_id: z.string().uuid(),
@@ -135,7 +133,7 @@ serve(async (req) => {
         const testInfo = relatedTests.length > 0 
           ? ` - TEST DATE: ${relatedTests[0].test_date}` 
           : '';
-        return `${t.name} (${subject?.name}, difficulty: ${t.difficulty}, confidence: ${t.confidence_level}/5${testInfo})`;
+        return `${t.name} (${subject?.name}${testInfo})`;
       })
       .join("; ");
     
@@ -213,16 +211,15 @@ CRITICAL REQUIREMENTS:
 Create a detailed, balanced study schedule that:
 1. **FIRST schedules ALL homework assignments** - these are mandatory deadlines and must be included
 2. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
-3. Allocates EXTRA sessions and time for difficult topics
-4. Prioritizes topics with lower confidence levels and harder difficulty
-5. Allocates more time to subjects with upcoming tests
-6. Includes regular breaks between study sessions
-7. ALWAYS schedules sessions within the specific time periods for each enabled day
-8. Balances all subjects to avoid burnout
-9. Includes revision of previously covered material
-10. STOPS scheduling revision for each topic after its test date
-11. Ensures consistent daily coverage on all enabled study days
-12. For homework sessions: use title as topic, subject from homework, type "homework", and include due date in notes
+3. Allocates EXTRA sessions and time for topics identified in the focus list
+4. Allocates more time to subjects with upcoming tests
+5. Includes regular breaks between study sessions
+6. ALWAYS schedules sessions within the specific time periods for each enabled day
+7. Balances all subjects to avoid burnout
+8. Includes revision of previously covered material
+9. STOPS scheduling revision for each topic after its test date
+10. Ensures consistent daily coverage on all enabled study days
+11. For homework sessions: use title as topic, subject from homework, type "homework", and include due date in notes
 
 Return a JSON object with the following structure:
 {

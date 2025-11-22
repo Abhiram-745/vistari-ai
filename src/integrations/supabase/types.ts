@@ -317,25 +317,19 @@ export type Database = {
       }
       topics: {
         Row: {
-          confidence_level: number | null
           created_at: string | null
-          difficulty: string | null
           id: string
           name: string
           subject_id: string
         }
         Insert: {
-          confidence_level?: number | null
           created_at?: string | null
-          difficulty?: string | null
           id?: string
           name: string
           subject_id: string
         }
         Update: {
-          confidence_level?: number | null
           created_at?: string | null
-          difficulty?: string | null
           id?: string
           name?: string
           subject_id?: string
