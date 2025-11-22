@@ -62,6 +62,20 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
   const fetchTopicsWithResources = async () => {
     setLoading(true);
     try {
+      // Fetch timetable data to get the actual topics the user added
+      const { data: timetableData, error: timetableError } = await supabase
+        .from("timetables")
+        .select("topics")
+        .eq("id", timetableId)
+        .single();
+
+      if (timetableError) throw timetableError;
+
+      // Create a set of valid topic names from the user's actual topics
+      const userTopics = new Set<string>(
+        (timetableData.topics as any[] || []).map((t: any) => t.name.toLowerCase())
+      );
+
       // Fetch all resources for this timetable
       const { data: resources, error } = await supabase
         .from("session_resources")
@@ -71,12 +85,18 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
 
       if (error) throw error;
 
-      // Extract unique topics from schedule
+      // Extract unique topics from schedule - ONLY include topics that exist in user's topic list
       const topicsMap = new Map<string, TopicWithResources>();
 
       Object.entries(schedule).forEach(([date, sessions]) => {
         sessions.forEach((session, index) => {
-          if (session.type !== "break" && session.type !== "homework") {
+          // Only include revision/study sessions (exclude breaks and homework)
+          // AND only if the topic is in the user's actual topic list
+          if (
+            session.type !== "break" && 
+            session.type !== "homework" &&
+            userTopics.has(session.topic.toLowerCase())
+          ) {
             const topicKey = `${session.subject}-${session.topic}`;
             const sessionId = `${date}-${index}`;
 
