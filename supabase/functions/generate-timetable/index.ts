@@ -202,7 +202,9 @@ CRITICAL REQUIREMENTS:
 8. **HOMEWORK INTEGRATION (CRITICAL)**: 
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
    - Homework is NOT optional - it has hard deadlines and MUST be scheduled
-   - Schedule homework 2-3 days BEFORE the due date to provide buffer time
+   - **CRITICAL SCHEDULING RULE**: Schedule homework AT LEAST 1-3 days BEFORE the due date, NEVER on the due date itself
+   - For homework due on date X, schedule it on date X-1, X-2, or X-3 (earlier is better)
+   - Example: If homework is due 2025-11-24, schedule it on 2025-11-23, 2025-11-22, or 2025-11-21 - NOT on 2025-11-24
    - If homework duration is provided, use it; otherwise allocate 45-60 minutes per homework
    - Break large homework (>90 mins) into multiple sessions across different days
    - Homework sessions MUST use type="homework" and include homeworkDueDate field
@@ -211,12 +213,14 @@ CRITICAL REQUIREMENTS:
    - Notes field should describe the homework (e.g., "Complete algebra homework - Due: YYYY-MM-DD")
    - **VERIFICATION**: The number of homework sessions in the schedule MUST equal the number of homework assignments provided
    - Schedule homework earlier rather than later - front-load homework in the schedule
+   - **FINAL CHECK**: Verify that NO homework session is scheduled on its due date - all must be BEFORE
 
 Create a detailed, balanced study schedule that:
 1. **FIRST AND FOREMOST: Schedule ALL homework assignments** 
    - Homework has HARD DEADLINES and is MANDATORY
    - Count the homework assignments and ensure you create exactly that many homework sessions
-   - Schedule each homework 2-3 days before its due date
+   - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
+   - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
    - Use type="homework", include homeworkDueDate, use homework title as topic
 2. PRIORITIZES topics based on the AI priority scores (8-10 = high priority, needs most time)
 3. Allocates EXTRA sessions and time for topics identified in the focus list
@@ -228,7 +232,9 @@ Create a detailed, balanced study schedule that:
 9. STOPS scheduling revision for each topic after its test date
 10. Ensures consistent daily coverage on all enabled study days
 
-**HOMEWORK COMPLETION CHECK**: Before finalizing, verify that you've created a homework session for EACH homework assignment listed above.
+**HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
+1. You've created a homework session for EACH homework assignment listed above
+2. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
 
 Return a JSON object with the following structure:
 {
@@ -249,17 +255,22 @@ Return a JSON object with the following structure:
 }
 
 **HOMEWORK SESSION EXAMPLE** (use this format):
+If homework is due on 2025-11-25, schedule it on 2025-11-23 or 2025-11-24:
 {
   "time": "14:00",
   "duration": 60,
   "subject": "Mathematics",
   "topic": "Complete Chapter 5 exercises",
   "type": "homework",
-  "notes": "Homework assignment - Complete all questions from Chapter 5",
+  "notes": "Homework assignment - Complete all questions from Chapter 5 - Due: 2025-11-25",
   "homeworkDueDate": "2025-11-25"
 }
+NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11-25 itself.
 
-**FINAL REMINDER**: DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session before its due date. Count them: if there are 3 homework assignments, there must be 3 homework sessions in your schedule.
+**FINAL REMINDER**: 
+1. DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session BEFORE its due date
+2. Count them: if there are 3 homework assignments, there must be 3 homework sessions in your schedule
+3. VERIFY: NO homework session should be scheduled ON its due date - all must be scheduled at least 1 day before
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
