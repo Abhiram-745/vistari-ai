@@ -35,6 +35,7 @@ const inputSchema = z.object({
     })),
     session_duration: z.number().min(15).max(180),
     break_duration: z.number().min(5).max(60),
+    duration_mode: z.enum(["fixed", "flexible"]),
     aiNotes: z.string().optional()
   }),
   homeworks: z.array(z.object({
@@ -197,35 +198,46 @@ ${userNotesContext}
 STUDY PREFERENCES:
 - Daily study hours target: ${preferences.daily_study_hours}
 - Available study times per day: ${enabledDays}
-- Default session duration: ${preferences.session_duration} minutes (this is a guideline, NOT a fixed requirement)
-- Break duration: ${preferences.break_duration} minutes
+- Duration mode: ${preferences.duration_mode === "fixed" ? "FIXED - Use exact durations specified below" : "FLEXIBLE - Vary durations intelligently based on task type"}
+${preferences.duration_mode === "fixed" 
+  ? `- Fixed session duration: ${preferences.session_duration} minutes (MUST use this exact duration for all study sessions)\n- Fixed break duration: ${preferences.break_duration} minutes (MUST use this exact duration for all breaks)` 
+  : `- Default session duration: ${preferences.session_duration} minutes (guideline only - adjust intelligently)\n- Default break duration: ${preferences.break_duration} minutes (guideline only - adjust intelligently)`}
 
-**IMPORTANT: Session durations should be FLEXIBLE and vary based on task type:**
+**IMPORTANT: Session duration rules based on mode:**
+${preferences.duration_mode === "fixed" 
+  ? `**FIXED MODE:**
+- ALL study sessions (homework, focus topics, regular topics) MUST use EXACTLY ${preferences.session_duration} minutes
+- ALL breaks MUST use EXACTLY ${preferences.break_duration} minutes
+- NO EXCEPTIONS - consistency is key in fixed mode`
+  : `**FLEXIBLE MODE:**
 - Homework: Use the EXACT duration specified for each homework assignment
 - Focus topics: Use LONGER sessions (60-90 minutes) regardless of default setting
 - Regular topics: Use SHORTER sessions (30-45 minutes) regardless of default setting
-- The ${preferences.session_duration} minute default is just a guideline - adjust durations intelligently
+- Breaks: Use 10-15 minutes between sessions
+- The ${preferences.session_duration} minute default is just a guideline - adjust durations intelligently`}
 
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 **CRITICAL REQUIREMENTS:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
-2. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
+2. **DURATION MODE COMPLIANCE**: ${preferences.duration_mode === "fixed" 
+  ? `FIXED MODE - ALL sessions MUST be EXACTLY ${preferences.session_duration} minutes and ALL breaks MUST be EXACTLY ${preferences.break_duration} minutes. NO EXCEPTIONS.`
+  : `FLEXIBLE MODE - Vary durations intelligently: homework (exact specified duration), focus topics (60-90 mins), regular topics (30-45 mins), breaks (10-15 mins)`}
+3. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
    - Schedule the EXACT number of sessions specified for each focus topic (typically 4-6 sessions per focus topic)
-   - Each focus topic session should be LONGER (60-90 minutes) - NOT the default session duration
+   ${preferences.duration_mode === "flexible" 
+     ? "- Each focus topic session should be LONGER (60-90 minutes)" 
+     : `- Each focus topic session uses the fixed ${preferences.session_duration} minute duration`}
    - Distribute these sessions throughout the study period (not all on the same day)
    - Space out focus topic sessions - don't cluster them all together
-3. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session of 30-45 minutes each (SHORTER than default)
-4. **HOMEWORK USES EXACT DURATION**: Each homework session MUST use its specified duration (ignore default session duration)
-   - If homework specifies 150 minutes, the session must be 150 minutes
-   - If homework specifies 30 minutes, the session must be 30 minutes
-   - Large homework (>120 mins) can be split into multiple sessions on different days if needed
-5. **FLEXIBLE DURATIONS**: Do NOT always use the default ${preferences.session_duration} minute duration - vary it intelligently:
-   - Homework: exact duration specified
-   - Focus topics: 60-90 minutes per session
-   - Regular topics: 30-45 minutes per session
-   - Breaks: ${preferences.break_duration} minutes
+4. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session each
+   ${preferences.duration_mode === "flexible" 
+     ? "- Each regular topic session: 30-45 minutes" 
+     : `- Each regular topic session: ${preferences.session_duration} minutes (fixed)`}
+5. **HOMEWORK DURATION**: ${preferences.duration_mode === "fixed" 
+  ? `Each homework session MUST use the fixed ${preferences.session_duration} minute duration. If homework needs more time, split it into multiple ${preferences.session_duration}-minute sessions across different days.`
+  : "Each homework session MUST use its exact specified duration (e.g., 150 mins, 60 mins, 30 mins). Large homework (>120 mins) can be split into multiple sessions if needed."}
 6. DO NOT schedule any revision for a topic AFTER its test date has passed
 6. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
 7. Include the test date in the notes field for sessions related to topics with tests
@@ -253,21 +265,24 @@ Create a detailed, balanced study schedule that:
    - Count the homework assignments and ensure you create exactly that many homework sessions
    - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
    - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
-   - **USE EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins, etc.)
-   - Split large homework (>120 mins) into 2-3 smaller sessions if needed
+   ${preferences.duration_mode === "fixed" 
+     ? `- **FIXED DURATION**: Each homework session MUST be ${preferences.session_duration} minutes. Split larger homework into multiple ${preferences.session_duration}-min sessions if needed.`
+     : "- **EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins). Split large homework (>120 mins) into 2-3 sessions if needed."}
    - Use type="homework", include homeworkDueDate, use homework title as topic
 2. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
-3. **MULTIPLE LONG SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
+3. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
    - The EXACT number of study sessions specified (typically 4-6 sessions each)
-   - Each session using LONGER duration (60-90 minutes per session) - NOT the default duration
+   ${preferences.duration_mode === "flexible" 
+     ? "- Each session using LONGER duration (60-90 minutes per session)"
+     : `- Each session using the FIXED ${preferences.session_duration} minute duration`}
    - Sessions distributed throughout the timetable period (spread across different days/weeks)
-   - Example: If a focus topic needs 5 sessions, schedule them on 5 different days with 60-90 minute durations
-4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session of 30-45 minutes each (SHORTER than default)
-5. **USE FLEXIBLE DURATIONS**: Session lengths should vary intelligently:
-   - Homework: exact specified duration (30-150+ mins)
-   - Focus topics: 60-90 minutes per session
-   - Regular topics: 30-45 minutes per session
-   - Do NOT always use the default ${preferences.session_duration} minute duration
+4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session each
+   ${preferences.duration_mode === "flexible" 
+     ? "- Each session: 30-45 minutes"
+     : `- Each session: ${preferences.session_duration} minutes`}
+5. **SESSION DURATION COMPLIANCE**: ${preferences.duration_mode === "fixed" 
+  ? `ALL sessions must be EXACTLY ${preferences.session_duration} minutes and ALL breaks must be EXACTLY ${preferences.break_duration} minutes. This is a STRICT requirement in fixed mode.`
+  : "Session lengths should vary intelligently based on task type (homework exact duration, focus topics 60-90 mins, regular topics 30-45 mins)."}
 6. Allocates more time to subjects with upcoming tests
 7. Includes regular breaks between study sessions
 8. ALWAYS schedules sessions within the specific time periods for each enabled day
@@ -278,13 +293,15 @@ Create a detailed, balanced study schedule that:
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
-2. Each homework session uses the EXACT duration specified for that homework (NOT default duration)
+${preferences.duration_mode === "fixed" 
+  ? `2. Each homework session uses the FIXED ${preferences.session_duration} minute duration (split larger homework into multiple sessions if needed)`
+  : "2. Each homework session uses the EXACT duration specified for that homework"}
 3. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
 
 **FOCUS vs REGULAR TOPICS CHECK**: Before finalizing, verify:
-1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session) - NOT default duration
-2. Regular (non-focus) topics have ONLY 1 session EACH with SHORTER duration (30-45 mins) - NOT default duration
-3. Session durations are VARIED and appropriate for each task type
+${preferences.duration_mode === "fixed"
+  ? `1. Focus topics have 4-6 sessions EACH, all using FIXED ${preferences.session_duration} minute duration\n2. Regular (non-focus) topics have ONLY 1 session EACH using FIXED ${preferences.session_duration} minute duration\n3. ALL breaks are EXACTLY ${preferences.break_duration} minutes`
+  : "1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session)\n2. Regular (non-focus) topics have ONLY 1 session EACH with SHORTER duration (30-45 mins)\n3. Session durations are VARIED and appropriate for each task type\n4. Breaks are 10-15 minutes"}
 
 Return a JSON object with the following structure:
 {
