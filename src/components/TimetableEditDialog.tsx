@@ -32,16 +32,21 @@ interface TimetableEditDialogProps {
 
 // Helper function to migrate old preferences format to new format
 const migratePreferences = (prefs: any): StudyPreferences => {
-  // If already in new format with day_time_slots, return as is
+  const weekDays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  
+  // If already in new format with day_time_slots
   if (prefs.day_time_slots && Array.isArray(prefs.day_time_slots)) {
     return {
-      ...prefs,
+      daily_study_hours: prefs.daily_study_hours || 2,
+      session_duration: prefs.session_duration,
+      break_duration: prefs.break_duration,
       duration_mode: prefs.duration_mode || "flexible",
+      day_time_slots: prefs.day_time_slots,
+      aiNotes: prefs.aiNotes,
     };
   }
 
   // Otherwise, convert old format to new format
-  const weekDays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
   const studyDays = prefs.study_days || [];
   const startTime = prefs.preferred_start_time || "09:00";
   const endTime = prefs.preferred_end_time || "17:00";
@@ -57,6 +62,7 @@ const migratePreferences = (prefs: any): StudyPreferences => {
       endTime,
       enabled: studyDays.includes(day),
     })),
+    aiNotes: prefs.aiNotes,
   };
 };
 
