@@ -800,6 +800,79 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           });
         }
       }
+
+      // CRITICAL: Filter out any sessions that overlap with events
+      // This ensures AI mistakes don't cause study sessions during event times
+      if (events && events.length > 0 && scheduleData.schedule && typeof scheduleData.schedule === 'object') {
+        console.log(`Validating schedule to remove any sessions overlapping with ${events.length} events`);
+        
+        // Create a map of events by date for efficient lookup
+        const eventsByDate = new Map<string, any[]>();
+        events.forEach((event: any) => {
+          const eventDate = new Date(event.start_time);
+          const dateKey = eventDate.toISOString().split('T')[0];
+          if (!eventsByDate.has(dateKey)) {
+            eventsByDate.set(dateKey, []);
+          }
+          eventsByDate.get(dateKey)!.push({
+            startTime: new Date(event.start_time),
+            endTime: new Date(event.end_time),
+            title: event.title,
+          });
+        });
+
+        // Helper function to check if a session overlaps with any event
+        const overlapsWithEvent = (sessionDate: string, sessionTime: string, sessionDuration: number): boolean => {
+          const eventsOnDate = eventsByDate.get(sessionDate);
+          if (!eventsOnDate || eventsOnDate.length === 0) return false;
+
+          // Parse session time
+          const [hours, minutes] = sessionTime.split(':').map(Number);
+          const sessionStart = new Date(sessionDate);
+          sessionStart.setHours(hours, minutes, 0, 0);
+          const sessionEnd = new Date(sessionStart);
+          sessionEnd.setMinutes(sessionEnd.getMinutes() + sessionDuration);
+
+          // Check if session overlaps with any event
+          return eventsOnDate.some((event) => {
+            // Sessions overlap if:
+            // Session starts before event ends AND session ends after event starts
+            return sessionStart < event.endTime && sessionEnd > event.startTime;
+          });
+        };
+
+        // Filter out overlapping sessions from schedule
+        let removedCount = 0;
+        for (const [date, sessions] of Object.entries(scheduleData.schedule)) {
+          if (!Array.isArray(sessions)) continue;
+          
+          const originalLength = sessions.length;
+          scheduleData.schedule[date] = (sessions as any[]).filter((session: any) => {
+            if (!session || !session.time || !session.duration) return true;
+            
+            // Keep non-study sessions and check study sessions for overlaps
+            if (session.type === 'event') return false; // Remove any event sessions (we'll add fresh ones from frontend)
+            
+            const isOverlapping = overlapsWithEvent(date, session.time, session.duration);
+            if (isOverlapping) {
+              console.log(`Removed overlapping session: ${date} ${session.time} ${session.subject} - ${session.topic}`);
+              removedCount++;
+            }
+            return !isOverlapping;
+          });
+          
+          const removedFromThisDay = originalLength - scheduleData.schedule[date].length;
+          if (removedFromThisDay > 0) {
+            console.log(`Removed ${removedFromThisDay} sessions from ${date} due to event overlaps`);
+          }
+        }
+        
+        if (removedCount > 0) {
+          console.log(`Total removed: ${removedCount} sessions that overlapped with events`);
+        } else {
+          console.log('No session-event overlaps detected - schedule is clean');
+        }
+      }
     } catch (parseError) {
       console.error("Failed to parse AI response:", aiResponse.substring(0, 500));
       console.error("Parse error:", parseError);
