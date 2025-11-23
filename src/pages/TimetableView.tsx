@@ -61,6 +61,7 @@ const TimetableView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [timetable, setTimetable] = useState<Timetable | null>(null);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
@@ -97,8 +98,28 @@ const TimetableView = () => {
     } else {
       setTimetable(data as unknown as Timetable);
       setNewName(data.name);
+      
+      // Fetch events that overlap with timetable date range
+      await fetchEvents(data.start_date, data.end_date);
     }
     setLoading(false);
+  };
+
+  const fetchEvents = async (startDate: string, endDate: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("start_time", startDate)
+      .lte("start_time", endDate)
+      .order("start_time", { ascending: true });
+
+    if (!error && data) {
+      setEvents(data);
+    }
   };
 
   const renameTimetable = async () => {
@@ -220,13 +241,43 @@ const TimetableView = () => {
   const sortedDates = Object.keys(timetable.schedule).sort();
   const progress = calculateProgress();
 
-  const scheduleDates = sortedDates.map(date => new Date(date));
+  // Merge events into schedule for display
+  const mergedSchedule = { ...timetable.schedule };
+  events.forEach((event) => {
+    const eventDate = format(new Date(event.start_time), 'yyyy-MM-dd');
+    const eventTime = format(new Date(event.start_time), 'HH:mm');
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+    const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+
+    const eventSession: TimetableSession = {
+      time: eventTime,
+      duration: durationMinutes,
+      subject: event.title,
+      topic: event.description || 'Event',
+      type: 'event',
+    };
+
+    if (!mergedSchedule[eventDate]) {
+      mergedSchedule[eventDate] = [];
+    }
+    
+    // Add event and sort sessions by time
+    mergedSchedule[eventDate].push(eventSession);
+    mergedSchedule[eventDate].sort((a, b) => {
+      const timeA = a.time.split(':').map(Number);
+      const timeB = b.time.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+  });
+
+  const scheduleDates = Object.keys(mergedSchedule).sort().map(date => new Date(date));
   const filteredDates = selectedDate
-    ? sortedDates.filter(date => {
+    ? Object.keys(mergedSchedule).filter(date => {
         const dateObj = new Date(date);
         return format(dateObj, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
       })
-    : sortedDates;
+    : Object.keys(mergedSchedule).sort();
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -332,8 +383,8 @@ const TimetableView = () => {
               </div>
             )}
             
-            {sortedDates.map((date) => {
-            const sessions = timetable.schedule[date];
+            {filteredDates.map((date) => {
+            const sessions = mergedSchedule[date];
             const dateObj = new Date(date);
             
             return (
