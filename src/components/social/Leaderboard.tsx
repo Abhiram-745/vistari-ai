@@ -82,7 +82,7 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
 
         userStats.set(uid, {
           user_id: uid,
-          full_name: profile?.full_name || "User",
+          full_name: profile?.full_name || "Unknown",
           total_minutes: totalMinutes,
           total_sessions: totalSessions,
           current_streak: currentStreak
@@ -103,7 +103,6 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
   };
 
   const getInitials = (name: string) => {
-    if (!name || name === "User") return "U";
     return name
       .split(" ")
       .map(n => n[0])

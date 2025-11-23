@@ -774,51 +774,6 @@ export type Database = {
         }
         Relationships: []
       }
-      topic_progress: {
-        Row: {
-          created_at: string
-          id: string
-          last_reviewed_at: string | null
-          mastery_level: string
-          next_review_date: string | null
-          progress_percentage: number
-          subject_id: string
-          successful_sessions_count: number
-          topic_id: string
-          total_sessions_count: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_reviewed_at?: string | null
-          mastery_level?: string
-          next_review_date?: string | null
-          progress_percentage?: number
-          subject_id: string
-          successful_sessions_count?: number
-          topic_id: string
-          total_sessions_count?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_reviewed_at?: string | null
-          mastery_level?: string
-          next_review_date?: string | null
-          progress_percentage?: number
-          subject_id?: string
-          successful_sessions_count?: number
-          topic_id?: string
-          total_sessions_count?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       topic_reflections: {
         Row: {
           created_at: string

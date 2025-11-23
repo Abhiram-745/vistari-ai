@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Play, Pause, Square, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useUpdateTopicProgress } from "@/hooks/useTopicProgress";
 
 interface SessionTimerProps {
   sessionId: string;
@@ -21,45 +20,8 @@ export const SessionTimer = ({ sessionId, subject, topic, plannedDurationMinutes
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [notes, setNotes] = useState("");
   const [focusScore, setFocusScore] = useState(0);
-  const [userId, setUserId] = useState<string>();
-  const [subjectId, setSubjectId] = useState<string>();
-  const [topicId, setTopicId] = useState<string>();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<Date | null>(null);
-  const updateProgress = useUpdateTopicProgress();
-
-  useEffect(() => {
-    const fetchSessionDetails = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-
-      // Get subject_id from subject name
-      const { data: subjectData } = await supabase
-        .from("subjects")
-        .select("id")
-        .eq("name", subject)
-        .eq("user_id", user?.id)
-        .maybeSingle();
-      
-      if (subjectData) {
-        setSubjectId(subjectData.id);
-        
-        // Get topic_id from topic name if topic exists
-        if (topic) {
-          const { data: topicData } = await supabase
-            .from("topics")
-            .select("id")
-            .eq("name", topic)
-            .eq("subject_id", subjectData.id)
-            .maybeSingle();
-          
-          if (topicData) setTopicId(topicData.id);
-        }
-      }
-    };
-
-    fetchSessionDetails();
-  }, [subject, topic]);
 
   const totalSeconds = plannedDurationMinutes * 60;
   const progress = Math.min((elapsedSeconds / totalSeconds) * 100, 100);
@@ -132,17 +94,6 @@ export const SessionTimer = ({ sessionId, subject, topic, plannedDurationMinutes
         focus_score: focusScore || null
       })
       .eq('id', sessionId);
-
-    // Update topic progress if we have the required IDs
-    if (userId && subjectId && topicId && focusScore > 0) {
-      const wasSuccessful = focusScore >= 6; // Consider 6+ out of 10 as successful
-      updateProgress.mutate({
-        userId,
-        topicId,
-        subjectId,
-        wasSuccessful,
-      });
-    }
 
     toast.success(`Session completed! ${actualDurationMinutes} minutes studied`, {
       description: focusScore ? `Focus score: ${focusScore}/10` : undefined

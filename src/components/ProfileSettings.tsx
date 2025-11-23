@@ -39,7 +39,7 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
       
       setFullName(data?.full_name || "");
     }
@@ -53,7 +53,8 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
 
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, full_name: fullName });
+        .update({ full_name: fullName })
+        .eq("id", user.id);
 
       if (error) throw error;
 

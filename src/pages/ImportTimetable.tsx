@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
-import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PreferencesStep from "@/components/onboarding/PreferencesStep";
@@ -271,27 +270,242 @@ const ImportTimetable = () => {
   }
 
   return (
-    <>
-      <AppSidebar />
+    <div className="min-h-screen bg-background">
+      <Header />
       
-      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
-        <Header />
-        
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="mb-6 gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Button>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-6 gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Button>
 
-          <Card className="p-8">
-...
-          </Card>
-        </main>
+        <Card className="p-8">
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-foreground">
+                Customize Your Timetable
+              </h1>
+              <span className="text-sm text-muted-foreground">
+                Step {currentStep} of {totalSteps}
+              </span>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              Implementing "{sharedTimetable.name}" from {sharedBy}
+            </p>
+            <Progress value={progress} className="h-2" />
+          </div>
+
+          <div className="space-y-6">
+            {currentStep === 1 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Events
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add any existing events or commitments that should be considered when generating your timetable.
+                </p>
+                <EventsWidget />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 2 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Homework
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add any homework assignments with deadlines to include in your study schedule.
+                </p>
+                <HomeworkStep
+                  subjects={subjects.map((s: any) => ({
+                    id: typeof s === 'object' ? s.id : undefined,
+                    name: typeof s === 'string' ? s : s.name,
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                  }))}
+                  homeworks={homeworks}
+                  setHomeworks={setHomeworks}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Study Preferences
+                </h2>
+                <PreferencesStep
+                  preferences={preferences}
+                  setPreferences={setPreferences}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Topic Confidence Levels
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Select topics you want to focus on and rate your confidence (the AI will allocate more time to lower-confidence topics).
+                </p>
+                <DifficultTopicsStep
+                  subjects={subjects.map((s: any) => ({
+                    id: typeof s === 'object' ? s.id : undefined,
+                    name: typeof s === 'string' ? s : s.name,
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                  }))}
+                  topics={parsedTopics}
+                  onAnalysisComplete={(analysis) => {
+                    setTopicConfidences(analysis);
+                  }}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button 
+                    onClick={handleNext} 
+                    className="flex-1 gap-2"
+                    disabled={!topicConfidences || Object.keys(topicConfidences).length === 0}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 5 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Review Test Dates
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Adjust or add test dates to help the AI prioritize your study schedule.
+                </p>
+                <TestDatesStep
+                  subjects={subjects.map((s: any, idx: number) => ({
+                    name: typeof s === 'string' ? s : s.name,
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                  }))}
+                  testDates={testDates}
+                  setTestDates={setTestDates}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 6 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Confirm & Generate
+                </h2>
+                <div className="space-y-4 mb-6">
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      Your Personalized Timetable Summary
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                      <div className="space-y-2">
+                        <p className="text-muted-foreground">
+                          <strong>Subjects:</strong> {subjects.length} subjects
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Study Period:</strong>{' '}
+                          {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Daily Study Hours:</strong> {preferences?.daily_study_hours || 2} hours
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Homework:</strong> {homeworks.length} assignments included
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-muted-foreground">
+                          <strong>Session Mode:</strong> {preferences?.duration_mode === 'flexible' ? 'Flexible (AI-optimized)' : 'Fixed'} 
+                        </p>
+                        {preferences?.duration_mode === 'fixed' && (
+                          <p className="text-muted-foreground">
+                            <strong>Session/Break:</strong> {preferences?.session_duration}min / {preferences?.break_duration}min
+                          </p>
+                        )}
+                        <p className="text-muted-foreground">
+                          <strong>Your Events:</strong> {events.length} events will be avoided
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Focus Topics:</strong> {topicConfidences?.difficult_topics?.length || 0} selected
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Test Dates:</strong> {testDates.length} exams scheduled
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1 gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="flex-1 gap-2 bg-gradient-primary"
+                    size="lg"
+                  >
+                    {loading ? (
+                      <>Generating Your Timetable...</>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        Generate Personalized Timetable
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -11,10 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, LogOut, Settings, BookOpen, Moon, Sun } from "lucide-react";
+import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface HeaderProps {
   onNewTimetable?: () => void;
@@ -22,9 +21,12 @@ interface HeaderProps {
 
 const Header = ({ onNewTimetable }: HeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState<{ full_name?: string; id: string } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const isOnDashboard = location.pathname === "/";
+  const isOnSocial = location.pathname === "/social";
 
   useEffect(() => {
     loadProfile();
@@ -34,26 +36,6 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
       setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
     }
-
-    // Subscribe to profile updates
-    const channel = supabase
-      .channel('profile-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => {
-          loadProfile();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const loadProfile = async () => {
@@ -63,9 +45,9 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
       
-      setProfile({ full_name: data?.full_name || "User", id: user.id });
+      setProfile({ full_name: data?.full_name || "", id: user.id });
     }
   };
 
@@ -96,32 +78,101 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   return (
     <>
       <header className="border-b bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Sidebar Trigger + Logo */}
-            <div className="flex items-center space-x-3">
-              <SidebarTrigger />
-              <div 
-                className="flex items-center space-x-3 cursor-pointer group transition-all duration-300 hover:scale-105" 
-                onClick={() => navigate("/")}
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-primary rounded-lg blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-primary p-2 rounded-lg shadow-md">
-                    <Calendar className="h-5 w-5 text-white" />
-                  </div>
+            {/* Logo */}
+            <div 
+              className="flex items-center space-x-3 cursor-pointer group transition-all duration-300 hover:scale-105" 
+              onClick={() => navigate("/")}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-primary rounded-lg blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                <div className="relative bg-gradient-primary p-2 rounded-lg shadow-md">
+                  <Calendar className="h-5 w-5 text-white" />
                 </div>
-                <div className="flex flex-col">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                    Study Planner
-                  </h1>
-                  <p className="text-[10px] text-muted-foreground -mt-1">Your revision companion</p>
-                </div>
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Study Planner
+                </h1>
+                <p className="text-[10px] text-muted-foreground -mt-1">Your revision companion</p>
               </div>
             </div>
 
-            {/* Right Side Actions */}
+            {/* Quick Actions */}
             <div className="flex items-center space-x-2">
+              {!isOnDashboard && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <Home className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Button>
+              )}
+
+              {!isOnSocial && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/social")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Social</span>
+                </Button>
+              )}
+
+              {!location.pathname.startsWith("/groups") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/groups")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Groups</span>
+                </Button>
+              )}
+
+              {location.pathname !== "/calendar" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/calendar")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="hidden sm:inline">Calendar</span>
+                </Button>
+              )}
+
+              {location.pathname !== "/events" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/events")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <CalendarClock className="h-4 w-4" />
+                  <span className="hidden sm:inline">Events</span>
+                </Button>
+              )}
+
+              {location.pathname !== "/homework" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/homework")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="hidden sm:inline">Homework</span>
+                </Button>
+              )}
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -134,6 +185,20 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   <Sun className="h-4 w-4" />
                 )}
               </Button>
+              
+              {onNewTimetable && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={onNewTimetable}
+                  className="gap-2 bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden sm:inline">New Timetable</span>
+                  <span className="sm:hidden">New</span>
+                </Button>
+              )}
+            </div>
 
             {/* Profile Dropdown */}
             <DropdownMenu>
@@ -175,6 +240,13 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-primary/10" />
                 <DropdownMenuItem 
+                  onClick={() => navigate("/")} 
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
+                >
+                  <Home className="mr-3 h-4 w-4 text-primary" />
+                  <span className="font-medium">Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={() => setShowSettings(true)} 
                   className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
                 >
@@ -191,7 +263,6 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            </div>
           </div>
         </div>
       </header>

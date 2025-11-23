@@ -7,7 +7,6 @@ import { ArrowLeft, Users, Settings, LogOut, Copy, CheckCircle2 } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { AppSidebar } from "@/components/AppSidebar";
 import { GroupTimetables } from "./GroupTimetables";
 
 interface GroupMember {
@@ -25,7 +24,6 @@ const GroupDetail = () => {
   const [group, setGroup] = useState<any>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -39,14 +37,12 @@ const GroupDetail = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      
-      setCurrentUserId(user.id);
 
       const { data: groupData } = await supabase
         .from('study_groups')
         .select('*')
         .eq('id', id)
-        .maybeSingle();
+        .single();
 
       if (groupData) {
         setGroup(groupData);
@@ -102,27 +98,6 @@ const GroupDetail = () => {
     }
   };
 
-  const handleDeleteGroup = async () => {
-    if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('study_groups')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Group deleted successfully');
-      navigate('/groups');
-    } catch (error) {
-      console.error('Error deleting group:', error);
-      toast.error('Failed to delete group');
-    }
-  };
-
   const handleCopyJoinCode = async () => {
     if (group?.join_code) {
       await navigator.clipboard.writeText(group.join_code);
@@ -134,39 +109,31 @@ const GroupDetail = () => {
 
   if (loading) {
     return (
-      <>
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
-          <Header />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <p className="text-center text-muted-foreground">Loading...</p>
-          </main>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <p className="text-center text-muted-foreground">Loading...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   if (!group) {
     return (
-      <>
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
-          <Header />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <p className="text-center text-muted-foreground">Group not found</p>
-          </main>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <p className="text-center text-muted-foreground">Group not found</p>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <AppSidebar />
-      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate('/groups')}
@@ -190,28 +157,19 @@ const GroupDetail = () => {
             </div>
 
             <div className="flex gap-2">
-              {group.created_by === currentUserId && (
-                <>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDeleteGroup}
-                    className="gap-2"
-                  >
-                    Delete Group
-                  </Button>
-                </>
-              )}
-              {group.created_by !== currentUserId && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLeaveGroup}
-                  className="gap-2"
-                >
-                  <LogOut className="w-4 h-4" /> Leave Group
+              {currentUserRole === 'admin' && (
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Settings className="w-4 h-4" /> Settings
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLeaveGroup}
+                className="gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Leave Group
+              </Button>
             </div>
           </div>
 
@@ -303,9 +261,8 @@ const GroupDetail = () => {
             </Card>
           </TabsContent>
         </Tabs>
-        </main>
       </div>
-    </>
+    </div>
   );
 };
 

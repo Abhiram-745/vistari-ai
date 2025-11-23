@@ -115,63 +115,47 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
   }
 
   return (
-    <Card className="shadow-md border-primary/10">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Calendar className="h-5 w-5 text-primary" />
-          </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
           Upcoming Deadlines
         </CardTitle>
       </CardHeader>
       <CardContent>
         {deadlines.length === 0 ? (
-          <div className="text-center py-8 space-y-2">
-            <div className="text-4xl">🎉</div>
-            <p className="font-medium text-foreground">All Caught Up!</p>
-            <p className="text-sm text-muted-foreground">
-              No upcoming deadlines at the moment
-            </p>
-          </div>
+          <p className="text-muted-foreground text-center py-4">
+            No upcoming deadlines. You're all caught up! 🎉
+          </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {deadlines.map((deadline) => (
               <div
                 key={`${deadline.type}-${deadline.id}`}
-                className="group relative flex items-center gap-3 p-3 rounded-lg border bg-gradient-to-r from-card to-card/50 hover:from-muted/50 hover:to-muted/30 transition-all duration-200 hover:shadow-sm"
+                className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-shrink-0">
-                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
-                    {deadline.type === "test" ? (
-                      <BookOpen className="h-4 w-4 text-primary" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-primary" />
-                    )}
-                  </div>
+                <div className="mt-1">
+                  {deadline.type === "test" ? (
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-primary" />
+                  )}
                 </div>
-                
-                <div className="flex-1 min-w-0 space-y-1">
-                  <p className="font-semibold text-foreground truncate leading-tight">
-                    {deadline.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {deadline.subject}
-                  </p>
-                </div>
-                
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <div className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    getDaysUntil(deadline.date) === "Today" 
-                      ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                      : getDaysUntil(deadline.date) === "Tomorrow"
-                      ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
-                      : "bg-muted text-muted-foreground"
-                  }`}>
-                    {getDaysUntil(deadline.date)}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium truncate">{deadline.title}</p>
+                      <p className="text-sm text-muted-foreground">{deadline.subject}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-medium ${getUrgencyColor(deadline.date)}`}>
+                        {getDaysUntil(deadline.date)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(deadline.date), "dd/MM/yyyy")}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground font-medium">
-                    {format(new Date(deadline.date), "dd/MM/yyyy")}
-                  </p>
                 </div>
               </div>
             ))}

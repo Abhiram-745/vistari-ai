@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Edit2, Share2, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, Edit2, Users, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -20,7 +20,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
-import { AppSidebar } from "@/components/AppSidebar";
+import { TimetableEditDialog } from "@/components/TimetableEditDialog";
+import { SessionResourceDialog } from "@/components/SessionResourceDialog";
+import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
@@ -62,11 +64,17 @@ const TimetableView = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [selectedSession, setSelectedSession] = useState<{
+    date: string;
+    index: number;
+    session: TimetableSession;
+  } | null>(null);
   const [reflectionSession, setReflectionSession] = useState<{
     date: string;
     index: number;
     session: TimetableSession;
   } | null>(null);
+  const [resourcesRefreshKey, setResourcesRefreshKey] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
@@ -220,162 +228,298 @@ const TimetableView = () => {
     : sortedDates;
 
   return (
-    <>
-      <AppSidebar />
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background">
+      <Header />
       
-      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => navigate("/")}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-                <div className="flex items-center space-x-2">
-                  <CalendarIcon className="h-6 w-6 text-primary" />
-                  <h1 className="text-3xl font-bold">{timetable.name}</h1>
-                  <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Rename Timetable</DialogTitle>
-                        <DialogDescription>
-                          Enter a new name for your timetable
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="name">Timetable Name</Label>
-                          <Input
-                            id="name"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            placeholder="Enter timetable name"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={renameTimetable}>Save</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-              
-              <Button onClick={() => setShowShareDialog(true)} className="gap-2">
-                <Share2 className="h-4 w-4" />
-                Share
-              </Button>
+      <div className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <CalendarIcon className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">{timetable.name}</h1>
+              <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Rename Timetable</DialogTitle>
+                    <DialogDescription>
+                      Enter a new name for your timetable
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <Label htmlFor="name">Timetable Name</Label>
+                      <Input
+                        id="name"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder="e.g. Spring Revision Plan"
+                        maxLength={100}
+                      />
+                    </div>
+                    <Button onClick={renameTimetable} className="w-full">
+                      Save Changes
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              {timetable.subjects && timetable.topics && timetable.test_dates && timetable.preferences && (
+                <TimetableEditDialog
+                  timetableId={timetable.id}
+                  currentSubjects={timetable.subjects}
+                  currentTopics={timetable.topics}
+                  currentTestDates={timetable.test_dates}
+                  currentPreferences={timetable.preferences}
+                  startDate={timetable.start_date}
+                  endDate={timetable.end_date}
+                  onUpdate={fetchTimetable}
+                />
+              )}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowShareDialog(true)}
+              className="gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share to Group
+            </Button>
+          </div>
+        </div>
+      </div>
 
-            {/* Progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Overall Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Progress value={progress} className="h-3" />
-                  <p className="text-sm text-muted-foreground text-center">
-                    {Math.round(progress)}% Complete
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 space-y-4">
+          <p className="text-muted-foreground">
+            {format(new Date(timetable.start_date), "dd/MM/yyyy")} - {format(new Date(timetable.end_date), "dd/MM/yyyy")}
+          </p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Overall Progress</span>
+              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        </div>
 
-            {/* Calendar Filter */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Filter by Date</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-center">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left side - Tasks */}
+          <div className="flex-1 space-y-6">
+            {selectedDate && (
+              <div className="mb-4">
+                <Button variant="outline" onClick={() => setSelectedDate(undefined)}>
+                  Show All Days
+                </Button>
+              </div>
+            )}
+            
+            {filteredDates.map((date) => {
+            const sessions = timetable.schedule[date];
+            const dateObj = new Date(date);
+            
+            return (
+              <Card key={date} className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    {format(dateObj, "EEEE, dd/MM/yyyy")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {sessions && sessions.length > 0 ? (
+                      sessions.map((session, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() =>
+                            session.type !== "break" &&
+                            setSelectedSession({ date, index: idx, session })
+                          }
+                          className={`p-4 rounded-lg border-l-4 ${
+                            session.completed
+                              ? "bg-primary/10 border-primary opacity-60"
+                              : session.type === "break"
+                              ? "bg-muted/30 border-muted-foreground"
+                              : session.type === "homework"
+                              ? "bg-purple-50 dark:bg-purple-950/20 border-purple-500"
+                              : session.type === "revision"
+                              ? "bg-blue-50 dark:bg-blue-950/20 border-blue-500"
+                              : session.testDate
+                              ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500"
+                              : "bg-primary/5 border-primary"
+                          } ${
+                            session.type !== "break"
+                              ? "cursor-pointer hover:shadow-md transition-shadow"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-sm">
+                                  {session.time}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  ({session.duration} min)
+                                </span>
+                                <span
+                                  className={`text-xs px-2 py-1 rounded ${
+                                    session.type === "break"
+                                      ? "bg-muted text-muted-foreground"
+                                      : session.type === "homework"
+                                      ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                                      : session.type === "revision"
+                                      ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                                      : "bg-primary/10 text-primary"
+                                  }`}
+                                >
+                                  {session.type}
+                                </span>
+                              </div>
+                              {session.subject && (
+                                <p className="font-medium">{session.subject}</p>
+                              )}
+                              {session.topic && (
+                                <p className="text-sm text-muted-foreground">
+                                  {session.topic}
+                                </p>
+                              )}
+                              {session.testDate && (
+                                <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-1">
+                                  📝 Test: {format(new Date(session.testDate), "dd/MM/yyyy")}
+                                </p>
+                              )}
+                              {session.homeworkDueDate && (
+                                <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mt-1">
+                                  📚 Due: {format(new Date(session.homeworkDueDate), "dd/MM/yyyy")}
+                                </p>
+                              )}
+                              {session.notes && (
+                                <p className="text-sm text-muted-foreground mt-2">
+                                  {session.notes}
+                                </p>
+                              )}
+                            </div>
+                            {session.type !== "break" && (
+                              <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={session.completed || false}
+                                  onCheckedChange={() => toggleSessionComplete(date, idx)}
+                                  className="h-5 w-5"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        No sessions scheduled for this day
+                      </p>
+                     )}
+                   </div>
+
+                   {/* Daily Insights Panel */}
+                   <DailyInsightsPanel
+                     date={date}
+                     sessions={sessions || []}
+                     timetableId={timetable.id}
+                     onScheduleUpdate={fetchTimetable}
+                   />
+                 </CardContent>
+               </Card>
+             );
+           })}
+          </div>
+
+          {/* Right side - Calendar and Topics */}
+          <div className="lg:w-96 space-y-6">
+            <div className="lg:sticky lg:top-24 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select a Date</CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    disabled={(date) => !scheduleDates.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
+                    modifiers={{
+                      hasSession: scheduleDates,
+                    }}
+                    modifiersClassNames={{
+                      hasSession: "bg-primary/20 font-bold",
+                    }}
+                    disabled={(date) => {
+                      const dateStr = format(date, 'yyyy-MM-dd');
+                      return !sortedDates.includes(dateStr);
+                    }}
                     className="rounded-md border"
                   />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Sessions */}
-            {filteredDates.map((date) => (
-              <Card key={date}>
-                <CardHeader>
-                  <CardTitle>{format(new Date(date), "EEEE, MMMM d, yyyy")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {timetable.schedule[date].map((session, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                      >
-                        {session.type !== "break" && (
-                          <Checkbox
-                            checked={session.completed || false}
-                            onCheckedChange={() => toggleSessionComplete(date, index)}
-                          />
-                        )}
-                        <div className="flex-1">
-                          <p className="font-medium">{session.subject} - {session.topic}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {session.time} • {session.duration} minutes • {session.type}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </CardContent>
               </Card>
-            ))}
 
-            {/* Study Insights */}
-            <StudyInsightsPanel timetableId={timetable.id} />
+              <TopicResourcesPanel
+                key={resourcesRefreshKey}
+                timetableId={timetable.id}
+                schedule={timetable.schedule}
+              />
+            </div>
           </div>
-        </main>
+        </div>
+      </main>
 
-        {reflectionSession && (
-          <TopicReflectionDialog
-            open={!!reflectionSession}
-            onOpenChange={(open) => {
-              if (!open) {
-                setReflectionSession(null);
-                toast.success("Session marked as complete!");
-              }
-            }}
-            timetableId={timetable.id}
-            sessionDate={reflectionSession.date}
-            sessionIndex={reflectionSession.index}
-            subject={reflectionSession.session.subject}
-            topic={reflectionSession.session.topic}
-          />
-        )}
-        
-        {timetable && (
-          <ShareTimetableDialog
-            open={showShareDialog}
-            onOpenChange={setShowShareDialog}
-            timetableId={timetable.id}
-            timetableName={timetable.name}
-          />
-        )}
-      </div>
-    </>
+      {selectedSession && (
+        <SessionResourceDialog
+          open={!!selectedSession}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedSession(null);
+              setResourcesRefreshKey(prev => prev + 1);
+            }
+          }}
+          timetableId={timetable.id}
+          sessionId={`${selectedSession.date}-${selectedSession.index}`}
+          sessionDetails={{
+            subject: selectedSession.session.subject,
+            topic: selectedSession.session.topic,
+            date: format(new Date(selectedSession.date), "EEEE, dd/MM/yyyy"),
+            time: selectedSession.session.time,
+          }}
+        />
+      )}
+
+      {reflectionSession && (
+        <TopicReflectionDialog
+          open={!!reflectionSession}
+          onOpenChange={(open) => {
+            if (!open) {
+              setReflectionSession(null);
+              toast.success("Session marked as complete!");
+            }
+          }}
+          timetableId={timetable.id}
+          sessionDate={reflectionSession.date}
+          sessionIndex={reflectionSession.index}
+          subject={reflectionSession.session.subject}
+          topic={reflectionSession.session.topic}
+        />
+      )}
+      
+      {timetable && (
+        <ShareTimetableDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          timetableId={timetable.id}
+          timetableName={timetable.name}
+        />
+      )}
+    </div>
   );
 };
 
