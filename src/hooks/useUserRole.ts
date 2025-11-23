@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type UserRole = "paid" | "free";
@@ -137,7 +137,7 @@ export const checkCanGenerateAIInsights = async (): Promise<boolean> => {
   return data as boolean;
 };
 
-export const incrementUsage = async (action: "timetable_creation" | "timetable_regeneration" | "daily_insights" | "ai_insights"): Promise<void> => {
+export const incrementUsage = async (action: "timetable_creation" | "timetable_regeneration" | "daily_insights" | "ai_insights", queryClient?: any): Promise<void> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
@@ -148,5 +148,10 @@ export const incrementUsage = async (action: "timetable_creation" | "timetable_r
 
   if (error) {
     console.error("Error incrementing usage:", error);
+  } else {
+    // Invalidate the usage limits query to refetch updated counts
+    if (queryClient) {
+      queryClient.invalidateQueries({ queryKey: ["usage-limits"] });
+    }
   }
 };

@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { checkCanUseDailyInsights, incrementUsage } from "@/hooks/useUserRole";
 import PaywallDialog from "@/components/PaywallDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TomorrowPlanDialogProps {
   open: boolean;
@@ -147,6 +148,7 @@ export const TomorrowPlanDialog = ({
   incompleteSessions,
   onScheduleUpdate,
 }: TomorrowPlanDialogProps) => {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [availableTopics, setAvailableTopics] = useState<Array<{ subject: string; topic: string; isDifficult?: boolean }>>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -523,7 +525,7 @@ export const TomorrowPlanDialog = ({
       }
 
       // Increment usage after successful generation
-      await incrementUsage("daily_insights");
+      await incrementUsage("daily_insights", queryClient);
 
       if (data.summary) {
         toast.success(data.summary, { duration: 8000 });

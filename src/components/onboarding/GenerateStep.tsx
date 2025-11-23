@@ -11,6 +11,7 @@ import { checkCanCreateTimetable, incrementUsage } from "@/hooks/useUserRole";
 import PaywallDialog from "@/components/PaywallDialog";
 import FeasibilityCheck from "./FeasibilityCheck";
 import { calculateFeasibility, FeasibilityResult } from "@/utils/feasibilityCalculator";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface GenerateStepProps {
   subjects: Subject[];
@@ -33,6 +34,7 @@ const GenerateStep = ({
   timetableMode,
   onComplete,
 }: GenerateStepProps) => {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [timetableName, setTimetableName] = useState("My Study Timetable");
   const [startDate, setStartDate] = useState("");
@@ -270,8 +272,8 @@ const GenerateStep = ({
 
       if (saveError) throw saveError;
 
-      // Increment usage counter
-      await incrementUsage("timetable_creation");
+      // Increment usage counter and invalidate cache
+      await incrementUsage("timetable_creation", queryClient);
 
       toast.success("Timetable generated successfully!");
       onComplete();
