@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Edit2 } from "lucide-react";
+import { Calendar as CalendarIcon, Edit2, Users, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -25,6 +25,7 @@ import { SessionResourceDialog } from "@/components/SessionResourceDialog";
 import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
+import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
 
 interface TimetableSession {
   time: string;
@@ -73,6 +74,7 @@ const TimetableView = () => {
     session: TimetableSession;
   } | null>(null);
   const [resourcesRefreshKey, setResourcesRefreshKey] = useState(0);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -283,7 +285,7 @@ const TimetableView = () => {
               onClick={() => setShowShareDialog(true)}
               className="gap-2"
             >
-              <Users className="w-4 h-4" />
+              <Share2 className="w-4 h-4" />
               Share to Group
             </Button>
           </div>
@@ -499,6 +501,15 @@ const TimetableView = () => {
           sessionIndex={reflectionSession.index}
           subject={reflectionSession.session.subject}
           topic={reflectionSession.session.topic}
+        />
+      )}
+      
+      {timetable && (
+        <ShareTimetableDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          timetableId={timetable.id}
+          timetableName={timetable.name}
         />
       )}
     </div>
