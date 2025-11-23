@@ -12,6 +12,8 @@ import Social from "./pages/Social";
 import Groups from "./pages/Groups";
 import GroupDetail from "./components/groups/GroupDetail";
 import ImportTimetable from "./pages/ImportTimetable";
+import Events from "./pages/Events";
+import Homework from "./pages/Homework";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/groups" element={<Groups />} />
           <Route path="/groups/:id" element={<GroupDetail />} />
           <Route path="/import-timetable" element={<ImportTimetable />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/homework" element={<Homework />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

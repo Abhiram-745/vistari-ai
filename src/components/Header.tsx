@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun } from "lucide-react";
+import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
 
@@ -146,6 +146,30 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 >
                   <Calendar className="h-4 w-4" />
                   <span className="hidden sm:inline">Calendar</span>
+                </Button>
+              )}
+
+              {location.pathname !== "/events" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/events")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <CalendarClock className="h-4 w-4" />
+                  <span className="hidden sm:inline">Events</span>
+                </Button>
+              )}
+
+              {location.pathname !== "/homework" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/homework")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="hidden sm:inline">Homework</span>
                 </Button>
               )}
 
