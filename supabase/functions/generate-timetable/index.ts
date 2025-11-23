@@ -57,7 +57,7 @@ const inputSchema = z.object({
       reason: z.string(),
       study_suggestion: z.string()
     })).optional()
-  }).optional(),
+  }).nullable().optional(),
   aiNotes: z.string().optional(),
   events: z.array(z.object({
     id: z.string().uuid(),
