@@ -101,77 +101,65 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
 
             {/* Quick Actions */}
             <div className="flex items-center space-x-2">
-              {!isOnDashboard && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <Home className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Button>
 
-              {!isOnSocial && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/social")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Social</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/social")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Social</span>
+              </Button>
 
-              {!location.pathname.startsWith("/groups") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/groups")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Groups</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/groups")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Groups</span>
+              </Button>
 
-              {location.pathname !== "/calendar" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/calendar")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">Calendar</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/calendar")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Calendar</span>
+              </Button>
 
-              {location.pathname !== "/events" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/events")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <CalendarClock className="h-4 w-4" />
-                  <span className="hidden sm:inline">Events</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/events")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <CalendarClock className="h-4 w-4" />
+                <span className="hidden sm:inline">Events</span>
+              </Button>
 
-              {location.pathname !== "/homework" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/homework")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  <span className="hidden sm:inline">Homework</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/homework")}
+                className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span className="hidden sm:inline">Homework</span>
+              </Button>
 
               <Button
                 variant="ghost"
