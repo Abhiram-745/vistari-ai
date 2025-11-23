@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 import { CreateGroupModal } from "@/components/groups/CreateGroupModal";
 import { JoinGroupModal } from "@/components/groups/JoinGroupModal";
 import { GroupInvitations } from "@/components/groups/GroupInvitations";
+import { CheckAchievementsButton } from "@/components/groups/CheckAchievementsButton";
 
 interface StudyGroup {
   id: string;
@@ -160,6 +161,7 @@ const Groups = () => {
             </div>
             
             <div className="flex gap-2">
+              <CheckAchievementsButton />
               <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2 hover-lift">
                 <Search className="w-4 h-4" /> Join with Code
               </Button>
