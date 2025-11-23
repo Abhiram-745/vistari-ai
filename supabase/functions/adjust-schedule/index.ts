@@ -142,6 +142,27 @@ ${JSON.stringify(eventsList?.map(e => ({
   endTime: e.end_time
 }))?.slice(0, 10) || [], null, 2)}
 
+**TEST DAY CHECK**
+${timetable.test_dates && Array.isArray(timetable.test_dates) && timetable.test_dates.length > 0 ?
+  (() => {
+    const currentDateStr = currentDate.split('T')[0];
+    const isTestDay = timetable.test_dates.some((test: any) => test.test_date === currentDateStr);
+    if (isTestDay) {
+      return `CRITICAL: Today is a TEST DAY. Do NOT schedule any study sessions for today. The user cannot study on test days.`;
+    }
+    
+    // Show upcoming test days
+    const upcomingTests = timetable.test_dates
+      .filter((test: any) => new Date(test.test_date) >= new Date(currentDateStr))
+      .slice(0, 5);
+    if (upcomingTests.length > 0) {
+      return `Upcoming test days (DO NOT schedule study sessions on these dates):
+${upcomingTests.map((test: any) => `- ${test.test_date}: ${test.subject} ${test.test_type} [BLOCKED]`).join('\n')}`;
+    }
+    return '';
+  })()
+: ''}
+
 **CURRENT SCHEDULE (Next 7 Days)**
 ${JSON.stringify(futureScheduleDetails, null, 2)}
 

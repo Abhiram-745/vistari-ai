@@ -148,6 +148,23 @@ ${JSON.stringify(tomorrowEvents?.map(e => ({
   endTime: e.end_time
 })) || [], null, 2)}
 
+**TEST DAY CHECK**
+${timetable.test_dates && Array.isArray(timetable.test_dates) && timetable.test_dates.length > 0 ? 
+  (() => {
+    const tomorrowDateStr = tomorrowDate;
+    const isTestDay = timetable.test_dates.some((test: any) => test.test_date === tomorrowDateStr);
+    if (isTestDay) {
+      const testsOnDay = timetable.test_dates.filter((test: any) => test.test_date === tomorrowDateStr);
+      return `CRITICAL: Tomorrow is a TEST DAY. Return an EMPTY schedule array.
+Tests scheduled:
+${testsOnDay.map((test: any) => `- ${test.subject}: ${test.test_type}`).join('\n')}
+
+The user CANNOT study on test days. Return: {"schedule": [], "summary": "Tomorrow is a test day - no study sessions scheduled", "reasoning": "Test days are blocked for studying"}`;
+    }
+    return '';
+  })()
+: ''}
+
 **CRITICAL SCHEDULING RULES**
 1. **FEWER TOPICS, MORE DEPTH**: Schedule 3-5 topics maximum for a productive day. Each topic needs 60+ minutes of focused work.
 2. **Prioritize ruthlessly**: First topics in the list get prime time slots and best focus hours.
