@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
+import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PreferencesStep from "@/components/onboarding/PreferencesStep";

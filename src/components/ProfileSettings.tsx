@@ -39,7 +39,7 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       
       setFullName(data?.full_name || "");
     }
