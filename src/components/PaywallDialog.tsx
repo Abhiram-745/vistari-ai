@@ -83,23 +83,22 @@ const PaywallDialog = ({ open, onOpenChange, limitType }: PaywallDialogProps) =>
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            Maybe Later
-          </Button>
-          <Button
-            onClick={() => {
-              // In a real app, this would open a payment dialog
-              window.open("mailto:support@example.com?subject=Upgrade%20Request", "_blank");
-            }}
-            className="flex-1 gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Contact to Upgrade
-          </Button>
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
+              Maybe Later
+            </Button>
+            <Button
+              onClick={() => {
+                window.open("mailto:support@example.com?subject=Upgrade%20to%20Premium", "_blank");
+              }}
+              className="flex-1 gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+            >
+              <Sparkles className="h-4 w-4" />
+              Upgrade for £5/month
+            </Button>
         </div>
       </DialogContent>
     </Dialog>
