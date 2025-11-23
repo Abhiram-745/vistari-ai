@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Calendar, Clock, GripVertical, Search } from "lucide-react";
+import { Loader2, Calendar, Clock, GripVertical, Search, X, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +33,14 @@ interface SortableTopicItemProps {
   topicKey: string;
   index: number;
   availableTopics: Array<{ subject: string; topic: string; isDifficult?: boolean }>;
+  onRemove?: (topicKey: string) => void;
 }
 
-const SortableTopicItem = ({ id, topicKey, index, availableTopics }: SortableTopicItemProps) => {
+interface ExtendedSortableTopicItemProps extends SortableTopicItemProps {
+  onRemove: (topicKey: string) => void;
+}
+
+const SortableTopicItem = ({ id, topicKey, index, availableTopics, onRemove }: ExtendedSortableTopicItemProps) => {
   const {
     attributes,
     listeners,
@@ -60,7 +65,7 @@ const SortableTopicItem = ({ id, topicKey, index, availableTopics }: SortableTop
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 bg-background border rounded-lg"
+      className="flex items-center gap-3 p-3 bg-background border rounded-lg group"
     >
       <div
         {...attributes}
@@ -73,7 +78,7 @@ const SortableTopicItem = ({ id, topicKey, index, availableTopics }: SortableTop
         <Badge variant="outline" className="text-xs shrink-0">
           #{index + 1}
         </Badge>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium truncate">{subject}</p>
             {topicData?.isDifficult && (
@@ -83,6 +88,14 @@ const SortableTopicItem = ({ id, topicKey, index, availableTopics }: SortableTop
           <p className="text-xs text-muted-foreground truncate">{topic}</p>
         </div>
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => onRemove(topicKey)}
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
@@ -103,6 +116,7 @@ export const TomorrowPlanDialog = ({
   const [endTime, setEndTime] = useState("17:00");
   const [difficultTopics, setDifficultTopics] = useState<Array<{ subject: string; topic: string }>>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Calculate tomorrow's date
   const tomorrow = new Date(currentDate);
@@ -114,8 +128,74 @@ export const TomorrowPlanDialog = ({
     if (open) {
       loadAvailableTopics();
       loadTimingPreferences();
+      autoPopulatePriorityTopics();
     }
   }, [open, timetableId]);
+
+  const autoPopulatePriorityTopics = async () => {
+    setLoadingSuggestions(true);
+    try {
+      // 1. Add incomplete STUDY sessions (not homework)
+      const incompleteStudySessions = incompleteSessions
+        .filter(session => session.type === 'study')
+        .map(session => `${session.subject}|||${session.topic}`);
+
+      // 2. Get AI-suggested topics
+      const suggestedTopics = await getSuggestedTopics();
+
+      // 3. Combine and deduplicate
+      const autoTopics = [...new Set([...incompleteStudySessions, ...suggestedTopics])];
+      
+      setSelectedTopics(autoTopics);
+    } catch (error) {
+      console.error('Error auto-populating topics:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const getSuggestedTopics = async (): Promise<string[]> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: timetable } = await supabase
+        .from('timetables')
+        .select('topics, subjects')
+        .eq('id', timetableId)
+        .single();
+
+      if (!timetable) return [];
+
+      const topics = (timetable.topics as any[]) || [];
+      const subjects = (timetable.subjects as any[]) || [];
+
+      // Get difficult/focus topics first
+      const difficultTopicKeys = topics
+        .filter(t => t.difficulty === 'hard' || t.focus === true)
+        .slice(0, 3) // Top 3 difficult topics
+        .map(topic => {
+          const subject = subjects.find(s => s.id === topic.subject_id);
+          return `${subject?.name || 'Unknown'}|||${topic.name}`;
+        });
+
+      // Add some random topics if we have less than 5
+      const remainingSlots = Math.max(0, 5 - difficultTopicKeys.length);
+      const otherTopics = topics
+        .filter(t => !(t.difficulty === 'hard' || t.focus === true))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, remainingSlots)
+        .map(topic => {
+          const subject = subjects.find(s => s.id === topic.subject_id);
+          return `${subject?.name || 'Unknown'}|||${topic.name}`;
+        });
+
+      return [...difficultTopicKeys, ...otherTopics];
+    } catch (error) {
+      console.error('Error getting suggested topics:', error);
+      return [];
+    }
+  };
 
   const loadTimingPreferences = async () => {
     try {
@@ -202,6 +282,10 @@ export const TomorrowPlanDialog = ({
     });
   };
 
+  const handleRemoveTopic = (topicKey: string) => {
+    setSelectedTopics(prev => prev.filter(t => t !== topicKey));
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -285,11 +369,68 @@ export const TomorrowPlanDialog = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Topic Selection */}
+          {/* Priority Order - Show first */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Select Topics for Tomorrow</Label>
-              <Badge variant="secondary">{selectedTopics.length} selected</Badge>
+              <Label className="text-base font-semibold">Priority Order</Label>
+              <div className="flex items-center gap-2">
+                {loadingSuggestions && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Loading suggestions...</span>
+                  </div>
+                )}
+                <Badge variant="outline" className="text-xs">Drag to reorder</Badge>
+              </div>
+            </div>
+            
+            {selectedTopics.length === 0 ? (
+              <div className="border rounded-lg p-8 text-center bg-muted/20">
+                <Sparkles className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {loadingSuggestions ? 'Generating personalized suggestions...' : 'No topics selected. Add topics below.'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 border rounded-lg p-3 bg-muted/20">
+                <div className="flex items-start gap-2 mb-2 p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded">
+                  <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-blue-900 dark:text-blue-100">
+                    Higher priority topics get better time slots. Topics include incomplete study sessions and AI suggestions.
+                  </p>
+                </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={selectedTopics}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {selectedTopics.map((topicKey, index) => (
+                        <SortableTopicItem
+                          key={topicKey}
+                          id={topicKey}
+                          topicKey={topicKey}
+                          index={index}
+                          availableTopics={availableTopics}
+                          onRemove={handleRemoveTopic}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            )}
+          </div>
+
+          {/* Topic Selection - For adding more */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Add More Topics</Label>
+              <Badge variant="secondary">{selectedTopics.length} in priority list</Badge>
             </div>
             
             {/* Search Input */}
@@ -389,43 +530,6 @@ export const TomorrowPlanDialog = ({
               })()}
             </div>
           </div>
-
-          {/* Priority Order - Only show if topics are selected */}
-          {selectedTopics.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Priority Order</Label>
-                <Badge variant="outline" className="text-xs">Drag to reorder</Badge>
-              </div>
-              <div className="space-y-2 border rounded-lg p-3 bg-muted/20">
-                <p className="text-xs text-muted-foreground mb-2">
-                  Higher priority topics will get better time slots in your schedule
-                </p>
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={selectedTopics}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-2">
-                      {selectedTopics.map((topicKey, index) => (
-                        <SortableTopicItem
-                          key={topicKey}
-                          id={topicKey}
-                          topicKey={topicKey}
-                          index={index}
-                          availableTopics={availableTopics}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              </div>
-            </div>
-          )}
 
           {/* Incomplete Sessions Info */}
           {incompleteSessions.length > 0 && (
