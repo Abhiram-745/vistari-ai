@@ -277,6 +277,15 @@ const TimetableView = () => {
                 />
               )}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowShareDialog(true)}
+              className="gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Share to Group
+            </Button>
           </div>
         </div>
       </div>
