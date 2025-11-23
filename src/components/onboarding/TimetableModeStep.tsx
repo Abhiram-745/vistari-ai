@@ -30,7 +30,7 @@ const TimetableModeStep = ({ selectedMode, onModeSelect }: TimetableModeStepProp
       id: "long-term-exam" as TimetableMode,
       icon: Clock,
       title: "Long-Term Exam Prep",
-      description: "Balanced revision with spaced repetition over 2-6 months",
+      description: "Balanced revision with spaced repetition over 5-8+ weeks.",
       features: [
         "Spaced repetition schedule",
         "Balanced study sessions",
