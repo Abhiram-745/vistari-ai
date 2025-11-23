@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { GraduationCap, Loader2 } from "lucide-react";
+import { AdminPasswordReset } from "@/components/AdminPasswordReset";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -61,7 +62,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted to-background p-4">
-      <Card className="w-full max-w-md shadow-lg">
+      <div className="flex flex-col gap-6 w-full max-w-md">
+      <Card className="w-full shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="rounded-full bg-gradient-primary p-3">
@@ -163,6 +165,9 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      
+      <AdminPasswordReset />
+      </div>
     </div>
   );
 };
