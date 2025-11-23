@@ -137,6 +137,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
             subjects={subjects} 
             topics={topics} 
             onAnalysisComplete={setTopicAnalysis}
+            onSkip={handleNext}
           />
         )}
         {step === 4 && (
@@ -174,7 +175,6 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
               disabled={
                 (step === 1 && subjects.length === 0) ||
                 (step === 2 && topics.length === 0) ||
-                (step === 3 && !topicAnalysis) ||
                 (step === 4 && testDates.length === 0)
               }
             >

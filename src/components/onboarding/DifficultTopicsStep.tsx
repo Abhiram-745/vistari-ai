@@ -13,9 +13,10 @@ interface DifficultTopicsStepProps {
   subjects: Subject[];
   topics: Topic[];
   onAnalysisComplete: (analysis: any) => void;
+  onSkip: () => void;
 }
 
-const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: DifficultTopicsStepProps) => {
+const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete, onSkip }: DifficultTopicsStepProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const [difficultTopics, setDifficultTopics] = useState<string[]>([]);
@@ -285,14 +286,23 @@ const DifficultTopicsStep = ({ subjects, topics, onAnalysisComplete }: Difficult
       )}
 
       {!analysis && !isAnalyzing && (
-        <Button
-          onClick={analyzeTopics}
-          className="w-full bg-gradient-primary hover:opacity-90"
-          disabled={difficultTopics.length === 0}
-        >
-          <Sparkles className="h-4 w-4 mr-2" />
-          Analyze {difficultTopics.length} Focus Topics
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={onSkip}
+            variant="outline"
+            className="flex-1"
+          >
+            Skip this step
+          </Button>
+          <Button
+            onClick={analyzeTopics}
+            className="flex-1 bg-gradient-primary hover:opacity-90"
+            disabled={difficultTopics.length === 0}
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Analyze {difficultTopics.length} Focus Topics
+          </Button>
+        </div>
       )}
     </div>
   );
