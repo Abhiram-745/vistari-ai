@@ -150,6 +150,7 @@ export const TomorrowPlanDialog = ({
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
+  const [dailyStudyMinutes, setDailyStudyMinutes] = useState<number | null>(null);
   const [difficultTopics, setDifficultTopics] = useState<Array<{ subject: string; topic: string }>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -251,14 +252,20 @@ export const TomorrowPlanDialog = ({
       if (preferences) {
         const dayTimeSlots = preferences.day_time_slots as any[] || [];
         const tomorrowDayOfWeek = tomorrow.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const tomorrowSlot = dayTimeSlots.find(slot => slot.day === tomorrowDayOfWeek);
+        const tomorrowSlot = dayTimeSlots.find((slot: any) => slot.day === tomorrowDayOfWeek);
         
+        // Use specific day slot times when available, otherwise fall back to general preferences
         if (tomorrowSlot) {
           setStartTime(tomorrowSlot.startTime || '09:00');
           setEndTime(tomorrowSlot.endTime || '17:00');
         } else {
           setStartTime(preferences.preferred_start_time || '09:00');
           setEndTime(preferences.preferred_end_time || '17:00');
+        }
+
+        // Store user's target daily study time (in minutes) for better recommendations
+        if (typeof preferences.daily_study_hours === 'number' && !isNaN(preferences.daily_study_hours)) {
+          setDailyStudyMinutes(preferences.daily_study_hours * 60);
         }
       }
     } catch (error) {
@@ -331,8 +338,8 @@ export const TomorrowPlanDialog = ({
   // Calculate estimated time for topics
   const calculateTopicTime = (confidence: number = 5) => {
     // Lower confidence = more time needed
-    // Scale: 10 confidence = 45min, 1 confidence = 90min
-    return 45 + (10 - confidence) * 5;
+    // Scale: 10 confidence ≈ 60min, 1 confidence ≈ 90min
+    return 60 + (10 - confidence) * 3;
   };
 
   const getTotalEstimatedTime = () => {
@@ -365,17 +372,31 @@ export const TomorrowPlanDialog = ({
 
   const getRecommendations = () => {
     const estimated = getTotalEstimatedTime();
-    const available = getAvailableTime();
-    const remaining = available - estimated.total;
-    
-    if (remaining < 0) {
+    const availableWindow = getAvailableTime();
+
+    // Target "full day" based on user's preferred daily study hours,
+    // but never exceeding the actual available time window
+    const targetTotal = dailyStudyMinutes
+      ? Math.min(dailyStudyMinutes, availableWindow)
+      : availableWindow;
+
+    const remaining = targetTotal - estimated.total;
+
+    // Approximate extra time per topic (study + its share of breaks)
+    const avgTopicMinutes = selectedTopics.length > 0
+      ? estimated.topicTime / selectedTopics.length
+      : 75; // sensible default when nothing selected yet
+    const perTopicCost = avgTopicMinutes + 15; // include a break between topics
+
+    if (remaining < -30) {
       const extraHours = Math.ceil(Math.abs(remaining) / 60);
+      const topicsToRemove = Math.max(1, Math.ceil(Math.abs(remaining) / perTopicCost));
       return {
         type: 'warning' as const,
-        message: `You need ${extraHours} more hour${extraHours > 1 ? 's' : ''} or remove ${Math.ceil(Math.abs(remaining) / 45)} topic${Math.ceil(Math.abs(remaining) / 45) > 1 ? 's' : ''}`
+        message: `You need ${extraHours} more hour${extraHours > 1 ? 's' : ''} or remove ${topicsToRemove} topic${topicsToRemove > 1 ? 's' : ''}`
       };
-    } else if (remaining > 90) {
-      const canAdd = Math.floor(remaining / 45);
+    } else if (remaining > 30) {
+      const canAdd = Math.max(1, Math.floor(remaining / perTopicCost));
       return {
         type: 'success' as const,
         message: `You can add ${canAdd} more topic${canAdd > 1 ? 's' : ''} for a full day`
