@@ -22,7 +22,7 @@ export const useUserRole = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching user role:", error);
@@ -45,7 +45,7 @@ export const useUsageLimits = () => {
         .from("usage_limits")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching usage limits:", error);
