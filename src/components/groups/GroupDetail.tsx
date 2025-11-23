@@ -9,6 +9,18 @@ import { toast } from "sonner";
 import Header from "@/components/Header";
 import { GroupTimetables } from "./GroupTimetables";
 import { GroupResources } from "./GroupResources";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 interface GroupMember {
   id: string;
@@ -27,6 +39,14 @@ const GroupDetail = () => {
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    subject: "",
+    is_private: false,
+    max_members: 10,
+  });
 
   useEffect(() => {
     if (id) {
@@ -47,6 +67,13 @@ const GroupDetail = () => {
 
       if (groupData) {
         setGroup(groupData);
+        setEditForm({
+          name: groupData.name || "",
+          description: groupData.description || "",
+          subject: groupData.subject || "",
+          is_private: groupData.is_private || false,
+          max_members: groupData.max_members || 10,
+        });
       }
 
       const { data: membersData } = await supabase
@@ -108,6 +135,30 @@ const GroupDetail = () => {
     }
   };
 
+  const handleSaveSettings = async () => {
+    try {
+      const { error } = await supabase
+        .from('study_groups')
+        .update({
+          name: editForm.name,
+          description: editForm.description,
+          subject: editForm.subject,
+          is_private: editForm.is_private,
+          max_members: editForm.max_members,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Group settings updated!');
+      setShowSettings(false);
+      loadGroupDetails();
+    } catch (error) {
+      console.error('Error updating group:', error);
+      toast.error('Failed to update group settings');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -159,7 +210,12 @@ const GroupDetail = () => {
 
             <div className="flex gap-2">
               {currentUserRole === 'admin' && (
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => setShowSettings(true)}
+                >
                   <Settings className="w-4 h-4" /> Settings
                 </Button>
               )}
@@ -261,6 +317,86 @@ const GroupDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Group Settings</DialogTitle>
+            <DialogDescription>
+              Update your group information and preferences
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Group Name *</Label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                placeholder="e.g., Math Study Group"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder="What's this group about?"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                value={editForm.subject}
+                onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
+                placeholder="e.g., Maths, Physics, English"
+              />
+            </div>
+
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <div className="flex-1 space-y-0.5">
+                <Label htmlFor="private">Private Group</Label>
+                <p className="text-sm text-muted-foreground">
+                  Require a join code to join this group
+                </p>
+              </div>
+              <Switch
+                id="private"
+                checked={editForm.is_private}
+                onCheckedChange={(checked) => setEditForm({ ...editForm, is_private: checked })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="max_members">Maximum Members</Label>
+              <Input
+                id="max_members"
+                type="number"
+                min="2"
+                max="100"
+                value={editForm.max_members}
+                onChange={(e) => setEditForm({ ...editForm, max_members: parseInt(e.target.value) || 10 })}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSettings(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSettings} disabled={!editForm.name.trim()}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
