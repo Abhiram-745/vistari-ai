@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import Header from "@/components/Header";
 import { CreateGroupModal } from "@/components/groups/CreateGroupModal";
 import { JoinGroupModal } from "@/components/groups/JoinGroupModal";
+import { GroupInvitations } from "@/components/groups/GroupInvitations";
 
 interface StudyGroup {
   id: string;
@@ -149,19 +150,23 @@ const Groups = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-display font-bold gradient-text mb-2">Study Groups</h1>
-            <p className="text-muted-foreground text-lg">Collaborate and learn together</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2 hover-lift">
-              <Search className="w-4 h-4" /> Join with Code
-            </Button>
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="h-4 w-4" /> Create Group
-            </Button>
+        <div className="space-y-6">
+          <GroupInvitations />
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-display font-bold gradient-text mb-2">Study Groups</h1>
+              <p className="text-muted-foreground text-lg">Collaborate and learn together</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2 hover-lift">
+                <Search className="w-4 h-4" /> Join with Code
+              </Button>
+              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                <Plus className="h-4 w-4" /> Create Group
+              </Button>
+            </div>
           </div>
         </div>
 

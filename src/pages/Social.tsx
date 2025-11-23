@@ -7,7 +7,9 @@ import Header from "@/components/Header";
 import FriendsList from "@/components/social/FriendsList";
 import AddFriend from "@/components/social/AddFriend";
 import Leaderboard from "@/components/social/Leaderboard";
+import { GroupLeaderboard } from "@/components/social/GroupLeaderboard";
 import SocialStats from "@/components/social/SocialStats";
+import { GroupInvitations } from "@/components/groups/GroupInvitations";
 
 const Social = () => {
   const navigate = useNavigate();
@@ -77,12 +79,14 @@ const Social = () => {
             </TabsList>
 
             <TabsContent value="friends" className="space-y-6 mt-6">
+              <GroupInvitations />
               <AddFriend userId={userId} />
               <FriendsList userId={userId} />
             </TabsContent>
 
-            <TabsContent value="leaderboard" className="mt-6">
+            <TabsContent value="leaderboard" className="space-y-6 mt-6">
               <Leaderboard userId={userId} />
+              <GroupLeaderboard />
             </TabsContent>
 
             <TabsContent value="stats" className="mt-6">

@@ -136,6 +136,76 @@ export type Database = {
         }
         Relationships: []
       }
+      group_challenges: {
+        Row: {
+          created_at: string | null
+          daily_hours_goal: number
+          group_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_hours_goal?: number
+          group_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_hours_goal?: number
+          group_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_invitations: {
+        Row: {
+          created_at: string | null
+          group_id: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          group_id: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_invitations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string
