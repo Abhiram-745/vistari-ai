@@ -311,15 +311,89 @@ export const TomorrowPlanDialog = ({
     }
   };
 
-  const handleTopicToggle = (topicKey: string) => {
+  const handleTopicToggle = (topicKey: string, openMetadata = false) => {
     setSelectedTopics(prev => {
-      if (prev.includes(topicKey)) {
+      const isCurrentlySelected = prev.includes(topicKey);
+      
+      if (isCurrentlySelected) {
         return prev.filter(t => t !== topicKey);
       } else {
         // Add to end of list when selecting
+        if (openMetadata) {
+          // Open metadata dialog after a brief delay to ensure state updates
+          setTimeout(() => handleTopicClick(topicKey), 100);
+        }
         return [...prev, topicKey];
       }
     });
+  };
+
+  // Calculate estimated time for topics
+  const calculateTopicTime = (confidence: number = 5) => {
+    // Lower confidence = more time needed
+    // Scale: 10 confidence = 30min, 1 confidence = 60min
+    return 30 + (10 - confidence) * 3;
+  };
+
+  const getTotalEstimatedTime = () => {
+    const topicTime = selectedTopics.reduce((total, key) => {
+      const metadata = topicMetadata[key];
+      return total + calculateTopicTime(metadata?.confidence);
+    }, 0);
+
+    const homeworkTime = incompleteSessions
+      .filter(s => s.type === 'homework')
+      .reduce((total, s) => total + s.duration, 0);
+
+    const breakTime = Math.max(0, selectedTopics.length - 1) * 15; // 15 min breaks between topics
+
+    return {
+      topicTime,
+      homeworkTime,
+      breakTime,
+      total: topicTime + homeworkTime + breakTime
+    };
+  };
+
+  const getAvailableTime = () => {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    return endMinutes - startMinutes;
+  };
+
+  const getRecommendations = () => {
+    const estimated = getTotalEstimatedTime();
+    const available = getAvailableTime();
+    const remaining = available - estimated.total;
+    
+    if (remaining < 0) {
+      const extraHours = Math.ceil(Math.abs(remaining) / 60);
+      return {
+        type: 'warning' as const,
+        message: `You need ${extraHours} more hour${extraHours > 1 ? 's' : ''} or remove ${Math.ceil(Math.abs(remaining) / 45)} topic${Math.ceil(Math.abs(remaining) / 45) > 1 ? 's' : ''}`
+      };
+    } else if (remaining > 90) {
+      const canAdd = Math.floor(remaining / 45);
+      return {
+        type: 'success' as const,
+        message: `You can add ${canAdd} more topic${canAdd > 1 ? 's' : ''} for a full day`
+      };
+    } else {
+      return {
+        type: 'info' as const,
+        message: 'Perfect! You have a well-balanced study day planned'
+      };
+    }
+  };
+
+  const formatMinutes = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
   };
 
   const handleRemoveTopic = (topicKey: string) => {
@@ -440,6 +514,48 @@ export const TomorrowPlanDialog = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Time Estimate Summary */}
+          {selectedTopics.length > 0 && (
+            <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Time Estimate</Label>
+                <Badge variant="secondary" className="text-sm">
+                  {formatMinutes(getTotalEstimatedTime().total)}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="space-y-1">
+                  <p className="text-muted-foreground">Study</p>
+                  <p className="font-medium">{formatMinutes(getTotalEstimatedTime().topicTime)}</p>
+                </div>
+                {getTotalEstimatedTime().homeworkTime > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-muted-foreground">Homework</p>
+                    <p className="font-medium">{formatMinutes(getTotalEstimatedTime().homeworkTime)}</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="text-muted-foreground">Breaks</p>
+                  <p className="font-medium">{formatMinutes(getTotalEstimatedTime().breakTime)}</p>
+                </div>
+              </div>
+
+              {(() => {
+                const rec = getRecommendations();
+                return (
+                  <div className={`p-2 rounded text-xs ${
+                    rec.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-100 border border-amber-200 dark:border-amber-800' :
+                    rec.type === 'success' ? 'bg-green-50 dark:bg-green-950/20 text-green-900 dark:text-green-100 border border-green-200 dark:border-green-800' :
+                    'bg-blue-50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-800'
+                  }`}>
+                    <p className="font-medium">{rec.message}</p>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Priority Order - Show first */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -575,11 +691,23 @@ export const TomorrowPlanDialog = ({
                                 return (
                                   <div
                                     key={idx}
-                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        handleTopicToggle(topicKey, true);
+                                      } else {
+                                        handleTopicClick(topicKey);
+                                      }
+                                    }}
                                   >
                                     <Checkbox
                                       checked={isSelected}
-                                      onCheckedChange={() => handleTopicToggle(topicKey)}
+                                      onCheckedChange={(checked) => {
+                                        if (!checked) {
+                                          handleTopicToggle(topicKey);
+                                        }
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
                                       className="mt-1"
                                     />
                                     <div className="flex-1 min-w-0">
@@ -588,7 +716,17 @@ export const TomorrowPlanDialog = ({
                                         {topic.isDifficult && (
                                           <Badge variant="secondary" className="text-xs shrink-0">Focus Point</Badge>
                                         )}
+                                        {isSelected && topicMetadata[topicKey] && (
+                                          <Badge variant="outline" className="text-xs shrink-0">
+                                            {topicMetadata[topicKey].confidence}/10
+                                          </Badge>
+                                        )}
                                       </div>
+                                      {isSelected && (
+                                        <p className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          Click to {topicMetadata[topicKey] ? 'edit' : 'add'} details
+                                        </p>
+                                      )}
                                     </div>
                                   </div>
                                 );
