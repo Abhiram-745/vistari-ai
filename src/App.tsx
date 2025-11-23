@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import TimetableView from "./pages/TimetableView";
+import CalendarView from "./pages/CalendarView";
 import Social from "./pages/Social";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/calendar" element={<CalendarView />} />
           <Route path="/social" element={<Social />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
