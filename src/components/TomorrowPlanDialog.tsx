@@ -5,13 +5,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Calendar, Clock, GripVertical, Search, X, Sparkles } from "lucide-react";
+import { Loader2, Calendar, Clock, GripVertical, Search, X, Sparkles, Edit2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 
 interface TomorrowPlanDialogProps {
   open: boolean;
@@ -28,19 +30,27 @@ interface TomorrowPlanDialogProps {
   onScheduleUpdate: () => void;
 }
 
+interface TopicMetadata {
+  confidence: number; // 1-10
+  difficulties: string;
+}
+
 interface SortableTopicItemProps {
   id: string;
   topicKey: string;
   index: number;
   availableTopics: Array<{ subject: string; topic: string; isDifficult?: boolean }>;
   onRemove?: (topicKey: string) => void;
+  onClick?: (topicKey: string) => void;
+  metadata?: TopicMetadata;
 }
 
 interface ExtendedSortableTopicItemProps extends SortableTopicItemProps {
   onRemove: (topicKey: string) => void;
+  onClick: (topicKey: string) => void;
 }
 
-const SortableTopicItem = ({ id, topicKey, index, availableTopics, onRemove }: ExtendedSortableTopicItemProps) => {
+const SortableTopicItem = ({ id, topicKey, index, availableTopics, onRemove, onClick, metadata }: ExtendedSortableTopicItemProps) => {
   const {
     attributes,
     listeners,
@@ -65,12 +75,14 @@ const SortableTopicItem = ({ id, topicKey, index, availableTopics, onRemove }: E
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 bg-background border rounded-lg group"
+      className="flex items-center gap-3 p-3 bg-background border rounded-lg group hover:border-primary/50 transition-colors cursor-pointer"
+      onClick={() => onClick(topicKey)}
     >
       <div
         {...attributes}
         {...listeners}
         className="cursor-grab active:cursor-grabbing"
+        onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
@@ -84,15 +96,39 @@ const SortableTopicItem = ({ id, topicKey, index, availableTopics, onRemove }: E
             {topicData?.isDifficult && (
               <Badge variant="secondary" className="text-xs shrink-0">Focus Point</Badge>
             )}
+            {metadata && (
+              <Badge variant="outline" className="text-xs shrink-0">
+                Confidence: {metadata.confidence}/10
+              </Badge>
+            )}
           </div>
           <p className="text-xs text-muted-foreground truncate">{topic}</p>
+          {metadata?.difficulties && (
+            <p className="text-xs text-muted-foreground italic truncate mt-1">
+              "{metadata.difficulties}"
+            </p>
+          )}
         </div>
       </div>
       <Button
         variant="ghost"
         size="icon"
         className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={() => onRemove(topicKey)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick(topicKey);
+        }}
+      >
+        <Edit2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(topicKey);
+        }}
       >
         <X className="h-4 w-4" />
       </Button>
@@ -117,6 +153,10 @@ export const TomorrowPlanDialog = ({
   const [difficultTopics, setDifficultTopics] = useState<Array<{ subject: string; topic: string }>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [topicMetadata, setTopicMetadata] = useState<Record<string, TopicMetadata>>({});
+  const [editingTopic, setEditingTopic] = useState<string | null>(null);
+  const [tempConfidence, setTempConfidence] = useState(5);
+  const [tempDifficulties, setTempDifficulties] = useState("");
 
   // Calculate tomorrow's date
   const tomorrow = new Date(currentDate);
@@ -284,6 +324,31 @@ export const TomorrowPlanDialog = ({
 
   const handleRemoveTopic = (topicKey: string) => {
     setSelectedTopics(prev => prev.filter(t => t !== topicKey));
+    setTopicMetadata(prev => {
+      const newMetadata = { ...prev };
+      delete newMetadata[topicKey];
+      return newMetadata;
+    });
+  };
+
+  const handleTopicClick = (topicKey: string) => {
+    setEditingTopic(topicKey);
+    const existing = topicMetadata[topicKey];
+    setTempConfidence(existing?.confidence || 5);
+    setTempDifficulties(existing?.difficulties || "");
+  };
+
+  const handleSaveMetadata = () => {
+    if (editingTopic) {
+      setTopicMetadata(prev => ({
+        ...prev,
+        [editingTopic]: {
+          confidence: tempConfidence,
+          difficulties: tempDifficulties
+        }
+      }));
+    }
+    setEditingTopic(null);
   };
 
   const sensors = useSensors(
@@ -315,7 +380,13 @@ export const TomorrowPlanDialog = ({
     try {
       const selectedTopicObjects = selectedTopics.map(key => {
         const [subject, topic] = key.split('|||');
-        return { subject, topic };
+        const metadata = topicMetadata[key];
+        return { 
+          subject, 
+          topic,
+          confidence: metadata?.confidence,
+          difficulties: metadata?.difficulties
+        };
       });
 
       const { data, error } = await supabase.functions.invoke('regenerate-tomorrow', {
@@ -417,6 +488,8 @@ export const TomorrowPlanDialog = ({
                           index={index}
                           availableTopics={availableTopics}
                           onRemove={handleRemoveTopic}
+                          onClick={handleTopicClick}
+                          metadata={topicMetadata[topicKey]}
                         />
                       ))}
                     </div>
@@ -604,6 +677,81 @@ export const TomorrowPlanDialog = ({
           </p>
         </div>
       </DialogContent>
+
+      {/* Topic Metadata Dialog */}
+      <Dialog open={editingTopic !== null} onOpenChange={(open) => !open && setEditingTopic(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Topic Details</DialogTitle>
+            <DialogDescription>
+              Help us understand your confidence and any difficulties with this topic
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingTopic && (
+            <div className="space-y-6 py-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">
+                    {editingTopic.split('|||')[1]}
+                  </Label>
+                  <Badge variant="outline">{editingTopic.split('|||')[0]}</Badge>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="confidence" className="text-sm font-medium">
+                    Confidence Level
+                  </Label>
+                  <Badge variant="secondary" className="text-sm">
+                    {tempConfidence}/10
+                  </Badge>
+                </div>
+                <Slider
+                  id="confidence"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={[tempConfidence]}
+                  onValueChange={(value) => setTempConfidence(value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Not confident</span>
+                  <span>Very confident</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="difficulties" className="text-sm font-medium">
+                  What might you find difficult?
+                </Label>
+                <Textarea
+                  id="difficulties"
+                  placeholder="e.g., Complex formulas, specific concepts, timing..."
+                  value={tempDifficulties}
+                  onChange={(e) => setTempDifficulties(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This helps AI allocate appropriate time and suggest resources
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={handleSaveMetadata} className="flex-1">
+                  Save Details
+                </Button>
+                <Button variant="outline" onClick={() => setEditingTopic(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
