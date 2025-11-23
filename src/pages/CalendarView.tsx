@@ -62,7 +62,7 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
   // Determine colors based on session type
   const getItemStyles = () => {
     if (item.type === "event") {
-      return "bg-accent/30 dark:bg-accent/20 border-accent hover:bg-accent/40";
+      return "bg-red-100 dark:bg-red-950/40 border-red-500 hover:bg-red-200 dark:hover:bg-red-950/60 shadow-md";
     }
     
     // For sessions, check the session type
@@ -152,11 +152,29 @@ const DroppableDay = ({ date, items, children }: { date: Date; items: CalendarIt
 
   const isToday = isSameDay(date, new Date());
   const dayItems = items.filter((item) => item.date === format(date, "yyyy-MM-dd"));
+  
+  // Separate events from study sessions for better visualization
+  const events = dayItems.filter((item) => item.type === "event");
+  const sessions = dayItems.filter((item) => item.type === "session");
+  
+  // Create time blocks (8 AM to 10 PM)
+  const timeBlocks = Array.from({ length: 15 }, (_, i) => {
+    const hour = i + 8; // Start from 8 AM
+    return {
+      hour,
+      label: `${hour.toString().padStart(2, '0')}:00`,
+      isBlocked: events.some(event => {
+        const eventStart = parseInt(event.startTime.split(':')[0]);
+        const eventEnd = parseInt(event.endTime.split(':')[0]);
+        return hour >= eventStart && hour < eventEnd;
+      })
+    };
+  });
 
   return (
     <div
       ref={setNodeRef}
-      className={`border-2 rounded-xl p-4 min-h-[250px] transition-all ${
+      className={`border-2 rounded-xl p-4 min-h-[250px] transition-all relative ${
         isOver 
           ? "bg-primary/10 border-primary shadow-lg scale-[1.02]" 
           : isToday
@@ -178,17 +196,75 @@ const DroppableDay = ({ date, items, children }: { date: Date; items: CalendarIt
           </div>
         </div>
         {dayItems.length > 0 && (
-          <p className="text-xs text-muted-foreground mt-2 font-medium">
-            {dayItems.length} session{dayItems.length !== 1 ? 's' : ''}
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <p className="text-xs text-muted-foreground font-medium">
+              {sessions.length} session{sessions.length !== 1 ? 's' : ''}
+            </p>
+            {events.length > 0 && (
+              <>
+                <span className="text-xs text-muted-foreground">•</span>
+                <p className="text-xs text-accent font-medium">
+                  {events.length} event{events.length !== 1 ? 's' : ''}
+                </p>
+              </>
+            )}
+          </div>
         )}
       </div>
-      <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-350px)]">
-        {dayItems
-          .sort((a, b) => a.startTime.localeCompare(b.startTime))
-          .map((item) => (
-            <DraggableItem key={item.id} item={item} />
-          ))}
+      
+      {/* Time slot indicators - show if there are any items */}
+      {dayItems.length > 0 && (
+        <div className="mb-3 p-2 rounded-lg bg-muted/50 border border-border">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Time Slots</p>
+          <div className="grid grid-cols-5 gap-1">
+            {timeBlocks.slice(0, 10).map((block) => (
+              <div
+                key={block.hour}
+                title={block.isBlocked ? `${block.label} - Blocked by event` : `${block.label} - Available`}
+                className={`h-6 rounded text-[9px] font-medium flex items-center justify-center transition-colors ${
+                  block.isBlocked
+                    ? "bg-red-200 dark:bg-red-900/40 text-red-800 dark:text-red-200 border border-red-400 dark:border-red-600"
+                    : "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700"
+                }`}
+              >
+                {block.hour}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-450px)]">
+        {/* Show events first with special styling */}
+        {events.length > 0 && (
+          <div className="space-y-2 mb-3">
+            <p className="text-xs font-semibold text-accent uppercase tracking-wide sticky top-0 bg-card py-1">
+              🚫 Blocked Time Slots
+            </p>
+            {events
+              .sort((a, b) => a.startTime.localeCompare(b.startTime))
+              .map((item) => (
+                <DraggableItem key={item.id} item={item} />
+              ))}
+          </div>
+        )}
+        
+        {/* Then show study sessions */}
+        {sessions.length > 0 && (
+          <div className="space-y-2">
+            {events.length > 0 && (
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide sticky top-0 bg-card py-1">
+                Study Sessions
+              </p>
+            )}
+            {sessions
+              .sort((a, b) => a.startTime.localeCompare(b.startTime))
+              .map((item) => (
+                <DraggableItem key={item.id} item={item} />
+              ))}
+          </div>
+        )}
+        
         {dayItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="text-3xl mb-2 opacity-50">📅</div>
@@ -534,37 +610,56 @@ const CalendarView = () => {
           {/* Legend */}
           <Card className="border-2">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Session Types Legend</CardTitle>
+              <CardTitle className="text-lg">Session Types & Time Slot Legend</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
-                  <div className="w-1 h-12 rounded bg-blue-500"></div>
-                  <div>
-                    <p className="font-semibold text-sm">Revision</p>
-                    <p className="text-xs text-muted-foreground">Study sessions</p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-semibold mb-2 text-muted-foreground">Session Types:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
+                      <div className="w-1 h-12 rounded bg-blue-500"></div>
+                      <div>
+                        <p className="font-semibold text-sm">Revision</p>
+                        <p className="text-xs text-muted-foreground">Study sessions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-500">
+                      <div className="w-1 h-12 rounded bg-purple-500"></div>
+                      <div>
+                        <p className="font-semibold text-sm">Homework</p>
+                        <p className="text-xs text-muted-foreground">Assignments</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border-2 border-red-500">
+                      <div className="w-1 h-12 rounded bg-red-500"></div>
+                      <div>
+                        <p className="font-semibold text-sm">Events</p>
+                        <p className="text-xs text-muted-foreground">🚫 Blocked times</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-500">
+                      <div className="w-1 h-12 rounded bg-orange-500"></div>
+                      <div>
+                        <p className="font-semibold text-sm">Test Prep</p>
+                        <p className="text-xs text-muted-foreground">Exam related</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-500">
-                  <div className="w-1 h-12 rounded bg-purple-500"></div>
-                  <div>
-                    <p className="font-semibold text-sm">Homework</p>
-                    <p className="text-xs text-muted-foreground">Assignments</p>
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-semibold mb-2 text-muted-foreground">Time Slot Indicators:</p>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-6 rounded bg-red-200 dark:bg-red-900/40 border border-red-400 dark:border-red-600"></div>
+                      <span className="text-sm">Blocked by event</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-6 rounded bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-700"></div>
+                      <span className="text-sm">Available for study</span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 dark:bg-accent/20 border-2 border-accent">
-                  <div className="w-1 h-12 rounded bg-accent"></div>
-                  <div>
-                    <p className="font-semibold text-sm">Events</p>
-                    <p className="text-xs text-muted-foreground">Commitments</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-500">
-                  <div className="w-1 h-12 rounded bg-orange-500"></div>
-                  <div>
-                    <p className="font-semibold text-sm">Test Prep</p>
-                    <p className="text-xs text-muted-foreground">Exam related</p>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Time slots show hourly availability from 8 AM to 6 PM</p>
                 </div>
               </div>
             </CardContent>
@@ -610,7 +705,7 @@ const CalendarView = () => {
                       <div
                         className={`p-3 rounded-lg border-l-4 shadow-2xl scale-105 ${
                           activeDragItem.type === "event"
-                            ? "bg-accent/30 dark:bg-accent/20 border-accent"
+                            ? "bg-red-100 dark:bg-red-950/40 border-red-500"
                             : activeDragItem.data?.type === "homework"
                             ? "bg-purple-100 dark:bg-purple-950/40 border-purple-500"
                             : activeDragItem.data?.type === "revision"
