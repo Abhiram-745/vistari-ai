@@ -360,9 +360,9 @@ NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging - increased for complex generation
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 80000); // 80 second timeout
 
     let response;
     try {
@@ -375,16 +375,17 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "openai/gpt-5-mini",
+            model: "google/gemini-2.5-flash", // Faster and more reliable for complex tasks
             messages: [
               {
                 role: "system",
                 content:
-                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON.",
+                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown.",
               },
               { role: "user", content: prompt },
             ],
             max_completion_tokens: 8000,
+            temperature: 0.7, // Add some creativity while maintaining structure
           }),
           signal: controller.signal,
         }
@@ -392,7 +393,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error("AI request timed out - please try again");
+        throw new Error("AI request timed out. Please try with a shorter date range or fewer subjects.");
       }
       throw err;
     } finally {
