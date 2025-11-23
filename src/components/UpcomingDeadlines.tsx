@@ -3,8 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Calendar, Clock, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, BookOpen, Check, X } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
+import { toast } from "sonner";
 
 interface Deadline {
   id: string;
@@ -22,6 +24,7 @@ interface UpcomingDeadlinesProps {
 
 export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [completedHomework, setCompletedHomework] = useState<Deadline[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDeadline, setSelectedDeadline] = useState<Deadline | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -50,11 +53,32 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
       .order("due_date", { ascending: true })
       .limit(5);
 
-    if (testsError || homeworkError) {
-      console.error("Error fetching deadlines:", testsError || homeworkError);
+    // Fetch completed homework
+    const { data: completedHw, error: completedError } = await supabase
+      .from("homeworks")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("completed", true)
+      .order("updated_at", { ascending: false })
+      .limit(5);
+
+    if (testsError || homeworkError || completedError) {
+      console.error("Error fetching deadlines:", testsError || homeworkError || completedError);
       setLoading(false);
       return;
     }
+
+    // Format completed homework
+    const formattedCompletedHw: Deadline[] = (completedHw || []).map((hw: any) => ({
+      id: hw.id,
+      type: "homework" as const,
+      subject: hw.subject,
+      title: hw.title,
+      date: hw.due_date,
+      description: hw.description,
+    }));
+
+    setCompletedHomework(formattedCompletedHw);
 
     // Remove duplicate test dates (same subject + date)
     const uniqueTests = new Map();
@@ -131,6 +155,24 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
     }
     setSelectedDeadline(deadline);
     setDialogOpen(true);
+  };
+
+  const handleToggleComplete = async (deadline: Deadline, completed: boolean) => {
+    if (deadline.type !== "homework") return;
+
+    const { error } = await supabase
+      .from("homeworks")
+      .update({ completed })
+      .eq("id", deadline.id);
+
+    if (error) {
+      toast.error("Failed to update homework");
+      return;
+    }
+
+    toast.success(completed ? "Homework marked as complete" : "Homework marked as incomplete");
+    setDialogOpen(false);
+    fetchDeadlines();
   };
 
   if (loading) {
@@ -250,11 +292,58 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
                     </p>
                   </div>
                 )}
+
+                {selectedDeadline?.type === "homework" && (
+                  <div className="pt-3 border-t">
+                    <Button
+                      onClick={() => selectedDeadline && handleToggleComplete(selectedDeadline, true)}
+                      className="w-full"
+                      variant="default"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Mark as Complete
+                    </Button>
+                  </div>
+                )}
               </div>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      {completedHomework.length > 0 && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-primary" />
+              Completed Homework
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {completedHomework.map((hw) => (
+                <div
+                  key={`completed-${hw.id}`}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium line-clamp-2">{hw.title}</p>
+                    <p className="text-sm text-muted-foreground">{hw.subject}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleToggleComplete(hw, false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 };
