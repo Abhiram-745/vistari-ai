@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface HeaderProps {
   onNewTimetable?: () => void;
@@ -25,6 +26,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string; id: string } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { data: userRole } = useUserRole();
   const isOnDashboard = location.pathname === "/";
   const isOnSocial = location.pathname === "/social";
 
@@ -275,7 +277,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                       </p>
                       <p className="text-xs leading-none text-muted-foreground flex items-center gap-1">
                         <BookOpen className="h-3 w-3" />
-                        Study Account
+                        {userRole === "paid" ? "Premium Account" : "Free Account"}
                       </p>
                     </div>
                   </div>
