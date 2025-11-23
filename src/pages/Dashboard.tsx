@@ -29,7 +29,7 @@ const Dashboard = () => {
         setUser(session.user);
         checkSubjects(session.user.id);
       } else {
-        navigate("/auth");
+        navigate("/");
       }
     });
 
@@ -38,7 +38,7 @@ const Dashboard = () => {
         setUser(session.user);
         checkSubjects(session.user.id);
       } else {
-        navigate("/auth");
+        navigate("/");
       }
     });
 
