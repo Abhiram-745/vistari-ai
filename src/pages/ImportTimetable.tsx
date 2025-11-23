@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import PreferencesStep from "@/components/onboarding/PreferencesStep";
 import DifficultTopicsStep from "@/components/onboarding/DifficultTopicsStep";
 import TestDatesStep from "@/components/onboarding/TestDatesStep";
+import HomeworkStep, { Homework } from "@/components/onboarding/HomeworkStep";
+import { EventsWidget } from "@/components/EventsWidget";
 
 interface TestDate {
   subject_id: string;
@@ -50,9 +52,10 @@ const ImportTimetable = () => {
   });
   const [topicConfidences, setTopicConfidences] = useState<any>({});
   const [events, setEvents] = useState<any[]>([]);
+  const [homeworks, setHomeworks] = useState<Homework[]>([]);
   const [parsedTopics, setParsedTopics] = useState<any[]>([]);
 
-  const totalSteps = 3;
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   useEffect(() => {
@@ -196,6 +199,7 @@ const ImportTimetable = () => {
           },
           topicConfidences,
           events,
+          homeworks,
           basedOnShare: {
             shareId,
             sharedBy,
@@ -217,6 +221,7 @@ const ImportTimetable = () => {
       setLoading(false);
     }
   };
+
 
   if (!sharedTimetable) {
     return null;
@@ -255,12 +260,12 @@ const ImportTimetable = () => {
             {currentStep === 1 && (
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4">
-                  Your Study Preferences
+                  Your Events
                 </h2>
-                <PreferencesStep
-                  preferences={preferences}
-                  setPreferences={setPreferences}
-                />
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add any existing events or commitments that should be considered when generating your timetable.
+                </p>
+                <EventsWidget />
                 <div className="flex gap-2 mt-6">
                   <Button onClick={handleNext} className="flex-1 gap-2">
                     Continue <ArrowRight className="w-4 h-4" />
@@ -270,6 +275,54 @@ const ImportTimetable = () => {
             )}
 
             {currentStep === 2 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Homework
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add any homework assignments with deadlines to include in your study schedule.
+                </p>
+                <HomeworkStep
+                  subjects={subjects.map((s: any) => ({
+                    id: typeof s === 'object' ? s.id : undefined,
+                    name: typeof s === 'string' ? s : s.name,
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                  }))}
+                  homeworks={homeworks}
+                  setHomeworks={setHomeworks}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 5 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Study Preferences
+                </h2>
+                <PreferencesStep
+                  preferences={preferences}
+                  setPreferences={setPreferences}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4">
                   Topic Confidence Levels
