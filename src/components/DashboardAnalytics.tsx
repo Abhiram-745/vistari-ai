@@ -443,21 +443,25 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                             
                             reflections.forEach((ref) => {
                               const data = ref.reflection_data as any;
-                              if (data?.hardAspects) {
-                                data.hardAspects.forEach((aspect: string) => {
+                              if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                                data.hardAspects.forEach((aspect: any) => {
+                                  // Skip non-string values
+                                  if (typeof aspect !== 'string') return;
+                                  
                                   // Categorize mistakes by keywords
                                   let category = 'Other';
-                                  if (aspect.toLowerCase().includes('formula') || aspect.toLowerCase().includes('equation')) {
+                                  const lowerAspect = aspect.toLowerCase();
+                                  if (lowerAspect.includes('formula') || lowerAspect.includes('equation')) {
                                     category = 'Formulas';
-                                  } else if (aspect.toLowerCase().includes('concept') || aspect.toLowerCase().includes('theory')) {
+                                  } else if (lowerAspect.includes('concept') || lowerAspect.includes('theory')) {
                                     category = 'Concepts';
-                                  } else if (aspect.toLowerCase().includes('problem') || aspect.toLowerCase().includes('question')) {
+                                  } else if (lowerAspect.includes('problem') || lowerAspect.includes('question')) {
                                     category = 'Problem Solving';
-                                  } else if (aspect.toLowerCase().includes('memory') || aspect.toLowerCase().includes('remember')) {
+                                  } else if (lowerAspect.includes('memory') || lowerAspect.includes('remember')) {
                                     category = 'Memory';
-                                  } else if (aspect.toLowerCase().includes('calculation') || aspect.toLowerCase().includes('math')) {
+                                  } else if (lowerAspect.includes('calculation') || lowerAspect.includes('math')) {
                                     category = 'Calculations';
-                                  } else if (aspect.toLowerCase().includes('application') || aspect.toLowerCase().includes('apply')) {
+                                  } else if (lowerAspect.includes('application') || lowerAspect.includes('apply')) {
                                     category = 'Application';
                                   }
                                   
