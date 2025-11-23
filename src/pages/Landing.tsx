@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
 import sessionLegend from "@/assets/session-legend.png";
-import dailySchedule from "@/assets/daily-schedule.png";
+
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -864,50 +864,26 @@ const Landing = () => {
                 </div>
               </motion.div>
 
-              {/* Floating Cards showing Session Legend and Daily Schedule */}
-              <div className="relative h-[500px]">
-                {/* Session Legend Card */}
+              {/* Session Legend Card - Centered */}
+              <div className="relative h-[500px] flex items-center justify-center">
                 <motion.div initial={{
                 opacity: 0,
-                x: -40,
-                rotate: -2
+                y: 30,
+                scale: 0.95
               }} whileInView={{
                 opacity: 1,
-                x: 0,
-                rotate: -2
+                y: 0,
+                scale: 1
               }} viewport={{
                 once: true
               }} transition={{
                 duration: 0.8,
                 delay: 0.2
               }} whileHover={{
-                rotate: 0,
                 scale: 1.02,
                 y: -10
-              }} className="absolute left-0 top-0 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-10 w-full max-w-[500px]">
+              }} className="bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden w-full max-w-[600px]">
                   <img src={sessionLegend} alt="Session Types & Time Slot Legend" className="w-full h-auto" />
-                </motion.div>
-
-                {/* Daily Schedule Card */}
-                <motion.div initial={{
-                opacity: 0,
-                x: 40,
-                rotate: 3
-              }} whileInView={{
-                opacity: 1,
-                x: 0,
-                rotate: 3
-              }} viewport={{
-                once: true
-              }} transition={{
-                duration: 0.8,
-                delay: 0.4
-              }} whileHover={{
-                rotate: 0,
-                scale: 1.05,
-                y: -10
-              }} className="absolute right-0 top-20 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-20 w-[220px]">
-                  <img src={dailySchedule} alt="Daily Schedule with Sessions" className="w-full h-auto" />
                 </motion.div>
 
                 {/* Info Badge */}
