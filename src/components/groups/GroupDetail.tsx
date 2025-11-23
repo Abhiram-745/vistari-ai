@@ -25,6 +25,7 @@ const GroupDetail = () => {
   const [group, setGroup] = useState<any>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -38,12 +39,14 @@ const GroupDetail = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      
+      setCurrentUserId(user.id);
 
       const { data: groupData } = await supabase
         .from('study_groups')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (groupData) {
         setGroup(groupData);
@@ -96,6 +99,27 @@ const GroupDetail = () => {
     } catch (error) {
       console.error('Error leaving group:', error);
       toast.error('Failed to leave group');
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('study_groups')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Group deleted successfully');
+      navigate('/groups');
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast.error('Failed to delete group');
     }
   };
 
@@ -166,19 +190,28 @@ const GroupDetail = () => {
             </div>
 
             <div className="flex gap-2">
-              {currentUserRole === 'admin' && (
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Settings className="w-4 h-4" /> Settings
+              {group.created_by === currentUserId && (
+                <>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteGroup}
+                    className="gap-2"
+                  >
+                    Delete Group
+                  </Button>
+                </>
+              )}
+              {group.created_by !== currentUserId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLeaveGroup}
+                  className="gap-2"
+                >
+                  <LogOut className="w-4 h-4" /> Leave Group
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLeaveGroup}
-                className="gap-2"
-              >
-                <LogOut className="w-4 h-4" /> Leave Group
-              </Button>
             </div>
           </div>
 

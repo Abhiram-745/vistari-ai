@@ -138,6 +138,44 @@ const Groups = () => {
     group.subject?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleJoinGroup = async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      // Check if already a member
+      const { data: existingMember } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingMember) {
+        toast.error('You are already a member of this group');
+        navigate(`/groups/${groupId}`);
+        return;
+      }
+
+      // Add user as a member
+      const { error } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: groupId,
+          user_id: user.id,
+          role: 'member'
+        });
+
+      if (error) throw error;
+
+      toast.success('Joined group successfully!');
+      navigate(`/groups/${groupId}`);
+      loadGroups(user.id);
+    } catch (error: any) {
+      console.error('Error joining group:', error);
+      toast.error('Failed to join group');
+    }
+  };
+
   return (
     <>
       <AppSidebar />
@@ -273,34 +311,62 @@ const Groups = () => {
                 </Card>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredGroups.map((group) => (
-                    <Card 
-                      key={group.id}
-                      className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-primary/20 hover:border-primary/40"
-                      onClick={() => navigate(`/groups/${group.id}`)}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1 line-clamp-1">{group.name}</h3>
-                          {group.subject && (
-                            <p className="text-sm text-primary font-medium">{group.subject}</p>
+                  {filteredGroups.map((group) => {
+                    const isMember = myGroups.some(mg => mg.id === group.id);
+                    
+                    return (
+                      <Card 
+                        key={group.id}
+                        className="p-6 hover:shadow-lg transition-all duration-200 border-primary/20 hover:border-primary/40"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1 line-clamp-1">{group.name}</h3>
+                            {group.subject && (
+                              <p className="text-sm text-primary font-medium">{group.subject}</p>
+                            )}
+                          </div>
+                          <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        </div>
+                        
+                        {group.description && (
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                            {group.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Users className="w-4 h-4 mr-1" />
+                            <span>{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</span>
+                          </div>
+                          
+                          {isMember ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => navigate(`/groups/${group.id}`)}
+                              className="gap-2"
+                            >
+                              View Group
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinGroup(group.id);
+                              }}
+                              className="gap-2"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Join
+                            </Button>
                           )}
                         </div>
-                        <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      </div>
-                      
-                      {group.description && (
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                          {group.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Users className="w-4 h-4 mr-1" />
-                        <span>{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</span>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
