@@ -242,8 +242,8 @@ CRITICAL EVENT BLOCKING RULES:
 
 🎯 INTENSIVE EXAM FOCUS - CRUNCH TIME MODE
 
-MANDATORY SCHEDULING RULES:
-✓ Session Duration: 70-90 minutes per topic (LONGER intensive sessions)
+MANDATORY SCHEDULING RULES (FLEXIBLE MODE):
+✓ Revision Session Duration: 60-90 minutes per topic (LONGER intensive sessions)
 ✓ Break Duration: 5-10 minutes only (SHORT breaks to maximize study time)
 ✓ Daily Sessions: 4-6 intensive study sessions per day
 ✓ Repeat Frequency: Review SAME topics every 2-3 days (aggressive repetition)
@@ -275,8 +275,8 @@ EXAM PREP INTENSITY:
 
 🎯 BALANCED APPROACH - STEADY PROGRESS MODE
 
-MANDATORY SCHEDULING RULES:
-✓ Session Duration: 45-60 minutes per topic (MODERATE length sessions)
+MANDATORY SCHEDULING RULES (FLEXIBLE MODE):
+✓ Revision Session Duration: 45-60 minutes per topic (MODERATE length sessions)
 ✓ Break Duration: 10-15 minutes (REGULAR breaks for sustainability)
 ✓ Daily Sessions: 3-4 balanced study sessions per day
 ✓ Repeat Frequency: Review topics every 5-7 days (spaced repetition)
@@ -308,8 +308,8 @@ STEADY LEARNING APPROACH:
 
 🎯 HOMEWORK PRIORITY - COURSEWORK FOCUS MODE
 
-MANDATORY SCHEDULING RULES:
-✓ Session Duration: 30-45 minutes per topic (SHORTER, lighter sessions)
+MANDATORY SCHEDULING RULES (FLEXIBLE MODE):
+✓ Revision Session Duration: ~20 minutes per topic (VERY SHORT, light sessions)
 ✓ Break Duration: 15-20 minutes (LONGER breaks for relaxed pace)
 ✓ Daily Sessions: 2-3 light study sessions per day
 ✓ Repeat Frequency: Review topics every 10-14 days (minimal repetition)
@@ -377,36 +377,38 @@ ${preferences.duration_mode === "fixed"
   ? `- Fixed session duration: ${preferences.session_duration} minutes (MUST use this exact duration for all study sessions)\n- Fixed break duration: ${preferences.break_duration} minutes (MUST use this exact duration for all breaks)` 
   : `- Default session duration: ${preferences.session_duration} minutes (guideline only - adjust intelligently)\n- Default break duration: ${preferences.break_duration} minutes (guideline only - adjust intelligently)`}
 
-**IMPORTANT: Session duration rules based on TIMETABLE MODE:**
-${timetableMode === "short-term-exam" 
-  ? `**SHORT-TERM EXAM MODE DURATIONS (INTENSIVE):**
-- Revision sessions: 70-90 minutes (LONG intensive sessions)
+**CRITICAL: Session duration rules based on DURATION MODE and TIMETABLE MODE:**
+
+${preferences.duration_mode === "fixed" 
+  ? `**🔒 FIXED DURATION MODE - USE USER'S EXACT SPECIFICATIONS:**
+- ALL revision sessions: EXACTLY ${preferences.session_duration} minutes (user's choice)
+- ALL homework sessions: Use exact specified duration from homework list
+- ALL breaks: EXACTLY ${preferences.break_duration} minutes (user's choice)
+- DO NOT adjust durations based on timetable mode - user wants fixed lengths
+- Respect user's preferences over timetable mode suggestions`
+  : timetableMode === "short-term-exam"
+  ? `**🔥 FLEXIBLE + SHORT-TERM EXAM MODE (INTENSIVE):**
+- Revision sessions: 60-90 minutes (LONG intensive sessions)
 - Homework: Only if urgent, use exact specified duration
 - Breaks: 5-10 minutes only (SHORT to maximize study)
-- IGNORE user's preferred session duration - use these intensive durations instead`
+- Use longer durations for intensive exam preparation`
   : timetableMode === "long-term-exam"
-  ? `**LONG-TERM EXAM MODE DURATIONS (BALANCED):**
+  ? `**⚖️ FLEXIBLE + LONG-TERM EXAM MODE (BALANCED):**
 - Revision sessions: 45-60 minutes (MODERATE sessions)
 - Homework: Use exact specified duration
 - Breaks: 10-15 minutes (REGULAR breaks)
-- Balance between user preferences and mode requirements`
+- Balance sustainable learning with effective study periods`
   : timetableMode === "no-exam"
-  ? `**NO EXAM MODE DURATIONS (HOMEWORK-FOCUSED):**
-- Revision sessions: 30-45 minutes (SHORT light sessions)
-- Homework: Use exact specified duration (PRIORITY)
+  ? `**📝 FLEXIBLE + NO EXAM MODE (HOMEWORK-FOCUSED):**
+- Revision sessions: ~20 minutes (VERY SHORT light maintenance sessions)
+- Homework: Use exact specified duration (TOP PRIORITY)
 - Breaks: 15-20 minutes (LONG relaxed breaks)
-- IGNORE intensive revision - keep it light and homework-focused`
-  : `**DEFAULT MODE DURATIONS:**
-- Use user's preferred session duration: ${preferences.session_duration} minutes
-- Focus topics: 60-90 minutes
-- Regular topics: 45-60 minutes
-- Breaks: ${preferences.break_duration} minutes`}
-
-**Duration Mode Setting (${preferences.duration_mode}):**
-${preferences.duration_mode === "fixed" 
-  ? `- User prefers FIXED ${preferences.session_duration}-minute sessions, but TIMETABLE MODE takes priority
-- Apply mode-specific durations above, not the fixed preference`
-  : `- FLEXIBLE mode active - vary durations intelligently based on mode and topic type`}
+- Keep revision minimal and light - focus on homework completion`
+  : `**📖 FLEXIBLE + DEFAULT MODE:**
+- Revision sessions: 45-60 minutes (standard duration)
+- Focus topics: 60-90 minutes (extra time for difficult topics)
+- Homework: Use exact specified duration
+- Breaks: 10-15 minutes`}
 
 **CRITICAL SESSION STRUCTURE & RECOMMENDED RESOURCES:**
 
