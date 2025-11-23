@@ -574,6 +574,19 @@ const CalendarView = () => {
               <span>Test-related</span>
             </div>
           </div>
+
+          {selectedTimetable && (
+            <div className="flex justify-center pt-6">
+              <Button
+                size="lg"
+                onClick={() => navigate(`/timetable/${selectedTimetable}`)}
+                className="gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Navigate to Timetable View
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>
