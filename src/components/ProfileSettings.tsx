@@ -53,8 +53,7 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
 
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: fullName })
-        .eq("id", user.id);
+        .upsert({ id: user.id, full_name: fullName });
 
       if (error) throw error;
 
