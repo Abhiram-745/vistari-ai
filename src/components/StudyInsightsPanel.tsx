@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Sparkles, TrendingUp, TrendingDown, Lightbulb, Target, Loader2, Clock, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import PaywallDialog from "@/components/PaywallDialog";
 import {
   BarChart,
   Bar,
@@ -105,7 +106,18 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
     }
   };
 
+  const [showPaywall, setShowPaywall] = useState(false);
+
   const generateInsights = async () => {
+    // Check paywall limits first
+    const { checkCanGenerateAIInsights, incrementUsage } = await import("@/hooks/useUserRole");
+    const canGenerate = await checkCanGenerateAIInsights();
+    
+    if (!canGenerate) {
+      setShowPaywall(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-insights', {
@@ -120,6 +132,10 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
       }
 
       setInsights(data.insights);
+      
+      // Increment usage after successful generation
+      await incrementUsage("ai_insights");
+      
       toast.success("AI Insights generated!");
     } catch (error) {
       console.error("Error generating insights:", error);
@@ -596,6 +612,12 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
           </CardContent>
         </Card>
       )}
+      
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        limitType="ai_insights"
+      />
     </div>
   );
 };

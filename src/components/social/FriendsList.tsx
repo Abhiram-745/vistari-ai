@@ -35,11 +35,14 @@ const FriendsList = ({ userId }: FriendsListProps) => {
         {
           event: '*',
           schema: 'public',
-          table: 'friendships',
-          filter: `user_id=eq.${userId},friend_id=eq.${userId}`
+          table: 'friendships'
         },
-        () => {
-          loadFriends();
+        (payload) => {
+          // Only reload if this friendship involves the current user
+          const friendship = payload.new as any;
+          if (friendship?.user_id === userId || friendship?.friend_id === userId) {
+            loadFriends();
+          }
         }
       )
       .subscribe();
@@ -72,7 +75,7 @@ const FriendsList = ({ userId }: FriendsListProps) => {
         const friendProfile = profiles?.find(p => p.id === (f.user_id === userId ? f.friend_id : f.user_id));
         return {
           ...f,
-          friend_name: friendProfile?.full_name || "Unknown",
+          friend_name: friendProfile?.full_name || "Unknown User",
           avatar_url: friendProfile?.avatar_url || undefined,
           is_incoming: f.friend_id === userId && f.status === "pending"
         };
@@ -120,8 +123,10 @@ const FriendsList = ({ userId }: FriendsListProps) => {
   };
 
   const getInitials = (name: string) => {
+    if (!name || name.trim() === "") return "?";
     return name
       .split(" ")
+      .filter(n => n.length > 0)
       .map(n => n[0])
       .join("")
       .toUpperCase()

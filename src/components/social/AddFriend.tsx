@@ -45,7 +45,7 @@ const AddFriend = ({ userId }: AddFriendProps) => {
 
       // Filter results client-side for case-insensitive search
       const filteredProfiles = profiles?.filter(p => 
-        p.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.full_name && p.full_name.toLowerCase().includes(searchQuery.toLowerCase())
       ) || [];
 
       if (filteredProfiles.length === 0) {
@@ -113,9 +113,10 @@ const AddFriend = ({ userId }: AddFriendProps) => {
   };
 
   const getInitials = (name: string) => {
-    if (!name) return "?";
+    if (!name || name.trim() === "") return "?";
     return name
       .split(" ")
+      .filter(n => n.length > 0)
       .map(n => n[0])
       .join("")
       .toUpperCase()
@@ -189,17 +190,17 @@ const AddFriend = ({ userId }: AddFriendProps) => {
                         {getInitials(result.full_name)}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">{result.full_name}</p>
-                      <p className="text-xs text-muted-foreground">Study Planner User</p>
-                    </div>
+                  <div>
+                    <p className="font-medium">{result.full_name || "Unknown User"}</p>
+                    <p className="text-xs text-muted-foreground">Study Planner User</p>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddFriend(result.id, result.full_name)}
-                    disabled={loading}
-                    className="gap-2"
-                  >
+                  </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddFriend(result.id, result.full_name || "Unknown User")}
+                      disabled={loading}
+                      className="gap-2"
+                    >
                     {loading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (

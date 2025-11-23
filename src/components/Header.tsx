@@ -68,11 +68,16 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         .maybeSingle();
       
       if (data) {
-        setProfile({ full_name: data?.full_name || "", avatar_url: data?.avatar_url || undefined, id: user.id });
+        setProfile({ full_name: data.full_name || "", avatar_url: data.avatar_url || undefined, id: user.id });
       } else {
-        // Create profile if doesn't exist
-        await supabase.from("profiles").insert({ id: user.id, full_name: user.user_metadata?.full_name || "User" });
-        setProfile({ full_name: user.user_metadata?.full_name || "User", id: user.id });
+        // Create profile if doesn't exist - use email username as fallback
+        const emailUsername = user.email?.split('@')[0] || "User";
+        const fallbackName = user.user_metadata?.full_name || emailUsername;
+        await supabase.from("profiles").insert({ 
+          id: user.id, 
+          full_name: fallbackName 
+        });
+        setProfile({ full_name: fallbackName, id: user.id });
       }
     }
   };
@@ -92,8 +97,14 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   };
 
   const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    if (!name || name.trim() === "") return "U";
+    return name
+      .split(" ")
+      .filter(n => n.length > 0)
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (

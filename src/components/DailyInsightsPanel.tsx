@@ -8,6 +8,8 @@ import { CheckCircle2, XCircle, Sparkles, Loader2, ChevronDown, ChevronUp, Calen
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TomorrowPlanDialog } from "./TomorrowPlanDialog";
+import { checkCanUseDailyInsights, incrementUsage } from "@/hooks/useUserRole";
+import PaywallDialog from "@/components/PaywallDialog";
 
 interface DailyInsightsPanelProps {
   date: string;
@@ -35,6 +37,7 @@ export const DailyInsightsPanel = ({
   const [loading, setLoading] = useState(false);
   const [dailyReflectionId, setDailyReflectionId] = useState<string | null>(null);
   const [showTomorrowDialog, setShowTomorrowDialog] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load existing reflection for this date
@@ -167,6 +170,13 @@ export const DailyInsightsPanel = ({
       return;
     }
 
+    // Check paywall limits first
+    const canUse = await checkCanUseDailyInsights();
+    if (!canUse) {
+      setShowPaywall(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -198,6 +208,9 @@ export const DailyInsightsPanel = ({
         toast.error(data.error);
         return;
       }
+
+      // Increment usage after successful generation
+      await incrementUsage("daily_insights");
 
       // Show AI summary to user
       if (data.summary) {
@@ -362,6 +375,12 @@ export const DailyInsightsPanel = ({
         reflection={reflection}
         incompleteSessions={incompleteSessions}
         onScheduleUpdate={onScheduleUpdate}
+      />
+      
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        limitType="daily_insights"
       />
     </Card>
   );
