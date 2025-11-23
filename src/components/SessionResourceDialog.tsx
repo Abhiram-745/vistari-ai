@@ -81,7 +81,8 @@ export const SessionResourceDialog = ({
       .from("session_resources")
       .select("*")
       .eq("timetable_id", timetableId)
-      .eq("session_id", sessionId)
+      .eq("topic", sessionDetails.topic)
+      .eq("subject", sessionDetails.subject)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -119,6 +120,8 @@ export const SessionResourceDialog = ({
       url: newResource.url.trim() || null,
       notes: newResource.notes.trim() || null,
       type: newResource.type,
+      topic: sessionDetails.topic,
+      subject: sessionDetails.subject,
     });
 
     if (error) {

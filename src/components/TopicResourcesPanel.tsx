@@ -98,7 +98,6 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
             userTopics.has(session.topic.toLowerCase())
           ) {
             const topicKey = `${session.subject}-${session.topic}`;
-            const sessionId = `${date}-${index}`;
 
             if (!topicsMap.has(topicKey)) {
               topicsMap.set(topicKey, {
@@ -111,12 +110,19 @@ export const TopicResourcesPanel = ({ timetableId, schedule }: TopicResourcesPan
 
             const topicData = topicsMap.get(topicKey)!;
             topicData.sessionCount++;
-
-            // Add resources for this session
-            const sessionResources = resources?.filter(r => r.session_id === sessionId) || [];
-            topicData.resources.push(...sessionResources);
           }
         });
+      });
+
+      // Now add resources by matching topic and subject (more reliable than session_id)
+      resources?.forEach(resource => {
+        if (resource.topic && resource.subject) {
+          const topicKey = `${resource.subject}-${resource.topic}`;
+          const topicData = topicsMap.get(topicKey);
+          if (topicData) {
+            topicData.resources.push(resource);
+          }
+        }
       });
 
       // Convert map to array and sort by subject and topic name
