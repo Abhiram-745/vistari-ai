@@ -35,7 +35,7 @@ serve(async (req) => {
 
     // Send password reset email
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
-      redirectTo: `${req.headers.get("origin")}/auth`,
+      redirectTo: `${req.headers.get("origin")}/reset-password`,
     });
 
     if (error) {
