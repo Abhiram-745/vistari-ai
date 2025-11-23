@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import { TopicProgressList } from "@/components/TopicProgressList";
 import { SpacedRepetitionPanel } from "@/components/SpacedRepetitionPanel";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Trophy, TrendingUp, Target } from "lucide-react";
 import { useTopicProgress } from "@/hooks/useTopicProgress";
 
@@ -62,10 +62,13 @@ const TopicMastery = () => {
   const stats = calculateOverallStats();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">
-      <Header />
+    <>
+      <AppSidebar />
+      
+      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
+        <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div className="space-y-8">
           {/* Header Section */}
           <div className="flex items-center justify-between">
@@ -176,7 +179,8 @@ const TopicMastery = () => {
           </Card>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 
