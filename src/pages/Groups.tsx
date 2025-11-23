@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +24,7 @@ interface StudyGroup {
 
 const Groups = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
   const [myGroups, setMyGroups] = useState<StudyGroup[]>([]);
   const [allGroups, setAllGroups] = useState<StudyGroup[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,19 +33,39 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadGroups();
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        loadGroups(session.user.id);
+      } else {
+        navigate("/auth");
+      }
+    });
 
-  const loadGroups = async () => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        loadGroups(session.user.id);
+      } else {
+        setUser(null);
+        setMyGroups([]);
+        setAllGroups([]);
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const loadGroups = async (userId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      setLoading(true);
 
       // Load user's groups
       const { data: memberData } = await supabase
         .from('group_members')
         .select('group_id')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (memberData) {
         const groupIds = memberData.map(m => m.group_id);
@@ -69,7 +91,11 @@ const Groups = () => {
               })
             );
             setMyGroups(groupsWithCounts);
+          } else {
+            setMyGroups([]);
           }
+        } else {
+          setMyGroups([]);
         }
       }
 
@@ -94,6 +120,8 @@ const Groups = () => {
           })
         );
         setAllGroups(groupsWithCounts);
+      } else {
+        setAllGroups([]);
       }
     } catch (error) {
       console.error('Error loading groups:', error);
@@ -244,13 +272,13 @@ const Groups = () => {
       <CreateGroupModal 
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
-        onSuccess={loadGroups}
+        onSuccess={() => user && loadGroups(user.id)}
       />
       
       <JoinGroupModal
         open={showJoinModal}
         onOpenChange={setShowJoinModal}
-        onSuccess={loadGroups}
+        onSuccess={() => user && loadGroups(user.id)}
       />
     </div>
   );
