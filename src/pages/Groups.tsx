@@ -165,7 +165,145 @@ const Groups = () => {
           </div>
 
           <Tabs defaultValue="my-groups" className="space-y-6">
-...
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="my-groups" className="gap-2">
+                <Users className="w-4 h-4" />
+                My Groups
+              </TabsTrigger>
+              <TabsTrigger value="discover" className="gap-2">
+                <Globe className="w-4 h-4" />
+                Discover
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="my-groups" className="space-y-4">
+              {loading ? (
+                <Card className="p-8 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p className="text-muted-foreground">Loading your groups...</p>
+                  </div>
+                </Card>
+              ) : myGroups.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No groups yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Create your first study group or join an existing one
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Create Group
+                    </Button>
+                    <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2">
+                      <Search className="w-4 h-4" />
+                      Join with Code
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {myGroups.map((group) => (
+                    <Card 
+                      key={group.id}
+                      className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-primary/20 hover:border-primary/40"
+                      onClick={() => navigate(`/groups/${group.id}`)}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1 line-clamp-1">{group.name}</h3>
+                          {group.subject && (
+                            <p className="text-sm text-primary font-medium">{group.subject}</p>
+                          )}
+                        </div>
+                        {group.is_private ? (
+                          <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        ) : (
+                          <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        )}
+                      </div>
+                      
+                      {group.description && (
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {group.description}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="w-4 h-4 mr-1" />
+                        <span>{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="discover" className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search groups by name, subject, or description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {loading ? (
+                <Card className="p-8 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p className="text-muted-foreground">Loading groups...</p>
+                  </div>
+                </Card>
+              ) : filteredGroups.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <Globe className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {searchQuery ? "No groups found" : "No public groups available"}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {searchQuery 
+                      ? "Try a different search term" 
+                      : "Be the first to create a public study group!"}
+                  </p>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredGroups.map((group) => (
+                    <Card 
+                      key={group.id}
+                      className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-primary/20 hover:border-primary/40"
+                      onClick={() => navigate(`/groups/${group.id}`)}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1 line-clamp-1">{group.name}</h3>
+                          {group.subject && (
+                            <p className="text-sm text-primary font-medium">{group.subject}</p>
+                          )}
+                        </div>
+                        <Globe className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      </div>
+                      
+                      {group.description && (
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {group.description}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="w-4 h-4 mr-1" />
+                        <span>{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
 
           <CreateGroupModal 
