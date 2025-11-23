@@ -90,6 +90,7 @@ Provide a priority score (1-10) for each topic where 10 means highest priority f
             }
           }
         ],
+        max_completion_tokens: 2000,
         tool_choice: { type: "function", function: { name: "prioritize_topics" } }
       }),
     });

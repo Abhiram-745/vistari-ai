@@ -68,6 +68,7 @@ serve(async (req) => {
             content: userContent
           }
         ],
+        max_completion_tokens: 2000,
         tools: [
           {
             type: "function",

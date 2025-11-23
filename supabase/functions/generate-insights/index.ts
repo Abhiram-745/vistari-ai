@@ -129,6 +129,7 @@ Format your response as JSON with this structure:
           { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },
           { role: 'user', content: prompt }
         ],
+        max_completion_tokens: 6000,
       }),
     });
 
