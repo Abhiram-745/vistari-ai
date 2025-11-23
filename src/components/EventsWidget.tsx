@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus, Trash2, Clock, Repeat } from "lucide-react";
+import { Calendar, Plus, Trash2, Clock, Repeat, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addDays, addWeeks, addMonths } from "date-fns";
@@ -52,6 +52,8 @@ export const EventsWidget = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -318,6 +320,137 @@ export const EventsWidget = () => {
     }
   };
 
+  const handleEditClick = (event: Event) => {
+    setEditingEvent(event);
+    setTitle(event.title);
+    setDescription(event.description || "");
+    setStartTime(format(new Date(event.start_time), "yyyy-MM-dd'T'HH:mm"));
+    setEndTime(format(new Date(event.end_time), "yyyy-MM-dd'T'HH:mm"));
+    setRecurrenceRule(event.recurrence_rule || "none");
+    setRecurrenceEndDate(event.recurrence_end_date ? format(new Date(event.recurrence_end_date), "yyyy-MM-dd") : "");
+    setEditDialogOpen(true);
+  };
+
+  const handleEditEvent = async () => {
+    if (!editingEvent) return;
+
+    // Validate input
+    const validation = eventSchema.safeParse({
+      title,
+      description,
+      startTime,
+      endTime,
+      recurrenceRule,
+      recurrenceEndDate,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
+      toast.error(firstError.message);
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const isRecurring = recurrenceRule !== "none";
+
+      // For recurring events, validate and regenerate instances
+      if (isRecurring && recurrenceEndDate) {
+        const start = new Date(startTime);
+        const recEnd = new Date(recurrenceEndDate);
+        
+        if (recEnd <= start) {
+          toast.error("Recurrence end date must be after the event start date");
+          return;
+        }
+
+        const instances = generateRecurringInstances(
+          start,
+          new Date(endTime),
+          recurrenceRule,
+          recEnd
+        );
+
+        if (instances.length > 100) {
+          toast.error("Too many recurring instances. Please choose a shorter recurrence period.");
+          return;
+        }
+
+        // If this was a recurring parent, delete all old instances
+        if (editingEvent.is_recurring) {
+          await supabase.from("events").delete().eq("parent_event_id", editingEvent.id);
+        }
+      }
+
+      // Update the parent event
+      const { error: updateError } = await supabase
+        .from("events")
+        .update({
+          title: title.trim(),
+          description: description?.trim() || null,
+          start_time: startTime,
+          end_time: endTime,
+          is_recurring: isRecurring,
+          recurrence_rule: isRecurring ? recurrenceRule : null,
+          recurrence_end_date: isRecurring ? recurrenceEndDate : null,
+        })
+        .eq("id", editingEvent.id);
+
+      if (updateError) throw updateError;
+
+      // Generate new recurring instances if applicable
+      if (isRecurring && recurrenceEndDate) {
+        const instances = generateRecurringInstances(
+          new Date(startTime),
+          new Date(endTime),
+          recurrenceRule,
+          new Date(recurrenceEndDate)
+        );
+
+        // Skip first instance (it's the parent event itself)
+        const recurringInstances = instances.slice(1).map((instance) => ({
+          user_id: user.id,
+          title: title.trim(),
+          description: description?.trim() || null,
+          start_time: instance.start.toISOString(),
+          end_time: instance.end.toISOString(),
+          is_recurring: false,
+          parent_event_id: editingEvent.id,
+        }));
+
+        if (recurringInstances.length > 0) {
+          const { error: instancesError } = await supabase
+            .from("events")
+            .insert(recurringInstances);
+
+          if (instancesError) throw instancesError;
+        }
+
+        toast.success(`Event updated with ${instances.length} instances`);
+      } else {
+        toast.success("Event updated successfully");
+      }
+
+      setEditDialogOpen(false);
+      setEditingEvent(null);
+      setTitle("");
+      setDescription("");
+      setStartTime("");
+      setEndTime("");
+      setRecurrenceRule("none");
+      setRecurrenceEndDate("");
+      fetchEvents();
+      
+      // Automatically regenerate timetables to account for the updated event
+      regenerateTimetables();
+    } catch (error) {
+      console.error("Error updating event:", error);
+      toast.error("Failed to update event");
+    }
+  };
+
   const upcomingEvents = events.filter(
     (event) => new Date(event.start_time) > new Date()
   ).slice(0, 5);
@@ -451,19 +584,104 @@ export const EventsWidget = () => {
                     </p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteEvent(event.id, event.is_recurring)}
-                  title={event.is_recurring ? "Delete all instances" : "Delete event"}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditClick(event)}
+                    title="Edit event"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteEvent(event.id, event.is_recurring)}
+                    title={event.is_recurring ? "Delete all instances" : "Delete event"}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
+
+      {/* Edit Event Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-title">Event Title *</Label>
+              <Input
+                id="edit-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Doctor Appointment"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add details about this event..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-start-time">Start Time *</Label>
+              <Input
+                id="edit-start-time"
+                type="datetime-local"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-end-time">End Time *</Label>
+              <Input
+                id="edit-end-time"
+                type="datetime-local"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-recurrence">Repeat</Label>
+              <Select value={recurrenceRule} onValueChange={setRecurrenceRule}>
+                <SelectTrigger id="edit-recurrence">
+                  <SelectValue placeholder="Select recurrence" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Does not repeat</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {recurrenceRule !== "none" && (
+              <div>
+                <Label htmlFor="edit-recurrence-end">Repeat Until *</Label>
+                <Input
+                  id="edit-recurrence-end"
+                  type="date"
+                  value={recurrenceEndDate}
+                  onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                />
+              </div>
+            )}
+            <Button onClick={handleEditEvent} className="w-full">
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
