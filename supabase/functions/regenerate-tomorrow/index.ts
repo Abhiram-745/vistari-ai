@@ -47,10 +47,35 @@ serve(async (req) => {
       endTime
     } = await req.json();
 
+    // Validate required fields
+    if (!timetableId) {
+      return new Response(JSON.stringify({ error: 'Timetable ID is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Ensure dates are valid
+    const validCurrentDate = currentDate || new Date().toISOString().split('T')[0];
+    const validTomorrowDate = tomorrowDate || (() => {
+      const tomorrow = new Date(validCurrentDate);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split('T')[0];
+    })();
+
+    // Validate that tomorrowDate is a valid date
+    const targetDateObj = new Date(validTomorrowDate);
+    if (isNaN(targetDateObj.getTime())) {
+      return new Response(JSON.stringify({ error: 'Invalid date format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Regenerate tomorrow request:', {
       timetableId,
-      currentDate,
-      tomorrowDate,
+      currentDate: validCurrentDate,
+      tomorrowDate: validTomorrowDate,
       selectedTopicsCount: selectedTopics?.length || 0,
       incompleteSessionsCount: incompleteSessions?.length || 0,
       difficultTopicsCount: difficultTopics?.length || 0,
@@ -85,8 +110,8 @@ serve(async (req) => {
       .from('events')
       .select('*')
       .eq('user_id', user.id)
-      .gte('start_time', `${tomorrowDate}T00:00:00`)
-      .lt('start_time', `${tomorrowDate}T23:59:59`);
+      .gte('start_time', `${validTomorrowDate}T00:00:00`)
+      .lte('start_time', `${validTomorrowDate}T23:59:59`);
 
     const uniqueTomorrowEvents = Array.from(
       new Map((tomorrowEvents || []).map((e: any) => [
@@ -108,7 +133,7 @@ serve(async (req) => {
     }
 
     // Get day of week for tomorrow
-    const tomorrowDayOfWeek = new Date(tomorrowDate).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const tomorrowDayOfWeek = targetDateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
     // Use provided timing
     const effectiveStartTime = startTime || '09:00';
@@ -119,7 +144,7 @@ serve(async (req) => {
     // Build comprehensive prompt for AI
     const prompt = `You are an expert study schedule generator. Generate a realistic study schedule for tomorrow with QUALITY over quantity.
 
-**DATE**: ${tomorrowDate} (${tomorrowDayOfWeek})
+**DATE**: ${validTomorrowDate} (${tomorrowDayOfWeek})
 
 **TIMING CONSTRAINTS**
 - Start Time: ${effectiveStartTime}
@@ -164,10 +189,9 @@ CRITICAL: The ENTIRE duration of each event is unavailable. Schedule sessions BE
 **TEST DAY CHECK**
 ${timetable.test_dates && Array.isArray(timetable.test_dates) && timetable.test_dates.length > 0 ? 
   (() => {
-    const tomorrowDateStr = tomorrowDate;
-    const isTestDay = timetable.test_dates.some((test: any) => test.test_date === tomorrowDateStr);
+    const isTestDay = timetable.test_dates.some((test: any) => test.test_date === validTomorrowDate);
     if (isTestDay) {
-      const testsOnDay = timetable.test_dates.filter((test: any) => test.test_date === tomorrowDateStr);
+      const testsOnDay = timetable.test_dates.filter((test: any) => test.test_date === validTomorrowDate);
       return `CRITICAL: Tomorrow is a TEST DAY. Return an EMPTY schedule array.
 Tests scheduled:
 ${testsOnDay.map((test: any) => `- ${test.subject}: ${test.test_type}`).join('\n')}
@@ -333,7 +357,7 @@ Return ONLY valid JSON:
     const currentSchedule = timetable.schedule as Record<string, any[]>;
     const updatedSchedule = {
       ...currentSchedule,
-      [tomorrowDate]: validatedSchedule
+      [validTomorrowDate]: validatedSchedule
     };
 
     const { error: updateError } = await supabase
@@ -353,7 +377,7 @@ Return ONLY valid JSON:
       schedule: validatedSchedule,
       summary: aiResult.summary || 'Schedule generated successfully',
       reasoning: aiResult.reasoning,
-      tomorrowDate
+      tomorrowDate: validTomorrowDate
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
