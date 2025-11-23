@@ -469,8 +469,6 @@ const TimetableView = () => {
                 timetableId={timetable.id}
                 schedule={timetable.schedule}
               />
-
-              <StudyInsightsPanel timetableId={timetable.id} />
             </div>
           </div>
         </div>
