@@ -14,6 +14,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { checkCanUseDailyInsights, incrementUsage } from "@/hooks/useUserRole";
+import PaywallDialog from "@/components/PaywallDialog";
 
 interface TomorrowPlanDialogProps {
   open: boolean;
@@ -158,6 +160,7 @@ export const TomorrowPlanDialog = ({
   const [editingTopic, setEditingTopic] = useState<string | null>(null);
   const [tempConfidence, setTempConfidence] = useState(5);
   const [tempDifficulties, setTempDifficulties] = useState("");
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Calculate tomorrow's date
   const tomorrow = new Date(currentDate);
@@ -471,6 +474,13 @@ export const TomorrowPlanDialog = ({
       return;
     }
 
+    // Check paywall limits first
+    const canUse = await checkCanUseDailyInsights();
+    if (!canUse) {
+      setShowPaywall(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const selectedTopicObjects = selectedTopics.map(key => {
@@ -504,6 +514,9 @@ export const TomorrowPlanDialog = ({
         toast.error(data.error);
         return;
       }
+
+      // Increment usage after successful generation
+      await incrementUsage("daily_insights");
 
       if (data.summary) {
         toast.success(data.summary, { duration: 8000 });
@@ -911,6 +924,12 @@ export const TomorrowPlanDialog = ({
           )}
         </DialogContent>
       </Dialog>
+      
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        limitType="daily_insights"
+      />
     </Dialog>
   );
 };

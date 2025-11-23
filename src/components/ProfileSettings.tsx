@@ -42,10 +42,23 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
         .from("profiles")
         .select("full_name, avatar_url")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       
-      setFullName(data?.full_name || "");
-      setAvatarUrl(data?.avatar_url || null);
+      if (data) {
+        setFullName(data.full_name || "");
+        setAvatarUrl(data.avatar_url || null);
+      } else {
+        // Create profile if doesn't exist
+        const emailUsername = user.email?.split('@')[0] || "User";
+        const fallbackName = user.user_metadata?.full_name || emailUsername;
+        
+        await supabase.from("profiles").insert({ 
+          id: user.id, 
+          full_name: fallbackName 
+        });
+        
+        setFullName(fallbackName);
+      }
     }
   };
 
@@ -101,6 +114,11 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
   };
 
   const handleSave = async () => {
+    if (!fullName.trim()) {
+      toast.error("Please enter your full name");
+      return;
+    }
+
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -108,8 +126,12 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
 
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: fullName })
-        .eq("id", user.id);
+        .upsert({ 
+          id: user.id,
+          full_name: fullName.trim() 
+        }, {
+          onConflict: 'id'
+        });
 
       if (error) throw error;
 
