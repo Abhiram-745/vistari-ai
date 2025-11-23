@@ -7,7 +7,6 @@ import { ArrowLeft, Users, Settings, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import { GroupChat } from "./GroupChat";
 import { GroupTimetables } from "./GroupTimetables";
 
 interface GroupMember {
@@ -170,17 +169,12 @@ const GroupDetail = () => {
           </div>
         </Card>
 
-        <Tabs defaultValue="chat" className="space-y-6">
+        <Tabs defaultValue="timetables" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="timetables">Timetables</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="chat">
-            <GroupChat groupId={id!} />
-          </TabsContent>
 
           <TabsContent value="timetables">
             <GroupTimetables groupId={id!} />
@@ -219,8 +213,10 @@ const GroupDetail = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="timetables">
-            <GroupTimetables groupId={id!} />
+          <TabsContent value="resources">
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground">Resources feature coming soon</p>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
