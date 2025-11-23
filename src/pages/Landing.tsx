@@ -130,7 +130,7 @@ const Landing = () => {
             }} className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Dhr! 👋</h3>
+                    <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Dhrishiv! 👋</h3>
                     <p className="text-muted-foreground">Ready to crush your study goals today?</p>
                   </div>
                   <div className="flex items-center gap-6">
@@ -1365,29 +1365,29 @@ const Landing = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 pointer-events-none"></div>
         
         <motion.div initial={{
-          opacity: 0,
-          y: 30
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          duration: 0.8
-        }} className="max-w-6xl mx-auto relative z-10">
+        opacity: 0,
+        y: 30
+      }} whileInView={{
+        opacity: 1,
+        y: 0
+      }} viewport={{
+        once: true
+      }} transition={{
+        duration: 0.8
+      }} className="max-w-6xl mx-auto relative z-10">
           <div className="text-center space-y-4 mb-16">
             <motion.div initial={{
-              opacity: 0,
-              y: 20
-            }} whileInView={{
-              opacity: 1,
-              y: 0
-            }} viewport={{
-              once: true
-            }} transition={{
-              duration: 0.8,
-              delay: 0.1
-            }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/20 border border-primary/30">
+            opacity: 0,
+            y: 20
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8,
+            delay: 0.1
+          }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/20 border border-primary/30">
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Simple & Transparent Pricing</span>
             </motion.div>
@@ -1407,17 +1407,17 @@ const Landing = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
             <motion.div initial={{
-              opacity: 0,
-              y: 30
-            }} whileInView={{
-              opacity: 1,
-              y: 0
-            }} viewport={{
-              once: true
-            }} transition={{
-              duration: 0.8,
-              delay: 0.2
-            }} className="relative">
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8,
+            delay: 0.2
+          }} className="relative">
               <Card className="border-2 hover:shadow-xl transition-all duration-300 h-full">
                 <CardHeader className="space-y-4 pb-8">
                   <div className="space-y-2">
@@ -1467,17 +1467,17 @@ const Landing = () => {
 
             {/* Premium Plan */}
             <motion.div initial={{
-              opacity: 0,
-              y: 30
-            }} whileInView={{
-              opacity: 1,
-              y: 0
-            }} viewport={{
-              once: true
-            }} transition={{
-              duration: 0.8,
-              delay: 0.3
-            }} className="relative">
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8,
+            delay: 0.3
+          }} className="relative">
               {/* Popular badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                 <div className="bg-gradient-to-r from-accent to-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
@@ -1554,13 +1554,17 @@ const Landing = () => {
         </div>
 
         <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center space-y-4 mb-20"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center space-y-4 mb-20">
             <h2 className="text-4xl sm:text-5xl font-display font-bold">
               Choose Your Plan
             </h2>
@@ -1571,15 +1575,28 @@ const Landing = () => {
 
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
             {/* Free Plan Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 50, rotateX: 10 }}
-              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-              className="relative"
-              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
-            >
+            <motion.div initial={{
+            opacity: 0,
+            y: 50,
+            rotateX: 10
+          }} whileInView={{
+            opacity: 1,
+            y: 0,
+            rotateX: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8,
+            delay: 0.1
+          }} whileHover={{
+            y: -10,
+            transition: {
+              duration: 0.3
+            }
+          }} className="relative" style={{
+            transformStyle: "preserve-3d",
+            perspective: 1000
+          }}>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl blur-xl opacity-50" />
               <Card className="relative border-2 bg-card/95 backdrop-blur-sm shadow-2xl hover:shadow-primary/20 transition-all duration-500 h-full">
                 <CardHeader className="space-y-6 pb-8">
@@ -1638,12 +1655,7 @@ const Landing = () => {
                       </div>
                     </li>
                   </ul>
-                  <Button
-                    onClick={() => navigate("/auth")}
-                    variant="outline"
-                    size="lg"
-                    className="w-full text-base py-6 hover:bg-primary/5 hover:border-primary/50 transition-all"
-                  >
+                  <Button onClick={() => navigate("/auth")} variant="outline" size="lg" className="w-full text-base py-6 hover:bg-primary/5 hover:border-primary/50 transition-all">
                     Get Started Free
                   </Button>
                 </CardContent>
@@ -1651,22 +1663,37 @@ const Landing = () => {
             </motion.div>
 
             {/* Premium Plan Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 50, rotateX: 10 }}
-              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              whileHover={{ y: -15, transition: { duration: 0.3 } }}
-              className="relative"
-              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
-            >
+            <motion.div initial={{
+            opacity: 0,
+            y: 50,
+            rotateX: 10
+          }} whileInView={{
+            opacity: 1,
+            y: 0,
+            rotateX: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8,
+            delay: 0.2
+          }} whileHover={{
+            y: -15,
+            transition: {
+              duration: 0.3
+            }
+          }} className="relative" style={{
+            transformStyle: "preserve-3d",
+            perspective: 1000
+          }}>
               {/* Popular Badge */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="bg-gradient-to-r from-accent via-primary to-secondary text-white px-8 py-3 rounded-full text-sm font-bold shadow-2xl"
-                >
+                <motion.div animate={{
+                y: [0, -5, 0]
+              }} transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }} className="bg-gradient-to-r from-accent via-primary to-secondary text-white px-8 py-3 rounded-full text-sm font-bold shadow-2xl">
                   ⚡ Most Popular
                 </motion.div>
               </div>
@@ -1746,11 +1773,7 @@ const Landing = () => {
                       </div>
                     </li>
                   </ul>
-                  <Button
-                    onClick={() => navigate("/auth")}
-                    size="lg"
-                    className="w-full text-base py-6 bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 hover:scale-105 transition-all shadow-xl text-white font-bold"
-                  >
+                  <Button onClick={() => navigate("/auth")} size="lg" className="w-full text-base py-6 bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 hover:scale-105 transition-all shadow-xl text-white font-bold">
                     Upgrade to Premium
                   </Button>
                   <p className="text-xs text-center text-muted-foreground">
