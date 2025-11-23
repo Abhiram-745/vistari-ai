@@ -360,28 +360,44 @@ NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-5-nano",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON.",
-            },
-            { role: "user", content: prompt },
-          ],
-          max_completion_tokens: 8000,
-        }),
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout
+
+    let response;
+    try {
+      response = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-5-mini",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON.",
+              },
+              { role: "user", content: prompt },
+            ],
+            max_completion_tokens: 8000,
+          }),
+          signal: controller.signal,
+        }
+      );
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error("AI request timed out - please try again");
       }
-    );
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -413,28 +429,46 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content;
 
-    console.log("AI Response:", aiResponse);
+    // Validate that we got a response
+    if (!aiResponse || aiResponse.trim() === '') {
+      console.error("Empty AI response received");
+      throw new Error("AI did not generate a response. Please try again or simplify your request.");
+    }
+
+    console.log("AI Response:", aiResponse.substring(0, 200) + "...");
 
     // Extract JSON from markdown code blocks if present
     let scheduleData;
     try {
       // Try multiple patterns for markdown code fences
-      let jsonString = aiResponse;
+      let jsonString = aiResponse.trim();
       
       // Remove markdown code fences if present (supports various formats)
-      if (aiResponse.includes('```')) {
-        jsonString = aiResponse
+      if (jsonString.includes('```')) {
+        jsonString = jsonString
           .replace(/^```(?:json)?\s*/i, '') // Remove opening fence
           .replace(/\s*```\s*$/i, '')        // Remove closing fence
           .trim();
       }
       
+      // Additional validation that we have some JSON-like content
+      if (!jsonString || jsonString.length < 10) {
+        throw new Error("AI response is too short to be valid JSON");
+      }
+
       scheduleData = JSON.parse(jsonString);
+      
+      // Validate that schedule exists in the response
+      if (!scheduleData.schedule || typeof scheduleData.schedule !== 'object') {
+        throw new Error("AI response missing valid schedule object");
+      }
     } catch (parseError) {
       console.error("Failed to parse AI response:", aiResponse.substring(0, 500));
-      throw new Error("Invalid AI response format");
+      console.error("Parse error:", parseError);
+      const errorMsg = parseError instanceof Error ? parseError.message : 'Could not parse JSON';
+      throw new Error(`Invalid AI response format: ${errorMsg}`);
     }
 
     return new Response(JSON.stringify(scheduleData), {
