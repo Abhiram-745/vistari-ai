@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,11 +32,93 @@ export const DailyInsightsPanel = ({
   const [reflection, setReflection] = useState("");
   const [completedSessions, setCompletedSessions] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dailyReflectionId, setDailyReflectionId] = useState<string | null>(null);
+
+  // Load existing reflection for this date
+  useEffect(() => {
+    loadDailyReflection();
+  }, [date, timetableId]);
+
+  const loadDailyReflection = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("topic_reflections")
+        .select("*")
+        .eq("timetable_id", timetableId)
+        .eq("session_date", date)
+        .eq("session_index", -1) // Use -1 for daily reflections
+        .maybeSingle();
+
+      if (data) {
+        setDailyReflectionId(data.id);
+        const reflectionData = data.reflection_data as any;
+        setReflection(reflectionData?.dailyReflection || "");
+        setCompletedSessions(reflectionData?.completedSessions || []);
+      }
+    } catch (error) {
+      console.error("Error loading daily reflection:", error);
+    }
+  };
+
+  const saveDailyReflection = async (reflectionText: string, completed: number[]) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const reflectionData = {
+        dailyReflection: reflectionText,
+        completedSessions: completed,
+      };
+
+      if (dailyReflectionId) {
+        // Update existing reflection
+        await supabase
+          .from("topic_reflections")
+          .update({
+            reflection_data: reflectionData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", dailyReflectionId);
+      } else {
+        // Create new reflection
+        const { data } = await supabase
+          .from("topic_reflections")
+          .insert({
+            user_id: user.id,
+            timetable_id: timetableId,
+            session_date: date,
+            session_index: -1, // Use -1 for daily reflections
+            subject: "Daily",
+            topic: "Daily Reflection",
+            reflection_data: reflectionData,
+          })
+          .select()
+          .single();
+
+        if (data) {
+          setDailyReflectionId(data.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving daily reflection:", error);
+    }
+  };
 
   const handleSessionToggle = (index: number) => {
-    setCompletedSessions((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    const newCompleted = completedSessions.includes(index)
+      ? completedSessions.filter((i) => i !== index)
+      : [...completedSessions, index];
+    
+    setCompletedSessions(newCompleted);
+    saveDailyReflection(reflection, newCompleted);
+  };
+
+  const handleReflectionChange = (text: string) => {
+    setReflection(text);
+    saveDailyReflection(text, completedSessions);
   };
 
   const handleGenerateNextDay = async () => {
@@ -79,8 +161,9 @@ export const DailyInsightsPanel = ({
 
       toast.success("Schedule updated! Missed topics added to next available days");
       onScheduleUpdate();
-      setReflection("");
-      setCompletedSessions([]);
+      
+      // Don't clear the reflection and completed sessions
+      // Users can still see what they wrote
     } catch (error: any) {
       console.error("Error adjusting schedule:", error);
       toast.error(error.message || "Failed to update schedule");
@@ -161,7 +244,7 @@ export const DailyInsightsPanel = ({
             <h4 className="text-sm font-semibold">Daily Reflection:</h4>
             <Textarea
               value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
+              onChange={(e) => handleReflectionChange(e.target.value)}
               placeholder="How did today go? What challenges did you face? What worked well? Any topics you need more time on?"
               className="min-h-[100px] resize-none"
             />
