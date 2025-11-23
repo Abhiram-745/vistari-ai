@@ -205,39 +205,52 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ChartContainer
-                            config={Object.entries(insights.subjectBreakdown).reduce((acc, [subject], idx) => ({
-                              ...acc,
-                              [subject]: {
-                                label: subject,
-                                color: `hsl(var(--chart-${(idx % 5) + 1}))`,
-                              }
-                            }), {})}
-                            className="h-[300px]"
-                          >
+                          <div className="h-[350px] w-full flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
-                              <RadarChart data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
-                                subject,
-                                confidence: data.confidenceScore,
-                              }))}>
-                                <PolarGrid />
-                                <PolarAngleAxis dataKey="subject" />
-                                <PolarRadiusAxis angle={90} domain={[0, 10]} />
+                              <RadarChart 
+                                data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
+                                  subject: subject.length > 15 ? subject.substring(0, 15) + '...' : subject,
+                                  fullSubject: subject,
+                                  confidence: data.confidenceScore,
+                                }))}
+                                margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                              >
+                                <PolarGrid strokeDasharray="3 3" />
+                                <PolarAngleAxis 
+                                  dataKey="subject" 
+                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                                />
+                                <PolarRadiusAxis 
+                                  angle={90} 
+                                  domain={[0, 10]}
+                                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                />
                                 <Radar
-                                  name="Confidence"
+                                  name="Confidence Level"
                                   dataKey="confidence"
                                   stroke="hsl(var(--primary))"
                                   fill="hsl(var(--primary))"
-                                  fillOpacity={0.6}
+                                  fillOpacity={0.5}
+                                  strokeWidth={2}
                                 />
-                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Tooltip 
+                                  contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    border: '1px solid hsl(var(--border))',
+                                    borderRadius: '8px',
+                                  }}
+                                  formatter={(value: any, name: any, props: any) => [
+                                    `${value}/10`,
+                                    props.payload.fullSubject || 'Confidence'
+                                  ]}
+                                />
                               </RadarChart>
                             </ResponsiveContainer>
-                          </ChartContainer>
+                          </div>
                         </CardContent>
                       </Card>
 
-                      {/* Topics Distribution */}
+                      {/* Topics Performance Table */}
                       <Card>
                         <CardHeader>
                           <CardTitle className="text-base flex items-center gap-2">
@@ -246,34 +259,91 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ChartContainer
-                            config={{
-                              struggling: { label: "Needs Focus", color: "hsl(var(--destructive))" },
-                              strong: { label: "Strengths", color: "hsl(var(--chart-2))" },
-                            }}
-                            className="h-[300px]"
-                          >
-                            <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                <Pie
-                                  data={[
-                                    { name: "Needs Focus", value: insights.strugglingTopics.length, fill: "hsl(var(--destructive))" },
-                                    { name: "Strengths", value: insights.strongAreas.length, fill: "hsl(var(--chart-2))" },
-                                  ]}
-                                  cx="50%"
-                                  cy="50%"
-                                  labelLine={false}
-                                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                  outerRadius={80}
-                                  dataKey="value"
-                                >
-                                  <Cell fill="hsl(var(--destructive))" />
-                                  <Cell fill="hsl(var(--chart-2))" />
-                                </Pie>
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                              </PieChart>
-                            </ResponsiveContainer>
-                          </ChartContainer>
+                          <div className="space-y-4">
+                            {/* Topics Needing Focus */}
+                            {insights.strugglingTopics.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                  <TrendingDown className="h-4 w-4 text-destructive" />
+                                  Needs Focus ({insights.strugglingTopics.length})
+                                </h4>
+                                <div className="border rounded-lg overflow-hidden">
+                                  <table className="w-full">
+                                    <thead className="bg-muted/50">
+                                      <tr>
+                                        <th className="text-left p-3 text-xs font-medium">Topic</th>
+                                        <th className="text-left p-3 text-xs font-medium">Subject</th>
+                                        <th className="text-left p-3 text-xs font-medium">Priority</th>
+                                        <th className="text-left p-3 text-xs font-medium">Issue</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                      {insights.strugglingTopics.map((topic, idx) => (
+                                        <tr 
+                                          key={idx}
+                                          className="hover:bg-muted/30 cursor-pointer transition-colors"
+                                          onClick={() => setSelectedTopic(topic.topic)}
+                                        >
+                                          <td className="p-3 text-sm font-medium">{topic.topic}</td>
+                                          <td className="p-3 text-sm text-muted-foreground">{topic.subject}</td>
+                                          <td className="p-3">
+                                            <Badge variant={getSeverityColor(topic.severity) as any} className="text-xs">
+                                              {topic.severity}
+                                            </Badge>
+                                          </td>
+                                          <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
+                                            {topic.reason}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Strong Topics */}
+                            {insights.strongAreas.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                  <TrendingUp className="h-4 w-4 text-green-600" />
+                                  Strengths ({insights.strongAreas.length})
+                                </h4>
+                                <div className="border rounded-lg overflow-hidden">
+                                  <table className="w-full">
+                                    <thead className="bg-green-50 dark:bg-green-950/20">
+                                      <tr>
+                                        <th className="text-left p-3 text-xs font-medium">Topic</th>
+                                        <th className="text-left p-3 text-xs font-medium">Subject</th>
+                                        <th className="text-left p-3 text-xs font-medium">Why You Excel</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                      {insights.strongAreas.map((area, idx) => (
+                                        <tr 
+                                          key={idx}
+                                          className="hover:bg-muted/30 cursor-pointer transition-colors"
+                                          onClick={() => setSelectedTopic(area.topic)}
+                                        >
+                                          <td className="p-3 text-sm font-medium">{area.topic}</td>
+                                          <td className="p-3 text-sm text-muted-foreground">{area.subject}</td>
+                                          <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
+                                            {area.reason}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {insights.strugglingTopics.length === 0 && insights.strongAreas.length === 0 && (
+                              <p className="text-sm text-muted-foreground text-center py-8">
+                                No topic performance data available yet
+                              </p>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     </TabsContent>
