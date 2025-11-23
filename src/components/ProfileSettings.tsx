@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, User, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProfileSettingsProps {
@@ -21,8 +22,12 @@ interface ProfileSettingsProps {
 
 const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSettingsProps) => {
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [userId, setUserId] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -34,18 +39,73 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setEmail(user.email || "");
+      setUserId(user.id);
       
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, avatar_url")
         .eq("id", user.id)
         .single();
       
       setFullName(data?.full_name || "");
+      setAvatarUrl(data?.avatar_url || "");
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !userId) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success("Profile picture updated");
+      onProfileUpdate?.();
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!fullName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -53,7 +113,7 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
 
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: fullName })
+        .update({ full_name: fullName.trim() })
         .eq("id", user.id);
 
       if (error) throw error;
@@ -67,6 +127,16 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
     } finally {
       setLoading(false);
     }
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -84,6 +154,41 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <Avatar className="h-24 w-24 ring-4 ring-primary/20">
+              <AvatarImage src={avatarUrl} alt={fullName} />
+              <AvatarFallback className="bg-gradient-primary text-white text-2xl font-semibold">
+                {getInitials(fullName)}
+              </AvatarFallback>
+            </Avatar>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  Change Picture
+                </>
+              )}
+            </Button>
+          </div>
+
           <div className="space-y-3">
             <Label htmlFor="full-name" className="text-sm font-semibold">Full Name</Label>
             <Input
