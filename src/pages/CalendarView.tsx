@@ -11,6 +11,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface TimetableSession {
   date: string;
@@ -454,142 +455,19 @@ const CalendarView = () => {
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">
-      <Header />
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6 animate-fade-in">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <Button variant="ghost" onClick={() => navigate("/")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            
-            <div className="flex items-center gap-4">
-              {availableTimetables.length > 0 && (
-                <Select value={selectedTimetable || ""} onValueChange={setSelectedTimetable}>
-                  <SelectTrigger className="w-[250px]">
-                    <SelectValue placeholder="Select a timetable" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableTimetables.map((tt) => (
-                      <SelectItem key={tt.id} value={tt.id}>
-                        {tt.name} ({format(parseISO(tt.start_date), "MMM d")} - {format(parseISO(tt.end_date), "MMM d, yyyy")})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-2 min-w-[200px] justify-center">
-                <CalendarIcon className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">
-                  {format(currentWeek, "MMM d")} - {format(addDays(currentWeek, 6), "MMM d, yyyy")}
-                </h2>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setCurrentWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-                Today
-              </Button>
-            </div>
+    <>
+      <AppSidebar />
+      
+      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
+        <Header />
+        
+        <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <div className="space-y-6 animate-fade-in">
+...
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
-                Weekly Calendar
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">Drag and drop to reschedule sessions and events</p>
-            </CardHeader>
-            <CardContent>
-              {!selectedTimetable ? (
-                <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                  <CalendarIcon className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">Please select a timetable to view the calendar</p>
-                </div>
-              ) : loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-pulse text-muted-foreground">Loading calendar...</div>
-                </div>
-              ) : calendarItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                  <CalendarIcon className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">No sessions or events found for this week</p>
-                  <p className="text-sm text-muted-foreground">Try selecting a different week or timetable</p>
-                </div>
-              ) : (
-                <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                  <div className="grid grid-cols-7 gap-3">
-                    {weekDays.map((day) => (
-                      <DroppableDay key={day.toISOString()} date={day} items={calendarItems} />
-                    ))}
-                  </div>
-                  <DragOverlay>
-                    {activeDragItem && (
-                      <div
-                        className={`p-2 rounded-lg border-l-4 shadow-lg ${
-                          activeDragItem.type === "event"
-                            ? "bg-accent/20 border-accent"
-                            : activeDragItem.data?.type === "homework"
-                            ? "bg-purple-50 dark:bg-purple-950/30 border-purple-500"
-                            : activeDragItem.data?.type === "revision"
-                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-500"
-                            : "bg-primary/10 border-primary"
-                        }`}
-                      >
-                        <p className="text-xs font-semibold">{activeDragItem.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {activeDragItem.startTime} - {activeDragItem.endTime}
-                        </p>
-                      </div>
-                    )}
-                  </DragOverlay>
-                </DndContext>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30"></div>
-              <span>Revision</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-950/30"></div>
-              <span>Homework</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-accent bg-accent/20"></div>
-              <span>Events</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-950/30"></div>
-              <span>Test-related</span>
-            </div>
-          </div>
-
-          {selectedTimetable && (
-            <div className="flex justify-center pt-6">
-              <Button
-                size="lg"
-                onClick={() => navigate(`/timetable/${selectedTimetable}`)}
-                className="gap-2"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                Navigate to Timetable View
-              </Button>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 
