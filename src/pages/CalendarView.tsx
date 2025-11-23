@@ -58,15 +58,56 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Determine colors based on session type
+  const getItemStyles = () => {
+    if (item.type === "event") {
+      return "bg-accent/20 border-accent";
+    }
+    
+    // For sessions, check the session type
+    const sessionType = item.data?.type;
+    
+    if (sessionType === "homework") {
+      return "bg-purple-50 dark:bg-purple-950/30 border-purple-500";
+    } else if (sessionType === "revision") {
+      return "bg-blue-50 dark:bg-blue-950/30 border-blue-500";
+    } else if (sessionType === "break") {
+      return "bg-muted/30 border-muted-foreground";
+    } else if (item.data?.testDate) {
+      return "bg-orange-50 dark:bg-orange-950/30 border-orange-500";
+    }
+    
+    return "bg-primary/10 border-primary";
+  };
+
+  const getBadgeVariant = () => {
+    if (item.type === "event") return "secondary";
+    
+    const sessionType = item.data?.type;
+    if (sessionType === "homework") return "default";
+    if (sessionType === "revision") return "default";
+    
+    return "default";
+  };
+
+  const getBadgeText = () => {
+    if (item.type === "event") return "Event";
+    
+    const sessionType = item.data?.type;
+    if (sessionType === "homework") return "Homework";
+    if (sessionType === "revision") return "Revision";
+    if (sessionType === "break") return "Break";
+    
+    return "Study";
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
-      className={`p-2 mb-2 rounded-lg border-l-4 cursor-move transition-all hover:shadow-md ${
-        item.type === "session" ? "bg-primary/10 border-primary" : "bg-accent/20 border-accent"
-      }`}
+      className={`p-2 mb-2 rounded-lg border-l-4 cursor-move transition-all hover:shadow-md ${getItemStyles()}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -75,8 +116,17 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
             {item.startTime} - {item.endTime}
           </p>
         </div>
-        <Badge variant={item.type === "session" ? "default" : "secondary"} className="text-xs shrink-0">
-          {item.type === "session" ? "Study" : "Event"}
+        <Badge 
+          variant={getBadgeVariant()} 
+          className={`text-xs shrink-0 ${
+            item.data?.type === "homework" 
+              ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300" 
+              : item.data?.type === "revision" 
+              ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+              : ""
+          }`}
+        >
+          {getBadgeText()}
         </Badge>
       </div>
     </div>
@@ -243,16 +293,21 @@ const CalendarView = () => {
                 const startDateTime = new Date(`${date}T${startTimeStr}:00`);
                 const endDateTime = addMinutes(startDateTime, session.duration || 60);
 
-                const item: CalendarItem = {
-                  id: `session-${date}-${index}`,
-                  type: "session",
-                  title: session.subject ? `${session.subject}${session.topic ? `: ${session.topic}` : ""}` : session.topic || "Study session",
+              const item: CalendarItem = {
+                id: `session-${date}-${index}`,
+                type: "session",
+                title: session.subject ? `${session.subject}${session.topic ? `: ${session.topic}` : ""}` : session.topic || "Study session",
+                date,
+                startTime: format(startDateTime, "HH:mm"),
+                endTime: format(endDateTime, "HH:mm"),
+                color: "primary",
+                data: { 
+                  ...session,
+                  sessionIndex: index, 
                   date,
-                  startTime: format(startDateTime, "HH:mm"),
-                  endTime: format(endDateTime, "HH:mm"),
-                  color: "primary",
-                  data: { sessionIndex: index, date },
-                };
+                  type: session.type || "study" // Preserve the session type
+                },
+              };
 
                 items.push(item);
               });
@@ -480,9 +535,13 @@ const CalendarView = () => {
                     {activeDragItem && (
                       <div
                         className={`p-2 rounded-lg border-l-4 shadow-lg ${
-                          activeDragItem.type === "session"
-                            ? "bg-primary/10 border-primary"
-                            : "bg-accent/20 border-accent"
+                          activeDragItem.type === "event"
+                            ? "bg-accent/20 border-accent"
+                            : activeDragItem.data?.type === "homework"
+                            ? "bg-purple-50 dark:bg-purple-950/30 border-purple-500"
+                            : activeDragItem.data?.type === "revision"
+                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-500"
+                            : "bg-primary/10 border-primary"
                         }`}
                       >
                         <p className="text-xs font-semibold">{activeDragItem.title}</p>
@@ -499,12 +558,20 @@ const CalendarView = () => {
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-primary bg-primary/10"></div>
-              <span>Study Sessions</span>
+              <div className="w-4 h-4 rounded border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30"></div>
+              <span>Revision</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-950/30"></div>
+              <span>Homework</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded border-l-4 border-accent bg-accent/20"></div>
               <span>Events</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-950/30"></div>
+              <span>Test-related</span>
             </div>
           </div>
         </div>
