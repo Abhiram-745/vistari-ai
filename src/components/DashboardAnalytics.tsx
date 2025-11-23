@@ -444,7 +444,10 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                             reflections.forEach((ref) => {
                               const data = ref.reflection_data as any;
                               if (data?.hardAspects) {
-                                data.hardAspects.forEach((aspect: string) => {
+                                data.hardAspects.forEach((aspect: any) => {
+                                  // Ensure aspect is a string before processing
+                                  if (typeof aspect !== 'string') return;
+                                  
                                   // Categorize mistakes by keywords
                                   let category = 'Other';
                                   if (aspect.toLowerCase().includes('formula') || aspect.toLowerCase().includes('equation')) {
