@@ -6,6 +6,7 @@ import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, 
 import sessionLegend from "@/assets/session-legend.png";
 import aiTopicParse from "@/assets/ai-topic-parse.png";
 import topicPriorityOrder from "@/assets/topic-priority-order.png";
+import topicDetailsCard from "@/assets/topic-details-card.png";
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -1028,8 +1029,83 @@ const Landing = () => {
               </div>
             </motion.div>
 
-            {/* Feature 2 */}
-            <FeatureRow title="Focus on what you struggle with" description="Mark topics as difficult and get extra practice time. The smart algorithm ensures you master tough concepts before exam day." icon={<Target className="w-12 h-12" />} gradient="from-secondary to-accent" direction="right" />
+            {/* Feature 2: Focus on what you struggle with - Enhanced with floating card */}
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{
+              opacity: 0,
+              x: 30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="space-y-6 order-2 md:order-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center text-white shadow-lg">
+                  <Target className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl sm:text-4xl font-display font-bold leading-tight">Focus on what you struggle with</h3>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Mark topics as difficult and get extra practice time. The smart algorithm ensures you master tough concepts before exam day.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Confidence scoring:</span> Rate your confidence for each topic on a 1-10 scale</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Difficulty notes:</span> Add specific notes about what you find challenging</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Smart time allocation:</span> AI allocates more study time to topics marked as difficult</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Personalized resources:</span> Get targeted resources and practice materials for your weak areas</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Card showing Topic Details */}
+              <div className="relative h-[500px] order-1 md:order-2">
+                <motion.div initial={{
+                opacity: 0,
+                y: 40,
+                rotate: 2
+              }} whileInView={{
+                opacity: 1,
+                y: 0,
+                rotate: 2
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.2
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.03,
+                y: -10
+              }} className="absolute left-1/2 -translate-x-1/2 top-0 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-10 w-full max-w-[450px]">
+                  <img src={topicDetailsCard} alt="Topic Details - Set confidence level and difficulty notes" className="w-full h-auto" />
+                </motion.div>
+              </div>
+            </motion.div>
 
             {/* Feature 3: Study with Friends - Enhanced with floating cards */}
             <motion.div initial={{
