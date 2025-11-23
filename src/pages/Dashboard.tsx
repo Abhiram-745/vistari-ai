@@ -13,6 +13,7 @@ import { StudyStreakTracker } from "@/components/StudyStreakTracker";
 import { WeeklyGoalsWidget } from "@/components/WeeklyGoalsWidget";
 import { UpcomingDeadlines } from "@/components/UpcomingDeadlines";
 import { EventsWidget } from "@/components/EventsWidget";
+import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -176,6 +177,11 @@ const Dashboard = () => {
             {/* Events Section */}
             <div>
               <EventsWidget />
+            </div>
+
+            {/* AI Analytics Section */}
+            <div>
+              <DashboardAnalytics userId={user?.id || ""} />
             </div>
 
             {/* Timetables Section */}
