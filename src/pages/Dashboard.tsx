@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Target, Trophy, Calendar } from "lucide-react";
+import { Plus, Sparkles, Target, Trophy, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import OnboardingWizard from "@/components/OnboardingWizard";
@@ -14,6 +14,9 @@ import { WeeklyGoalsWidget } from "@/components/WeeklyGoalsWidget";
 import { UpcomingDeadlines } from "@/components/UpcomingDeadlines";
 import { EventsWidget } from "@/components/EventsWidget";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +25,7 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { data: userRole } = useUserRole();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -206,6 +210,253 @@ const Dashboard = () => {
             {/* Homework Section */}
             <div className="space-y-6">
               <HomeworkList userId={user?.id || ""} />
+            </div>
+
+            {/* Pricing Cards Section */}
+            <div className="py-16 relative overflow-hidden">
+              {/* Background decoration */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+              </div>
+
+              <div className="relative z-10">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8 }}
+                  className="text-center space-y-4 mb-12"
+                >
+                  <h2 className="text-3xl sm:text-4xl font-display font-bold gradient-text">
+                    {userRole === "paid" ? "Your Current Plan" : "Upgrade Your Experience"}
+                  </h2>
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    {userRole === "paid" 
+                      ? "You're on the Premium plan with unlimited access to all features"
+                      : "Unlock unlimited AI-powered study planning"}
+                  </p>
+                </motion.div>
+
+                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                  {/* Free Plan Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 50, rotateX: 10 }}
+                    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.1 }}
+                    whileHover={{ y: -10, transition: { duration: 0.3 } }}
+                    className="relative"
+                    style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+                  >
+                    {userRole === "free" && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                        <div className="bg-muted text-muted-foreground px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                          Current Plan
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-br from-muted/20 to-muted/10 rounded-3xl blur-xl opacity-50" />
+                    <Card className={`relative border-2 ${userRole === "free" ? "border-primary" : ""} bg-card/95 backdrop-blur-sm shadow-xl transition-all duration-500 h-full`}>
+                      <CardHeader className="space-y-6 pb-6">
+                        <div className="inline-flex items-center gap-2 text-muted-foreground">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                            <Sparkles className="w-6 h-6" />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <CardTitle className="text-2xl font-display">Free</CardTitle>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-5xl font-bold">£0</span>
+                            <span className="text-lg text-muted-foreground">/month</span>
+                          </div>
+                          <CardDescription className="text-base">
+                            Try out AI-powered study planning
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <ul className="space-y-3">
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <CheckCircle2 className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">1 timetable creation</p>
+                              <p className="text-xs text-muted-foreground">Generate your first schedule</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <CheckCircle2 className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">1 regeneration per day</p>
+                              <p className="text-xs text-muted-foreground">Daily schedule adjustments</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <CheckCircle2 className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Basic AI insights</p>
+                              <p className="text-xs text-muted-foreground">1 analysis per day</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <CheckCircle2 className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Study tracking</p>
+                              <p className="text-xs text-muted-foreground">Session & progress tracking</p>
+                            </div>
+                          </li>
+                        </ul>
+                        {userRole !== "free" && (
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            disabled
+                            className="w-full text-base py-6"
+                          >
+                            Current Plan
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Premium Plan Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 50, rotateX: 10 }}
+                    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    whileHover={{ y: -15, transition: { duration: 0.3 } }}
+                    className="relative"
+                    style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+                  >
+                    {userRole === "paid" ? (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                        <div className="bg-gradient-to-r from-accent via-primary to-secondary text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                          Current Plan
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                        <motion.div
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="bg-gradient-to-r from-accent via-primary to-secondary text-white px-8 py-2 rounded-full text-sm font-bold shadow-2xl"
+                        >
+                          ⚡ Most Popular
+                        </motion.div>
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-secondary/40 rounded-3xl blur-2xl opacity-60 animate-pulse" />
+                    <Card className="relative border-2 border-primary/50 bg-gradient-to-br from-card via-card to-primary/5 backdrop-blur-sm shadow-2xl transition-all duration-500 h-full overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none" />
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+
+                      <CardHeader className="space-y-6 pb-6 relative z-10">
+                        <div className="inline-flex items-center gap-2">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <CardTitle className="text-2xl font-display bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            Premium
+                          </CardTitle>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                              £5
+                            </span>
+                            <span className="text-lg text-muted-foreground">/month</span>
+                          </div>
+                          <CardDescription className="text-base">
+                            Unlimited AI for serious students
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6 relative z-10">
+                        <ul className="space-y-3">
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 mt-0.5">
+                              <Sparkles className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">Unlimited timetables</p>
+                              <p className="text-xs text-muted-foreground">Create as many as you need</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 mt-0.5">
+                              <Sparkles className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">Unlimited regenerations</p>
+                              <p className="text-xs text-muted-foreground">Adjust anytime, instantly</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 mt-0.5">
+                              <Sparkles className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">Unlimited AI insights</p>
+                              <p className="text-xs text-muted-foreground">Deep performance analysis</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 mt-0.5">
+                              <Sparkles className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">Priority support</p>
+                              <p className="text-xs text-muted-foreground">Get help when needed</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 mt-0.5">
+                              <Sparkles className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">Early access</p>
+                              <p className="text-xs text-muted-foreground">New features first</p>
+                            </div>
+                          </li>
+                        </ul>
+                        {userRole === "paid" ? (
+                          <Button
+                            size="lg"
+                            disabled
+                            className="w-full text-base py-6 bg-gradient-to-r from-primary via-secondary to-accent"
+                          >
+                            Current Plan
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => {
+                              window.open("mailto:support@example.com?subject=Upgrade%20to%20Premium", "_blank");
+                            }}
+                            size="lg"
+                            className="w-full text-base py-6 bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 hover:scale-105 transition-all shadow-xl text-white font-bold"
+                          >
+                            Upgrade to Premium
+                          </Button>
+                        )}
+                        <p className="text-xs text-center text-muted-foreground">
+                          Cancel anytime • No hidden fees
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+              </div>
             </div>
           </div>
         )}
