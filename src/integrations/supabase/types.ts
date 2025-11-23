@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string
+          criteria_type: string
+          criteria_value: number
+          description: string
+          icon: string
+          id: string
+          is_hidden: boolean | null
+          name: string
+          tier: string
+          xp_reward: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          criteria_type: string
+          criteria_value: number
+          description: string
+          icon: string
+          id?: string
+          is_hidden?: boolean | null
+          name: string
+          tier: string
+          xp_reward: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          criteria_type?: string
+          criteria_value?: number
+          description?: string
+          icon?: string
+          id?: string
+          is_hidden?: boolean | null
+          name?: string
+          tier?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -94,6 +136,129 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          last_active: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          last_active?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          last_active?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          is_pinned: boolean | null
+          message: string
+          message_type: string | null
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          is_pinned?: boolean | null
+          message: string
+          message_type?: string | null
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          is_pinned?: boolean | null
+          message?: string
+          message_type?: string | null
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_resources: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_path: string | null
+          group_id: string
+          id: string
+          likes_count: number | null
+          resource_type: string
+          title: string
+          uploaded_by: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          group_id: string
+          id?: string
+          likes_count?: number | null
+          resource_type: string
+          title: string
+          uploaded_by: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          group_id?: string
+          id?: string
+          likes_count?: number | null
+          resource_type?: string
+          title?: string
+          uploaded_by?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_resources_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homeworks: {
         Row: {
           completed: boolean
@@ -138,19 +303,70 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          level: number | null
+          title: string | null
+          total_xp: number | null
           updated_at: string | null
+          xp_to_next_level: number | null
         }
         Insert: {
           created_at?: string | null
           full_name?: string | null
           id: string
+          level?: number | null
+          title?: string | null
+          total_xp?: number | null
           updated_at?: string | null
+          xp_to_next_level?: number | null
         }
         Update: {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          level?: number | null
+          title?: string | null
+          total_xp?: number | null
           updated_at?: string | null
+          xp_to_next_level?: number | null
+        }
+        Relationships: []
+      }
+      session_analytics: {
+        Row: {
+          average_focus_score: number | null
+          created_at: string
+          date: string
+          id: string
+          sessions_completed: number
+          sessions_skipped: number
+          subjects_studied: Json | null
+          total_actual_minutes: number
+          total_planned_minutes: number
+          user_id: string
+        }
+        Insert: {
+          average_focus_score?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          sessions_completed?: number
+          sessions_skipped?: number
+          subjects_studied?: Json | null
+          total_actual_minutes?: number
+          total_planned_minutes?: number
+          user_id: string
+        }
+        Update: {
+          average_focus_score?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          sessions_completed?: number
+          sessions_skipped?: number
+          subjects_studied?: Json | null
+          total_actual_minutes?: number
+          total_planned_minutes?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -200,6 +416,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shared_timetables: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          is_public: boolean | null
+          shared_by: string
+          timetable_id: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_public?: boolean | null
+          shared_by: string
+          timetable_id: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_public?: boolean | null
+          shared_by?: string
+          timetable_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_timetables_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_timetables_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_groups: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_private: boolean | null
+          join_code: string | null
+          max_members: number | null
+          name: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          join_code?: string | null
+          max_members?: number | null
+          name: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          join_code?: string | null
+          max_members?: number | null
+          name?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       study_insights: {
         Row: {
@@ -274,6 +577,77 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          actual_duration_minutes: number | null
+          actual_end: string | null
+          actual_start: string | null
+          created_at: string
+          focus_score: number | null
+          id: string
+          notes: string | null
+          pause_time: number | null
+          planned_duration_minutes: number
+          planned_end: string
+          planned_start: string
+          session_type: string
+          status: string
+          subject: string
+          timetable_id: string | null
+          topic: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_duration_minutes?: number | null
+          actual_end?: string | null
+          actual_start?: string | null
+          created_at?: string
+          focus_score?: number | null
+          id?: string
+          notes?: string | null
+          pause_time?: number | null
+          planned_duration_minutes: number
+          planned_end: string
+          planned_start: string
+          session_type: string
+          status?: string
+          subject: string
+          timetable_id?: string | null
+          topic?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_duration_minutes?: number | null
+          actual_end?: string | null
+          actual_start?: string | null
+          created_at?: string
+          focus_score?: number | null
+          id?: string
+          notes?: string | null
+          pause_time?: number | null
+          planned_duration_minutes?: number
+          planned_end?: string
+          planned_start?: string
+          session_type?: string
+          status?: string
+          subject?: string
+          timetable_id?: string | null
+          topic?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_streaks: {
         Row: {
@@ -472,6 +846,44 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          created_at: string
+          id: string
+          is_new: boolean | null
+          progress: number | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          created_at?: string
+          id?: string
+          is_new?: boolean | null
+          progress?: number | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          created_at?: string
+          id?: string
+          is_new?: boolean | null
+          progress?: number | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
             referencedColumns: ["id"]
           },
         ]
