@@ -1335,7 +1335,7 @@ const Landing = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {[{
-            quote: "I went from feeling completely lost to having a clear path forward. Got A's in all my subjects!",
+            quote: "I went from getting 60% in school to a 90% average - this helped me a ton!",
             author: "Michael Thompson",
             role: "GCSE Student",
             initial: "M"
