@@ -18,6 +18,8 @@ import PreferencesStep from "./onboarding/PreferencesStep";
 import HomeworkEditStep from "./onboarding/HomeworkEditStep";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Subject, Topic, TestDate, StudyPreferences } from "./OnboardingWizard";
+import { checkCanRegenerateTimetable, incrementUsage } from "@/hooks/useUserRole";
+import PaywallDialog from "@/components/PaywallDialog";
 
 interface TimetableEditDialogProps {
   timetableId: string;
@@ -82,6 +84,7 @@ export const TimetableEditDialog = ({
   const [testDates, setTestDates] = useState<TestDate[]>(currentTestDates);
   const [preferences, setPreferences] = useState<StudyPreferences>(migratePreferences(currentPreferences));
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleRegenerate = async () => {
     if (subjects.length === 0) {
@@ -94,6 +97,13 @@ export const TimetableEditDialog = ({
     }
     if (testDates.length === 0) {
       toast.error("Please add at least one test date");
+      return;
+    }
+
+    // Check if user can regenerate timetable
+    const canRegenerate = await checkCanRegenerateTimetable();
+    if (!canRegenerate) {
+      setShowPaywall(true);
       return;
     }
 
@@ -161,6 +171,9 @@ export const TimetableEditDialog = ({
         .eq("id", timetableId);
 
       if (updateError) throw updateError;
+
+      // Increment usage counter
+      await incrementUsage("timetable_regeneration");
 
       toast.success("Timetable regenerated successfully!");
       setOpen(false);
@@ -234,6 +247,14 @@ export const TimetableEditDialog = ({
           </Button>
         </div>
       </DialogContent>
+
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        limitType="timetable_regeneration"
+      />
     </Dialog>
   );
 };
+
+export default TimetableEditDialog;

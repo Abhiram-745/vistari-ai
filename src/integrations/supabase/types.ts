@@ -957,6 +957,42 @@ export type Database = {
           },
         ]
       }
+      usage_limits: {
+        Row: {
+          ai_insights_generations: number
+          created_at: string | null
+          daily_insights_used: boolean
+          id: string
+          last_reset_date: string
+          timetable_creations: number
+          timetable_regenerations: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_insights_generations?: number
+          created_at?: string | null
+          daily_insights_used?: boolean
+          id?: string
+          last_reset_date?: string
+          timetable_creations?: number
+          timetable_regenerations?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_insights_generations?: number
+          created_at?: string | null
+          daily_insights_used?: boolean
+          id?: string
+          last_reset_date?: string
+          timetable_creations?: number
+          timetable_regenerations?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -995,6 +1031,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_goals: {
         Row: {
           created_at: string
@@ -1030,10 +1090,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_create_timetable: { Args: { _user_id: string }; Returns: boolean }
+      can_generate_ai_insights: { Args: { _user_id: string }; Returns: boolean }
+      can_regenerate_timetable: { Args: { _user_id: string }; Returns: boolean }
+      can_use_daily_insights: { Args: { _user_id: string }; Returns: boolean }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_usage: {
+        Args: { _action: string; _user_id: string }
+        Returns: undefined
+      }
+      reset_daily_limits: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "paid" | "free"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1160,6 +1239,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["paid", "free"],
+    },
   },
 } as const

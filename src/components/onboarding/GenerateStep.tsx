@@ -7,6 +7,8 @@ import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Subject, Topic, TestDate, StudyPreferences } from "../OnboardingWizard";
 import { Homework } from "./HomeworkStep";
+import { checkCanCreateTimetable, incrementUsage } from "@/hooks/useUserRole";
+import PaywallDialog from "@/components/PaywallDialog";
 
 interface GenerateStepProps {
   subjects: Subject[];
@@ -31,10 +33,18 @@ const GenerateStep = ({
   const [timetableName, setTimetableName] = useState("My Study Timetable");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleGenerate = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select start and end dates");
+      return;
+    }
+
+    // Check if user can create timetable
+    const canCreate = await checkCanCreateTimetable();
+    if (!canCreate) {
+      setShowPaywall(true);
       return;
     }
 
@@ -54,11 +64,11 @@ const GenerateStep = ({
 
       if (eventsError) throw eventsError;
 
-      // Save homeworks to database
+      // Save homeworks to database (use upsert to avoid duplicates)
       if (homeworks.length > 0) {
         const { error: homeworkError } = await supabase
           .from("homeworks")
-          .insert(
+          .upsert(
             homeworks.map((hw) => ({
               user_id: user.id,
               subject: hw.subject,
@@ -67,7 +77,11 @@ const GenerateStep = ({
               due_date: hw.due_date,
               duration: hw.duration,
               completed: false,
-            }))
+            })),
+            {
+              onConflict: "user_id,title,subject,due_date",
+              ignoreDuplicates: true,
+            }
           );
 
         if (homeworkError) throw homeworkError;
@@ -181,6 +195,9 @@ const GenerateStep = ({
 
       if (saveError) throw saveError;
 
+      // Increment usage counter
+      await incrementUsage("timetable_creation");
+
       toast.success("Timetable generated successfully!");
       onComplete();
     } catch (error: any) {
@@ -257,6 +274,12 @@ const GenerateStep = ({
           </>
         )}
       </Button>
+
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        limitType="timetable_creation"
+      />
     </div>
   );
 };
