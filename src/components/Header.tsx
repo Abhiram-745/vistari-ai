@@ -125,6 +125,18 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 </Button>
               )}
 
+              {location.pathname !== "/calendar" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/calendar")}
+                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="hidden sm:inline">Calendar</span>
+                </Button>
+              )}
+
               <Button
                 variant="ghost"
                 size="sm"
