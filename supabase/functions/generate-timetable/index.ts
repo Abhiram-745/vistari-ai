@@ -497,7 +497,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash", // Faster and more reliable for complex tasks
+            model: "google/gemini-2.5-flash-lite", // Faster and cheaper for complex tasks
             messages: [
               {
                 role: "system",
