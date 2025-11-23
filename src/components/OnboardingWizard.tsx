@@ -27,6 +27,8 @@ export interface Topic {
   id?: string;
   subject_id: string;
   name: string;
+  confidence?: number;
+  difficulties?: string;
 }
 
 export interface TestDate {
