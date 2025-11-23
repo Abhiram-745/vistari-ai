@@ -188,10 +188,11 @@ const ImportTimetable = () => {
           subjects,
           topics,
           testDates,
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
           preferences: {
             ...preferences,
-            startDate: startDate.toISOString().split('T')[0],
-            endDate: endDate.toISOString().split('T')[0]
+            duration_mode: preferences.duration_mode || 'flexible'
           },
           topicConfidences,
           events,
