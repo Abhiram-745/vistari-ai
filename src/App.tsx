@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Timetables from "./pages/Timetables";
 import TimetableView from "./pages/TimetableView";
 import CalendarView from "./pages/CalendarView";
 import Social from "./pages/Social";
@@ -29,6 +30,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/timetables" element={<Timetables />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/social" element={<Social />} />
