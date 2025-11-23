@@ -384,7 +384,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
               },
               { role: "user", content: prompt },
             ],
-            max_completion_tokens: 8000,
+            max_completion_tokens: 16000,
             temperature: 0.7, // Add some creativity while maintaining structure
           }),
           signal: controller.signal,
@@ -452,6 +452,17 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           .replace(/^```(?:json)?\s*/i, '') // Remove opening fence
           .replace(/\s*```\s*$/i, '')        // Remove closing fence
           .trim();
+      }
+      
+      // Try to repair truncated JSON by finding the last complete object
+      if (!jsonString.endsWith('}')) {
+        console.log('JSON appears truncated, attempting repair...');
+        // Find the last complete closing brace for the schedule object
+        const lastScheduleBrace = jsonString.lastIndexOf('}');
+        if (lastScheduleBrace > -1) {
+          // Add closing braces to complete the JSON structure
+          jsonString = jsonString.substring(0, lastScheduleBrace + 1) + '\n  }\n}';
+        }
       }
       
       // Additional validation that we have some JSON-like content
