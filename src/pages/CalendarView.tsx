@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, addMinutes } from "date-fns";
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
@@ -111,7 +112,16 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 space-y-1">
-          <p className="text-sm font-semibold leading-tight line-clamp-2 overflow-hidden">{item.title}</p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-sm font-semibold leading-tight line-clamp-2 overflow-hidden">{item.title}</p>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{item.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
             <span className="text-xs">🕐</span>
             {item.startTime} - {item.endTime}
