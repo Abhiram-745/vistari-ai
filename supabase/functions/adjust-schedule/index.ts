@@ -203,7 +203,7 @@ Return ONLY valid JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },
           { role: 'user', content: prompt }
