@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Plus, Trash2, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarIcon, Plus, Trash2, Clock, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,7 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
       .from("homeworks")
       .select("*")
       .eq("user_id", userId)
+      .order("completed", { ascending: true })
       .order("due_date", { ascending: true });
 
     if (error) {
@@ -118,16 +119,16 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
     return `${hours} hr ${mins} min`;
   };
 
-  const toggleComplete = async (id: string, completed: boolean) => {
+  const toggleComplete = async (id: string, newStatus: boolean) => {
     const { error } = await supabase
       .from("homeworks")
-      .update({ completed: !completed })
+      .update({ completed: newStatus })
       .eq("id", id);
 
     if (error) {
       toast.error("Failed to update homework");
     } else {
-      toast.success(completed ? "Marked as incomplete" : "Marked as complete!");
+      toast.success(newStatus ? "Marked as complete!" : "Marked as incomplete");
       fetchHomeworks();
     }
   };
@@ -250,66 +251,134 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        {homeworks.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            No homeworks yet. Add your first homework to get started!
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {homeworks.map((homework) => (
-              <div
-                key={homework.id}
-                className={cn(
-                  "p-4 rounded-lg border",
-                  homework.completed ? "bg-muted/50 opacity-60" : "bg-card"
-                )}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <Checkbox
-                      checked={homework.completed}
-                      onCheckedChange={() =>
-                        toggleComplete(homework.id, homework.completed)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-medium text-sm text-primary">
-                          {homework.subject}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Due: {format(new Date(homework.due_date), "dd/MM/yyyy")}
-                        </span>
-                        {homework.duration && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDuration(homework.duration)}
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="pending">
+              Pending ({homeworks.filter(h => !h.completed).length})
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+              Completed ({homeworks.filter(h => h.completed).length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pending">
+            {homeworks.filter(h => !h.completed).length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No pending homework. Great job! 🎉
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {homeworks.filter(h => !h.completed).map((homework) => (
+                  <div
+                    key={homework.id}
+                    className="p-4 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-medium text-sm text-primary">
+                            {homework.subject}
                           </span>
+                          <span className="text-xs text-muted-foreground">
+                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy")}
+                          </span>
+                          {homework.duration && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDuration(homework.duration)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-medium">{homework.title}</p>
+                        {homework.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {homework.description}
+                          </p>
                         )}
                       </div>
-                      <p className={cn("font-medium", homework.completed && "line-through")}>
-                        {homework.title}
-                      </p>
-                      {homework.description && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {homework.description}
-                        </p>
-                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleComplete(homework.id, true)}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteHomework(homework.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteHomework(homework.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed">
+            {homeworks.filter(h => h.completed).length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No completed homework yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {homeworks.filter(h => h.completed).map((homework) => (
+                  <div
+                    key={homework.id}
+                    className="p-4 rounded-lg border bg-muted/50"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-medium text-sm text-primary">
+                            {homework.subject}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy")}
+                          </span>
+                          {homework.duration && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDuration(homework.duration)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-medium text-muted-foreground">{homework.title}</p>
+                        {homework.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {homework.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleComplete(homework.id, false)}
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteHomework(homework.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
