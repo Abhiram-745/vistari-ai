@@ -14,6 +14,7 @@ import { WeeklyGoalsWidget } from "@/components/WeeklyGoalsWidget";
 import { UpcomingDeadlines } from "@/components/UpcomingDeadlines";
 import { EventsWidget } from "@/components/EventsWidget";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
+import { SpacedRepetitionPanel } from "@/components/SpacedRepetitionPanel";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -172,6 +173,11 @@ const Dashboard = () => {
                 <WeeklyGoalsWidget userId={user?.id || ""} />
                 <UpcomingDeadlines userId={user?.id || ""} />
               </div>
+            </div>
+
+            {/* Spaced Repetition Section */}
+            <div>
+              <SpacedRepetitionPanel />
             </div>
 
             {/* Events Section */}
