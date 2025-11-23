@@ -42,6 +42,7 @@ serve(async (req) => {
       reflection, 
       selectedTopics,
       incompleteSessions,
+      difficultTopics,
       startTime,
       endTime
     } = await req.json();
@@ -52,7 +53,8 @@ serve(async (req) => {
       tomorrowDate,
       selectedTopicsCount: selectedTopics?.length || 0,
       incompleteSessionsCount: incompleteSessions?.length || 0,
-      customTiming: startTime && endTime
+      difficultTopicsCount: difficultTopics?.length || 0,
+      timing: `${startTime} - ${endTime}`
     });
 
     // Fetch timetable and related data
@@ -101,12 +103,9 @@ serve(async (req) => {
     // Get day of week for tomorrow
     const tomorrowDayOfWeek = new Date(tomorrowDate).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
-    // Determine timing preferences
-    const dayTimeSlots = preferences?.day_time_slots as any[] || [];
-    const tomorrowSlot = dayTimeSlots.find(slot => slot.day === tomorrowDayOfWeek);
-    
-    const effectiveStartTime = startTime || tomorrowSlot?.startTime || preferences?.preferred_start_time || '09:00';
-    const effectiveEndTime = endTime || tomorrowSlot?.endTime || preferences?.preferred_end_time || '17:00';
+    // Use provided timing
+    const effectiveStartTime = startTime || '09:00';
+    const effectiveEndTime = endTime || '17:00';
     const sessionDuration = preferences?.session_duration || 45;
     const breakDuration = preferences?.break_duration || 15;
 
@@ -124,8 +123,11 @@ serve(async (req) => {
 **STUDENT'S REFLECTION FROM TODAY**
 "${reflection || 'No reflection provided'}"
 
-**SELECTED TOPICS FOR TOMORROW**
+**SELECTED TOPICS FOR TOMORROW** (These are the student's chosen focus areas)
 ${JSON.stringify(selectedTopics || [], null, 2)}
+
+**DIFFICULT TOPICS / FOCUS POINTS** (Student previously marked these as challenging - prioritize if selected)
+${JSON.stringify(difficultTopics || [], null, 2)}
 
 **INCOMPLETE SESSIONS FROM TODAY** (Include these if student's reflection suggests they need rescheduling)
 ${JSON.stringify(incompleteSessions || [], null, 2)}
@@ -149,12 +151,13 @@ ${JSON.stringify(tomorrowEvents?.map(e => ({
 **YOUR TASK**
 Generate a complete, well-balanced study schedule for tomorrow that:
 1. **Prioritizes selected topics** - these are what the student wants to focus on
-2. **Includes incomplete sessions** if the reflection suggests they should be rescheduled
-3. **Works around all events** - never overlap with scheduled events
-4. **Respects timing** - all sessions must be between ${effectiveStartTime} and ${effectiveEndTime}
-5. **Includes breaks** - add ${breakDuration} minute breaks between sessions
-6. **Balances workload** - mix difficult and easier topics throughout the day
-7. **Matches homework** - if selected topics mention homework, use correct subject from homework list
+2. **Extra focus on difficult topics** - if any selected topics match difficult/focus points, give them prime study slots (morning or when student is freshest)
+3. **Includes incomplete sessions** if the reflection suggests they should be rescheduled
+4. **Works around all events** - never overlap with scheduled events
+5. **Respects timing** - all sessions must be between ${effectiveStartTime} and ${effectiveEndTime}
+6. **Includes breaks** - add ${breakDuration} minute breaks between sessions
+7. **Balances workload** - mix difficult and easier topics throughout the day, put harder topics in morning/peak focus times
+8. **Matches homework** - if selected topics mention homework, use correct subject from homework list
 
 **CRITICAL RULES**
 ✓ All times MUST be HH:MM format between 00:00-23:59
