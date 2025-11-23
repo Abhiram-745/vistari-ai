@@ -91,9 +91,10 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
         });
       });
 
-      // Sort by total minutes
+      // Sort by total minutes and take top 10
       const sortedEntries = Array.from(userStats.values())
-        .sort((a, b) => b.total_minutes - a.total_minutes);
+        .sort((a, b) => b.total_minutes - a.total_minutes)
+        .slice(0, 10);
 
       setEntries(sortedEntries);
     } catch (error: any) {
@@ -135,10 +136,10 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <Trophy className="h-6 w-6 text-primary" />
-          Study Leaderboard
+          Top 10 Students
         </CardTitle>
         <CardDescription>
-          See how you rank against all students
+          See how you rank against all students globally
         </CardDescription>
       </CardHeader>
       <CardContent>

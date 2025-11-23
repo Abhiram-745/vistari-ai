@@ -3,12 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Users, Settings, LogOut, Copy, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Users, Settings, LogOut, Copy, CheckCircle2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import { GroupTimetables } from "./GroupTimetables";
 import { GroupResources } from "./GroupResources";
+import { InviteFriendsDialog } from "./InviteFriendsDialog";
+import { GroupChallenge } from "./GroupChallenge";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,7 @@ const GroupDetail = () => {
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
@@ -210,14 +213,24 @@ const GroupDetail = () => {
 
             <div className="flex gap-2">
               {currentUserRole === 'admin' && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-2"
-                  onClick={() => setShowSettings(true)}
-                >
-                  <Settings className="w-4 h-4" /> Settings
-                </Button>
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => setShowInviteDialog(true)}
+                  >
+                    <UserPlus className="w-4 h-4" /> Invite Friends
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => setShowSettings(true)}
+                  >
+                    <Settings className="w-4 h-4" /> Settings
+                  </Button>
+                </>
               )}
               <Button
                 variant="outline"
@@ -267,6 +280,8 @@ const GroupDetail = () => {
             </div>
           )}
         </Card>
+
+        <GroupChallenge groupId={id!} isAdmin={currentUserRole === 'admin'} />
 
         <Tabs defaultValue="timetables" className="space-y-6">
           <TabsList>
@@ -397,6 +412,13 @@ const GroupDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invite Friends Dialog */}
+      <InviteFriendsDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        groupId={id!}
+      />
     </div>
   );
 };
