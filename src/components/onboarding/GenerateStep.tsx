@@ -19,6 +19,7 @@ interface GenerateStepProps {
   preferences: StudyPreferences;
   homeworks: Homework[];
   topicAnalysis?: any;
+  timetableMode: string | null;
   onComplete: () => void;
 }
 
@@ -29,6 +30,7 @@ const GenerateStep = ({
   preferences,
   homeworks,
   topicAnalysis,
+  timetableMode,
   onComplete,
 }: GenerateStepProps) => {
   const [loading, setLoading] = useState(false);
@@ -238,6 +240,7 @@ const GenerateStep = ({
             events: uniqueEvents,
             startDate,
             endDate,
+            timetableMode,
           },
         }
       );

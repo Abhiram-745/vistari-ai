@@ -67,7 +67,8 @@ const inputSchema = z.object({
     end_time: z.string()
   })).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  timetableMode: z.enum(["short-term-exam", "long-term-exam", "no-exam"]).nullable().optional()
 });
 
 serve(async (req) => {
@@ -115,7 +116,7 @@ serve(async (req) => {
       );
     }
 
-    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes, events: rawEvents = [] } = parsed.data;
+    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes, events: rawEvents = [], timetableMode } = parsed.data;
 
     const events = Array.from(
       new Map(rawEvents.map((evt: any) => [
@@ -230,7 +231,88 @@ CRITICAL EVENT BLOCKING RULES:
 `
       : "";
 
+    // Timetable mode context - adjust scheduling strategy based on mode
+    const getModeContext = (mode: string | null | undefined) => {
+      switch (mode) {
+        case "short-term-exam":
+          return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 TIMETABLE MODE: SHORT-TERM EXAM PREP (INTENSIVE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCHEDULING STRATEGY:
+✓ HIGH-INTENSITY revision focus - maximize exam preparation
+✓ Longer study sessions (60-90 minutes each)
+✓ MINIMAL homework time - only urgent homework near due dates
+✓ Daily revision of key exam topics - repeat important topics multiple times
+✓ Focus on exam practice questions and past papers
+✓ Spaced repetition with SHORT intervals (review topics every 2-3 days)
+✓ Prioritize topics that will appear on upcoming exams
+✓ Allocate 70% time to exam revision, 30% to homework
+
+IMPORTANT: This is CRUNCH TIME - students need intensive, focused exam practice!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        case "long-term-exam":
+          return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 TIMETABLE MODE: LONG-TERM EXAM PREP (BALANCED)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCHEDULING STRATEGY:
+✓ Balanced approach - mix of revision and homework
+✓ Medium-length sessions (45-60 minutes)
+✓ Adequate homework time - schedule all homework comfortably
+✓ Spaced repetition with LONGER intervals (review topics every 5-7 days)
+✓ Gradual topic coverage - don't rush through topics
+✓ Mix practice sessions with exam questions over multiple weeks
+✓ Build understanding gradually with consistent daily work
+✓ Allocate 50% time to revision, 50% to homework
+
+IMPORTANT: Build solid foundations through consistent, spaced-out study!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        case "no-exam":
+          return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 TIMETABLE MODE: NO EXAM FOCUS (HOMEWORK-CENTRIC)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCHEDULING STRATEGY:
+✓ HOMEWORK is the PRIMARY focus - schedule all homework with priority
+✓ Shorter, lighter revision sessions (30-45 minutes)
+✓ Very spaced out revision - only for topic maintenance
+✓ Flexible pacing - no pressure for intensive study
+✓ Review topics occasionally (every 10-14 days) just to stay fresh
+✓ Focus on completing assignments well ahead of due dates
+✓ Allocate 70% time to homework, 30% to light revision/maintenance
+
+IMPORTANT: This is about staying on top of coursework, not exam cramming!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        default:
+          return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 TIMETABLE MODE: BALANCED (DEFAULT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCHEDULING STRATEGY:
+✓ Balanced approach between homework and revision
+✓ Standard session lengths (45-60 minutes)
+✓ Moderate spaced repetition (review every 5-7 days)
+✓ Equal priority to homework and topic mastery
+✓ Allocate 50% time to revision, 50% to homework
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      }
+    };
+
+    const modeContext = getModeContext(timetableMode);
+
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
+
+${modeContext}
 
 SUBJECTS: ${subjectsContext}
 
