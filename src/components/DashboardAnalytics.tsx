@@ -290,17 +290,17 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Timetable Selection */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             Study Analytics & AI Insights
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex-1">
               <Select value={selectedTimetableId} onValueChange={setSelectedTimetableId}>
                 <SelectTrigger>
@@ -318,24 +318,25 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
             <Button
               onClick={generateInsights}
               disabled={loading || reflections.length === 0}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
+              size="sm"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Analyzing...
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                  <span className="text-xs sm:text-sm">Analyzing...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  Generate AI Analysis
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">Generate AI Analysis</span>
                 </>
               )}
             </Button>
           </div>
 
           {reflections.length === 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Complete study sessions and add reflections to generate AI insights
             </p>
           )}
@@ -346,38 +347,38 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
       {efficiencyScore && (
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Study Efficiency Score
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
               <div>
-                <div className="text-4xl font-bold text-primary">{efficiencyScore.score}%</div>
-                <p className="text-sm text-muted-foreground mt-1">{efficiencyScore.rating}</p>
+                <div className="text-3xl sm:text-4xl font-bold text-primary">{efficiencyScore.score}%</div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{efficiencyScore.rating}</p>
               </div>
-              <div className="text-right space-y-1">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <div className="text-left sm:text-right space-y-1 w-full sm:w-auto">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                   <span>{efficiencyScore.easyCount} easy aspects</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Target className="h-4 w-4 text-orange-600" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
                   <span>{efficiencyScore.hardCount} hard aspects</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-[10px] sm:text-xs text-muted-foreground">
                   Based on {efficiencyScore.totalReflections} reflections
                 </div>
               </div>
             </div>
-            <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 sm:h-3 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-primary to-primary/80 h-full rounded-full transition-all duration-500"
                 style={{ width: `${efficiencyScore.score}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
               This score analyzes how well you're retaining information based on easy vs hard aspects in your reflections
             </p>
           </CardContent>
@@ -400,19 +401,19 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
             </div>
 
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-                <TabsTrigger value="insights">Insights</TabsTrigger>
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
+                <TabsTrigger value="insights" className="text-xs sm:text-sm">Insights</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
+              <TabsContent value="overview" className="space-y-4 sm:space-y-6">
                 {/* Topic Completion Matrix */}
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-base">Topic Completion Status</CardTitle>
+                  <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
+                    <CardTitle className="text-sm sm:text-base">Topic Completion Status</CardTitle>
                     <Select value={topicSubjectFilter} onValueChange={setTopicSubjectFilter}>
-                      <SelectTrigger className="w-[200px]">
+                      <SelectTrigger className="w-full sm:w-[200px]">
                         <SelectValue placeholder="Filter by subject" />
                       </SelectTrigger>
                       <SelectContent>
@@ -508,33 +509,34 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
 
                       return (
                         <div className="space-y-4">
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs sm:text-sm text-muted-foreground">
                             Showing {chartData.length} topic{chartData.length !== 1 ? 's' : ''} with completed study sessions
                           </div>
-                          <div className="h-[500px] w-full overflow-auto">
-                            <ResponsiveContainer width="100%" height={Math.max(500, chartData.length * 50)}>
+                          <div className="h-[400px] sm:h-[500px] w-full overflow-auto">
+                            <ResponsiveContainer width="100%" height={Math.max(400, chartData.length * 40)}>
                               <BarChart
                                 data={chartData}
                                 layout="vertical"
-                                margin={{ top: 20, right: 30, bottom: 20, left: 160 }}
+                                margin={{ top: 10, right: 20, bottom: 10, left: window.innerWidth < 640 ? 100 : 160 }}
                               >
                                 <XAxis 
                                   type="number" 
                                   domain={[0, 100]}
-                                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                                  label={{ value: 'Completion %', position: 'insideBottom', offset: -10, fill: 'hsl(var(--muted-foreground))' }}
+                                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
+                                  label={window.innerWidth >= 640 ? { value: 'Completion %', position: 'insideBottom', offset: -10, fill: 'hsl(var(--muted-foreground))' } : undefined}
                                 />
                                 <YAxis 
                                   dataKey="topic" 
                                   type="category" 
-                                  width={150}
-                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
+                                  width={window.innerWidth < 640 ? 90 : 150}
+                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: window.innerWidth < 640 ? 9 : 11 }}
                                 />
                                 <Tooltip 
                                   contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',
                                     border: '1px solid hsl(var(--border))',
                                     borderRadius: '8px',
+                                    fontSize: window.innerWidth < 640 ? '11px' : '13px',
                                   }}
                                   labelFormatter={(label, payload) => {
                                     if (payload && payload[0]) {
@@ -544,7 +546,7 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                                     return label;
                                   }}
                                 />
-                                <Legend />
+                                <Legend wrapperStyle={{ fontSize: window.innerWidth < 640 ? '11px' : '13px' }} />
                                 <Bar 
                                   dataKey="Mastered" 
                                   stackId="a" 
@@ -571,7 +573,7 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                 {/* Mistake Genome */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Mistake Genome</CardTitle>
+                    <CardTitle className="text-sm sm:text-base">Mistake Genome</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {(() => {
