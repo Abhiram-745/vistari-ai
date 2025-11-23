@@ -26,6 +26,27 @@ const FriendsList = ({ userId }: FriendsListProps) => {
 
   useEffect(() => {
     loadFriends();
+
+    // Set up realtime subscription for friendships
+    const channel = supabase
+      .channel('friendships-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'friendships',
+          filter: `user_id=eq.${userId},friend_id=eq.${userId}`
+        },
+        () => {
+          loadFriends();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const loadFriends = async () => {
