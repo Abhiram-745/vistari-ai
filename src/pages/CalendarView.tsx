@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO } from "date-fns";
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, addMinutes } from "date-fns";
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
@@ -106,10 +106,7 @@ const DroppableDay = ({ date, items, children }: { date: Date; items: CalendarIt
       </div>
       <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-300px)]">
         {items
-          .filter((item) => {
-            const matchesDate = item.date === format(date, "yyyy-MM-dd");
-            return matchesDate;
-          })
+          .filter((item) => item.date === format(date, "yyyy-MM-dd"))
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .map((item) => (
             <DraggableItem key={item.id} item={item} />
@@ -222,50 +219,47 @@ const CalendarView = () => {
       const items: CalendarItem[] = [];
 
       // Process timetable sessions
-      if (timetable) {
+      if (timetable && timetable.schedule) {
         setTimetableId(timetable.id);
         
-        const schedule = timetable.schedule;
-        console.log("Schedule data:", schedule, "Type:", typeof schedule, "Is array:", Array.isArray(schedule));
+        const schedule = timetable.schedule as Record<string, any[]>;
+        console.log("Schedule keys:", Object.keys(schedule || {}));
         
-        // Handle schedule data properly
-        if (Array.isArray(schedule)) {
-          schedule.forEach((daySchedule: any, dayIndex: number) => {
-            console.log(`Processing day ${dayIndex}:`, daySchedule);
-            
-            if (!daySchedule || !daySchedule.date) {
-              console.warn("Invalid day schedule:", daySchedule);
+        if (schedule && typeof schedule === "object") {
+          Object.entries(schedule).forEach(([date, sessions]) => {
+            if (!Array.isArray(sessions)) {
+              console.warn("Sessions value is not array for date", date, sessions);
               return;
             }
-            
-            const scheduleDate = parseISO(daySchedule.date);
-            console.log("Schedule date:", scheduleDate, "Current week range:", currentWeek, "to", addDays(currentWeek, 6));
-            
-            if (scheduleDate >= currentWeek && scheduleDate <= addDays(currentWeek, 6)) {
-              if (Array.isArray(daySchedule.sessions)) {
-                console.log(`Day ${daySchedule.date} has ${daySchedule.sessions.length} sessions`);
-                
-                daySchedule.sessions.forEach((session: any, index: number) => {
-                  const item = {
-                    id: `session-${daySchedule.date}-${index}`,
-                    type: "session" as const,
-                    title: `${session.subject}: ${session.topic}`,
-                    date: daySchedule.date,
-                    startTime: session.startTime || "09:00",
-                    endTime: session.endTime || "10:00",
-                    color: "primary",
-                    data: { ...session, date: daySchedule.date, sessionIndex: index },
-                  };
-                  console.log("Adding session item:", item);
-                  items.push(item);
-                });
-              } else {
-                console.warn("Sessions is not an array for day:", daySchedule.date, daySchedule.sessions);
-              }
+
+            const scheduleDate = parseISO(date);
+            const weekStartDate = currentWeek;
+            const weekEndDate = addDays(currentWeek, 6);
+
+            if (scheduleDate >= weekStartDate && scheduleDate <= weekEndDate) {
+              sessions.forEach((session: any, index: number) => {
+                const startTimeStr: string = session.time || session.startTime || "09:00";
+                const [hours, minutes] = startTimeStr.split(":").map(Number);
+                const startDateTime = new Date(`${date}T${startTimeStr}:00`);
+                const endDateTime = addMinutes(startDateTime, session.duration || 60);
+
+                const item: CalendarItem = {
+                  id: `session-${date}-${index}`,
+                  type: "session",
+                  title: session.subject ? `${session.subject}${session.topic ? `: ${session.topic}` : ""}` : session.topic || "Study session",
+                  date,
+                  startTime: format(startDateTime, "HH:mm"),
+                  endTime: format(endDateTime, "HH:mm"),
+                  color: "primary",
+                  data: { sessionIndex: index, date },
+                };
+
+                items.push(item);
+              });
             }
           });
         } else {
-          console.error("Schedule is not an array:", schedule);
+          console.error("Schedule is not an object:", schedule);
         }
       }
 
@@ -335,52 +329,41 @@ const CalendarView = () => {
 
         if (!timetable) throw new Error("Timetable not found");
 
-        let schedule = timetable.schedule;
+        const schedule = (timetable.schedule || {}) as Record<string, any[]>;
         console.log("Current schedule before update:", schedule);
         
-        // Ensure schedule is an array
-        if (!Array.isArray(schedule)) {
-          console.error("Schedule is not an array:", schedule);
-          throw new Error("Invalid schedule format");
-        }
-        
-        schedule = [...schedule];
+        const scheduleCopy: Record<string, any[]> = {};
+        Object.entries(schedule).forEach(([date, sessions]) => {
+          scheduleCopy[date] = Array.isArray(sessions) ? [...sessions] : [];
+        });
         
         // Remove from old date
-        const oldDayIndex = schedule.findIndex((day: any) => day.date === draggedItem.date);
-        if (oldDayIndex !== -1 && schedule[oldDayIndex]) {
-          const sessionIndex = draggedItem.data.sessionIndex;
-          const oldDay = schedule[oldDayIndex] as any;
-          if (Array.isArray(oldDay.sessions)) {
-            oldDay.sessions.splice(sessionIndex, 1);
-          }
-        }
-
-        // Add to new date
-        let newDayIndex = schedule.findIndex((day: any) => day.date === newDate);
-        if (newDayIndex === -1) {
-          schedule.push({ date: newDate, sessions: [] } as any);
-          newDayIndex = schedule.length - 1;
-        }
-
-        const newDay = schedule[newDayIndex] as any;
-        if (!Array.isArray(newDay.sessions)) {
-          newDay.sessions = [];
+        const oldSessions = scheduleCopy[draggedItem.date] || [];
+        const sessionIndex = draggedItem.data.sessionIndex as number;
+        
+        if (sessionIndex < 0 || sessionIndex >= oldSessions.length) {
+          console.error("Invalid session index for drag:", sessionIndex, "for date", draggedItem.date);
+          return;
         }
         
-        newDay.sessions.push({
-          ...draggedItem.data,
-          date: newDate,
+        const [movedSession] = oldSessions.splice(sessionIndex, 1);
+        scheduleCopy[draggedItem.date] = oldSessions;
+
+        // Add to new date
+        const newSessions = scheduleCopy[newDate] ? [...scheduleCopy[newDate]] : [];
+        newSessions.push(movedSession);
+        newSessions.sort((a: any, b: any) => {
+          const timeA = a.time || a.startTime || "00:00";
+          const timeB = b.time || b.startTime || "00:00";
+          return timeA.localeCompare(timeB);
         });
+        scheduleCopy[newDate] = newSessions;
 
-        // Sort sessions by start time
-        newDay.sessions.sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
-
-        console.log("Updated schedule:", schedule);
+        console.log("Updated schedule:", scheduleCopy);
 
         const { error } = await supabase
           .from("timetables")
-          .update({ schedule: schedule as any })
+          .update({ schedule: scheduleCopy as any })
           .eq("id", timetableId);
 
         if (error) throw error;
