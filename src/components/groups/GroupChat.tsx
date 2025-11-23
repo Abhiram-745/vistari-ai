@@ -14,6 +14,7 @@ interface Message {
   user_id: string;
   profiles: {
     full_name: string;
+    avatar_url?: string;
   };
 }
 
@@ -58,14 +59,20 @@ export const GroupChat = ({ groupId }: GroupChatProps) => {
         const userIds = [...new Set(messagesData.map(m => m.user_id))];
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, full_name')
+          .select('id, full_name, avatar_url')
           .in('id', userIds);
         
         const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
-        const enrichedMessages = messagesData.map(msg => ({
-          ...msg,
-          profiles: { full_name: profilesMap.get(msg.user_id)?.full_name || 'Unknown' }
-        }));
+        const enrichedMessages = messagesData.map(msg => {
+          const profile = profilesMap.get(msg.user_id);
+          return {
+            ...msg,
+            profiles: { 
+              full_name: profile?.full_name || 'Unknown',
+              avatar_url: profile?.avatar_url || undefined
+            }
+          };
+        });
         
         setMessages(enrichedMessages);
       }
@@ -96,13 +103,16 @@ export const GroupChat = ({ groupId }: GroupChatProps) => {
           if (msgData) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('full_name')
+              .select('full_name, avatar_url')
               .eq('id', msgData.user_id)
               .single();
             
             setMessages(prev => [...prev, {
               ...msgData,
-              profiles: { full_name: profile?.full_name || 'Unknown' }
+              profiles: { 
+                full_name: profile?.full_name || 'Unknown',
+                avatar_url: profile?.avatar_url || undefined
+              }
             }]);
           }
         }
