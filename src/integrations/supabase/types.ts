@@ -379,8 +379,10 @@ export type Database = {
           id: string
           notes: string | null
           session_id: string
+          subject: string | null
           timetable_id: string
           title: string
+          topic: string | null
           type: string
           updated_at: string
           url: string | null
@@ -391,8 +393,10 @@ export type Database = {
           id?: string
           notes?: string | null
           session_id: string
+          subject?: string | null
           timetable_id: string
           title: string
+          topic?: string | null
           type?: string
           updated_at?: string
           url?: string | null
@@ -403,8 +407,10 @@ export type Database = {
           id?: string
           notes?: string | null
           session_id?: string
+          subject?: string | null
           timetable_id?: string
           title?: string
+          topic?: string | null
           type?: string
           updated_at?: string
           url?: string | null
