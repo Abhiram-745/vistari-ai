@@ -7,6 +7,7 @@ import { ArrowLeft, Users, Settings, LogOut, Copy, CheckCircle2 } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
+import { AppSidebar } from "@/components/AppSidebar";
 import { GroupTimetables } from "./GroupTimetables";
 
 interface GroupMember {
@@ -109,31 +110,39 @@ const GroupDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-center text-muted-foreground">Loading...</p>
+      <>
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
+          <Header />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <p className="text-center text-muted-foreground">Loading...</p>
+          </main>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!group) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-center text-muted-foreground">Group not found</p>
+      <>
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
+          <Header />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <p className="text-center text-muted-foreground">Group not found</p>
+          </main>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <AppSidebar />
+      <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
+        <Header />
+        
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <Button
           variant="ghost"
           onClick={() => navigate('/groups')}
@@ -261,8 +270,9 @@ const GroupDetail = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </main>
       </div>
-    </div>
+    </>
   );
 };
 
