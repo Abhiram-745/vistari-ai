@@ -111,14 +111,15 @@ export const GroupTimetables = ({ groupId }: GroupTimetablesProps) => {
         const enriched = sharesData
           .map(share => {
             const timetable = timetablesMap.get(share.timetable_id);
-            const profile = profilesMap.get(share.shared_by);
-            if (!timetable || !profile) return null;
-            
+            if (!timetable) return null;
+
+            const profile = profilesMap.get(share.shared_by) || { full_name: 'Unknown user' };
+
             return {
               ...share,
               timetables: timetable,
-              profiles: profile
-            };
+              profiles: profile,
+            } as SharedTimetable;
           })
           .filter(Boolean) as SharedTimetable[];
 
