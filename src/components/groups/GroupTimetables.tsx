@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Eye, Download } from "lucide-react";
+import { Calendar, User, Eye, Download, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -35,33 +35,75 @@ export const GroupTimetables = ({ groupId }: GroupTimetablesProps) => {
   const navigate = useNavigate();
   const [sharedTimetables, setSharedTimetables] = useState<SharedTimetable[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadSharedTimetables();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('shared-timetables-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shared_timetables',
+          filter: `group_id=eq.${groupId}`
+        },
+        (payload) => {
+          console.log('Shared timetable change:', payload);
+          loadSharedTimetables();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [groupId]);
 
-  const loadSharedTimetables = async () => {
+  const loadSharedTimetables = async (isRefresh = false) => {
     try {
-      const { data: sharesData } = await supabase
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const { data: sharesData, error: sharesError } = await supabase
         .from('shared_timetables')
         .select('id, timetable_id, shared_by, created_at, view_count')
         .eq('group_id', groupId)
         .order('created_at', { ascending: false });
 
-      if (sharesData) {
+      if (sharesError) {
+        console.error('Error fetching shares:', sharesError);
+        throw sharesError;
+      }
+
+      if (sharesData && sharesData.length > 0) {
         // Fetch timetable details
         const timetableIds = sharesData.map(s => s.timetable_id);
-        const { data: timetablesData } = await supabase
+        const { data: timetablesData, error: timetablesError } = await supabase
           .from('timetables')
           .select('id, name, start_date, end_date, subjects, topics, test_dates')
           .in('id', timetableIds);
 
+        if (timetablesError) {
+          console.error('Error fetching timetables:', timetablesError);
+        }
+
         // Fetch profile details
         const userIds = sharesData.map(s => s.shared_by);
-        const { data: profiles } = await supabase
+        const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, full_name')
           .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        }
 
         const timetablesMap = new Map(timetablesData?.map(t => [t.id, t]) || []);
         const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
@@ -81,12 +123,15 @@ export const GroupTimetables = ({ groupId }: GroupTimetablesProps) => {
           .filter(Boolean) as SharedTimetable[];
 
         setSharedTimetables(enriched);
+      } else {
+        setSharedTimetables([]);
       }
     } catch (error) {
       console.error('Error loading shared timetables:', error);
       toast.error('Failed to load shared timetables');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -138,6 +183,16 @@ export const GroupTimetables = ({ groupId }: GroupTimetablesProps) => {
         <h3 className="text-lg font-semibold text-foreground">
           Shared Timetables ({sharedTimetables.length})
         </h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => loadSharedTimetables(true)}
+          disabled={refreshing}
+          className="gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
