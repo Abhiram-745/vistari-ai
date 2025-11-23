@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, XCircle, Sparkles, Loader2, ChevronDown, ChevronUp, Calendar, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { TomorrowPlanDialog } from "./TomorrowPlanDialog";
 
 interface DailyInsightsPanelProps {
   date: string;
@@ -33,6 +34,7 @@ export const DailyInsightsPanel = ({
   const [completedSessions, setCompletedSessions] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [dailyReflectionId, setDailyReflectionId] = useState<string | null>(null);
+  const [showTomorrowDialog, setShowTomorrowDialog] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load existing reflection for this date
@@ -219,6 +221,17 @@ export const DailyInsightsPanel = ({
   const completedCount = completedSessions.length;
   const totalSessions = sessions.filter((s) => s.type !== "break").length;
 
+  // Get incomplete sessions for tomorrow planning
+  const incompleteSessions = sessions
+    .filter((_, idx) => !completedSessions.includes(idx))
+    .filter((s) => s.type !== "break")
+    .map((s) => ({
+      subject: s.subject,
+      topic: s.topic,
+      duration: s.duration,
+      type: s.type,
+    }));
+
   return (
     <Card className="mt-4 border-primary/20 bg-gradient-to-r from-primary/5 to-background">
       <CardHeader
@@ -298,36 +311,58 @@ export const DailyInsightsPanel = ({
           {completedSessions.length < totalSessions && (
             <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                {totalSessions - completedSessions.length} session(s) will be
-                rescheduled to upcoming days
+                {totalSessions - completedSessions.length} session(s) incomplete
               </p>
             </div>
           )}
 
-          {/* Generate Button */}
-          <Button
-            onClick={handleGenerateNextDay}
-            disabled={loading || (completedSessions.length === 0 && !reflection.trim())}
-            className="w-full gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Adjusting Schedule...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Update Schedule Based on Progress
-              </>
-            )}
-          </Button>
+          {/* Action Buttons */}
+          <div className="space-y-3 pt-2">
+            <Button
+              onClick={() => setShowTomorrowDialog(true)}
+              disabled={loading}
+              className="w-full gap-2"
+              variant="default"
+            >
+              <Calendar className="h-4 w-4" />
+              Customize Tomorrow's Schedule
+            </Button>
+
+            <Button
+              onClick={handleGenerateNextDay}
+              disabled={loading || (completedSessions.length === 0 && !reflection.trim())}
+              className="w-full gap-2"
+              variant="outline"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adjusting Schedule...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Auto-Adjust Based on Progress
+                </>
+              )}
+            </Button>
+          </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            AI will reschedule incomplete topics to the next available slots
+            Choose to customize tomorrow with topic selection or let AI auto-adjust your schedule
           </p>
         </CardContent>
       )}
+
+      <TomorrowPlanDialog
+        open={showTomorrowDialog}
+        onOpenChange={setShowTomorrowDialog}
+        timetableId={timetableId}
+        currentDate={date}
+        reflection={reflection}
+        incompleteSessions={incompleteSessions}
+        onScheduleUpdate={onScheduleUpdate}
+      />
     </Card>
   );
 };
