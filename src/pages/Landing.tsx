@@ -116,15 +116,15 @@ const Landing = () => {
               <p className="text-sm text-muted-foreground">Free forever · No credit card · 2 min setup</p>
             </motion.div>
 
-            {/* Floating cards with animations - Dashboard Preview */}
-            <div className="relative h-72 mt-20">
-              {/* Dashboard Header Card */}
+            {/* Floating cards with animations - Dashboard Preview with Flow */}
+            <div className="relative h-[600px] mt-20">
+              {/* Step 1: Dashboard Header Card */}
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.8 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
                 whileHover={{ scale: 1.02, y: -5 }}
-                className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full"
+                className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -146,15 +146,53 @@ const Landing = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Step indicator */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 }}
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
+                >
+                  Step 1: Your Dashboard
+                </motion.div>
               </motion.div>
 
-              {/* Study Session Card */}
+              {/* Connecting Arrow 1 */}
               <motion.div
-                initial={{ opacity: 0, x: -40, rotate: -3 }}
-                animate={{ opacity: 1, x: 0, rotate: -3 }}
-                transition={{ duration: 1, delay: 1 }}
-                whileHover={{ rotate: 0, scale: 1.05, y: -10 }}
-                className="absolute left-8 bottom-0 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm"
+                initial={{ opacity: 0, pathLength: 0 }}
+                animate={{ opacity: 1, pathLength: 1 }}
+                transition={{ duration: 0.8, delay: 1.6 }}
+                className="absolute left-1/4 top-32 z-5"
+              >
+                <svg width="120" height="120" viewBox="0 0 120 120" className="text-primary/40">
+                  <motion.path
+                    d="M 60 10 Q 30 60 40 110"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeDasharray="8 8"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, delay: 1.6 }}
+                  />
+                  <motion.polygon
+                    points="40,110 35,100 45,100"
+                    fill="currentColor"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 2.4 }}
+                  />
+                </svg>
+              </motion.div>
+
+              {/* Step 2: Study Session Card */}
+              <motion.div
+                initial={{ opacity: 0, x: -40, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ duration: 0.8, delay: 1.8 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="absolute left-8 top-44 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm z-10"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -174,25 +212,200 @@ const Landing = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Step indicator */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2.5 }}
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                >
+                  Step 2: Study Session
+                </motion.div>
               </motion.div>
 
-              {/* Completion Badge */}
+              {/* Connecting Arrow 2 */}
               <motion.div
-                initial={{ opacity: 0, x: 40, scale: 0.8 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ duration: 1, delay: 1.2 }}
-                className="absolute right-8 bottom-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl px-6 py-4 shadow-xl backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 2.6 }}
+                className="absolute left-1/2 top-[280px] -translate-x-1/2 z-5"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6" />
+                <svg width="200" height="100" viewBox="0 0 200 100" className="text-secondary/40">
+                  <motion.path
+                    d="M 10 20 Q 100 10 190 40"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeDasharray="8 8"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, delay: 2.6 }}
+                  />
+                  <motion.polygon
+                    points="190,40 180,35 185,45"
+                    fill="currentColor"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 3.4 }}
+                  />
+                </svg>
+              </motion.div>
+
+              {/* Step 3: Reflection Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.8, delay: 2.8 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="absolute right-8 top-56 bg-card border border-border/50 rounded-2xl p-5 shadow-lg max-w-xs backdrop-blur-sm z-10"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Brain className="w-5 h-5 text-secondary" />
+                    <h4 className="font-bold text-sm">Session Reflection</h4>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium opacity-90">Week's Progress</p>
-                    <p className="text-lg font-bold">12/15 sessions ✨</p>
+                  <div className="space-y-2">
+                    <div className="text-xs">
+                      <span className="text-muted-foreground">What went well:</span>
+                      <div className="mt-1 bg-secondary/10 rounded p-2 text-xs">
+                        "Examples were clear..."
+                      </div>
+                    </div>
+                    <div className="text-xs">
+                      <span className="text-muted-foreground">Challenging:</span>
+                      <div className="mt-1 bg-destructive/10 rounded p-2 text-xs">
+                        "Struggled with proofs"
+                      </div>
+                    </div>
+                    <div className="text-xs">
+                      <span className="text-muted-foreground">Feeling:</span>
+                      <div className="mt-1 bg-primary/10 rounded p-2 text-xs text-primary font-medium">
+                        Need more practice ✍️
+                      </div>
+                    </div>
                   </div>
                 </div>
+                
+                {/* Step indicator */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 3.5 }}
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                >
+                  Step 3: Reflection
+                </motion.div>
               </motion.div>
+
+              {/* Connecting Arrow 3 */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 3.6 }}
+                className="absolute right-1/4 top-[420px] z-5"
+              >
+                <svg width="120" height="100" viewBox="0 0 120 100" className="text-accent/40">
+                  <motion.path
+                    d="M 80 10 Q 60 50 70 90"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeDasharray="8 8"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1, delay: 3.6 }}
+                  />
+                  <motion.polygon
+                    points="70,90 65,80 75,80"
+                    fill="currentColor"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 4.4 }}
+                  />
+                </svg>
+              </motion.div>
+
+              {/* Step 4: Insights Card */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 3.8 }}
+                whileHover={{ scale: 1.05 }}
+                className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <h4 className="font-bold">AI Generated Insights</h4>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-card rounded-lg p-2 border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">Mathematics</div>
+                      <div className="text-lg font-bold text-primary">85%</div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                        <motion.div
+                          className="h-full bg-primary rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: "85%" }}
+                          transition={{ duration: 1, delay: 4.5 }}
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-card rounded-lg p-2 border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">Biology</div>
+                      <div className="text-lg font-bold text-secondary">72%</div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                        <motion.div
+                          className="h-full bg-secondary rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: "72%" }}
+                          transition={{ duration: 1, delay: 4.6 }}
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-card rounded-lg p-2 border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">Physics</div>
+                      <div className="text-lg font-bold text-accent">91%</div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                        <motion.div
+                          className="h-full bg-accent rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: "91%" }}
+                          transition={{ duration: 1, delay: 4.7 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Step indicator */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 4.5 }}
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                >
+                  Step 4: AI Insights ✨
+                </motion.div>
+              </motion.div>
+
+              {/* Pulsing connection indicators */}
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 5 }}
+                className="absolute left-1/2 top-24 w-3 h-3 bg-primary rounded-full -translate-x-1/2 z-20"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 5.5 }}
+                className="absolute left-1/4 top-60 w-3 h-3 bg-primary rounded-full z-20"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 6 }}
+                className="absolute right-1/4 top-80 w-3 h-3 bg-secondary rounded-full z-20"
+              />
             </div>
           </motion.div>
         </div>
