@@ -203,10 +203,15 @@ const ImportTimetable = () => {
       return;
     }
 
+    if (!userId) {
+      toast.error('Unable to generate timetable: user not loaded');
+      return;
+    }
+
     setLoading(true);
     try {
       // Call generate-timetable edge function with imported data
-      const { data, error } = await supabase.functions.invoke('generate-timetable', {
+      const { data: timetableData, error: generateError } = await supabase.functions.invoke('generate-timetable', {
         body: {
           subjects,
           topics,
@@ -215,28 +220,45 @@ const ImportTimetable = () => {
           endDate: endDate.toISOString().split('T')[0],
           preferences: {
             ...preferences,
-            duration_mode: preferences.duration_mode || 'flexible'
+            duration_mode: preferences.duration_mode || 'flexible',
           },
-          topicConfidences,
+          topicAnalysis: topicConfidences,
           events,
           homeworks,
-          basedOnShare: {
-            shareId,
-            sharedBy,
-            originalName: sharedTimetable.name
-          }
-        }
+        },
       });
 
-      if (error) throw error;
-
-      if (data?.timetableId) {
-        toast.success('Timetable created successfully!');
-        navigate(`/timetable/${data.timetableId}`);
+      if (generateError) throw generateError;
+      if (!timetableData || !timetableData.schedule) {
+        throw new Error('Invalid timetable data returned');
       }
-    } catch (error) {
+
+      const { data: savedTimetable, error: saveError } = await supabase
+        .from('timetables')
+        .insert({
+          user_id: userId,
+          name: sharedTimetable?.name || 'Imported Timetable',
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          schedule: timetableData.schedule,
+          subjects: subjects as any,
+          topics: topics as any,
+          test_dates: testDates as any,
+          preferences: {
+            ...preferences,
+            duration_mode: preferences.duration_mode || 'flexible',
+          } as any,
+        })
+        .select('id')
+        .single();
+
+      if (saveError) throw saveError;
+
+      toast.success('Timetable created successfully!');
+      navigate(`/timetable/${savedTimetable.id}`);
+    } catch (error: any) {
       console.error('Error generating timetable:', error);
-      toast.error('Failed to generate timetable');
+      toast.error(error.message || 'Failed to generate timetable');
     } finally {
       setLoading(false);
     }
