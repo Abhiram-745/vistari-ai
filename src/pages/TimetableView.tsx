@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Edit2, Users, Share2 } from "lucide-react";
+import { Calendar as CalendarIcon, Edit2, Share2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -21,9 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import { AppSidebar } from "@/components/AppSidebar";
-import { TimetableEditDialog } from "@/components/TimetableEditDialog";
-import { SessionResourceDialog } from "@/components/SessionResourceDialog";
-import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
@@ -65,17 +62,11 @@ const TimetableView = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
-  const [selectedSession, setSelectedSession] = useState<{
-    date: string;
-    index: number;
-    session: TimetableSession;
-  } | null>(null);
   const [reflectionSession, setReflectionSession] = useState<{
     date: string;
     index: number;
     session: TimetableSession;
   } | null>(null);
-  const [resourcesRefreshKey, setResourcesRefreshKey] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
@@ -235,37 +226,128 @@ const TimetableView = () => {
       <div className="flex-1 flex flex-col min-h-screen w-full bg-gradient-to-br from-background via-muted/50 to-background">
         <Header />
         
-        <div className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-...
-          </div>
-        </div>
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-...
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => navigate("/")}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <CalendarIcon className="h-6 w-6 text-primary" />
+                  <h1 className="text-3xl font-bold">{timetable.name}</h1>
+                  <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Rename Timetable</DialogTitle>
+                        <DialogDescription>
+                          Enter a new name for your timetable
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Timetable Name</Label>
+                          <Input
+                            id="name"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            placeholder="Enter timetable name"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={renameTimetable}>Save</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+              
+              <Button onClick={() => setShowShareDialog(true)} className="gap-2">
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+            </div>
+
+            {/* Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Overall Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Progress value={progress} className="h-3" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    {Math.round(progress)}% Complete
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Calendar Filter */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Filter by Date</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => !scheduleDates.some(d => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))}
+                    className="rounded-md border"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sessions */}
+            {filteredDates.map((date) => (
+              <Card key={date}>
+                <CardHeader>
+                  <CardTitle>{format(new Date(date), "EEEE, MMMM d, yyyy")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {timetable.schedule[date].map((session, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                      >
+                        {session.type !== "break" && (
+                          <Checkbox
+                            checked={session.completed || false}
+                            onCheckedChange={() => toggleSessionComplete(date, index)}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{session.subject} - {session.topic}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {session.time} • {session.duration} minutes • {session.type}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Study Insights */}
+            <StudyInsightsPanel timetableId={timetable.id} />
+          </div>
         </main>
-
-        {selectedSession && (
-          <SessionResourceDialog
-            open={!!selectedSession}
-            onOpenChange={(open) => !open && setSelectedSession(null)}
-            timetableId={timetable.id}
-            sessionId={`${selectedSession.date}_${selectedSession.index}`}
-            subject={selectedSession.session.subject}
-            topic={selectedSession.session.topic}
-            onResourceAdded={() => setResourcesRefreshKey(prev => prev + 1)}
-          />
-        )}
-
-        {selectedSession && (
-          <TimetableEditDialog
-            open={!!selectedSession}
-            onOpenChange={(open) => !open && setSelectedSession(null)}
-            session={selectedSession.session}
-            date={selectedSession.date}
-            onSave={handleUpdateSession}
-          />
-        )}
 
         {reflectionSession && (
           <TopicReflectionDialog
