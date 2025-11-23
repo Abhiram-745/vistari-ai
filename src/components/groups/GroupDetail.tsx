@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import { GroupChat } from "./GroupChat";
+import { GroupTimetables } from "./GroupTimetables";
 
 interface GroupMember {
   id: string;
@@ -172,12 +173,17 @@ const GroupDetail = () => {
         <Tabs defaultValue="chat" className="space-y-6">
           <TabsList>
             <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="timetables">Timetables</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat">
             <GroupChat groupId={id!} />
+          </TabsContent>
+
+          <TabsContent value="timetables">
+            <GroupTimetables groupId={id!} />
           </TabsContent>
 
           <TabsContent value="members">
@@ -213,12 +219,8 @@ const GroupDetail = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="resources">
-            <Card className="p-6">
-              <p className="text-center text-muted-foreground py-8">
-                Resource sharing coming soon
-              </p>
-            </Card>
+          <TabsContent value="timetables">
+            <GroupTimetables groupId={id!} />
           </TabsContent>
         </Tabs>
       </div>

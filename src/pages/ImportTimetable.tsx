@@ -11,6 +11,12 @@ import PreferencesStep from "@/components/onboarding/PreferencesStep";
 import DifficultTopicsStep from "@/components/onboarding/DifficultTopicsStep";
 import TestDatesStep from "@/components/onboarding/TestDatesStep";
 
+interface TestDate {
+  subject_id: string;
+  test_date: string;
+  test_type: string;
+}
+
 const ImportTimetable = () => {
   const location = useLocation();
   const navigate = useNavigate();
