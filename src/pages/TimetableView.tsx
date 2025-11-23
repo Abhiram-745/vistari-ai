@@ -249,9 +249,21 @@ const TimetableView = () => {
   const sortedDates = Object.keys(timetable.schedule).sort();
   const progress = calculateProgress();
 
+  // Helper function to validate dates
+  const isValidDate = (date: any): boolean => {
+    const d = new Date(date);
+    return d instanceof Date && !isNaN(d.getTime());
+  };
+
   // Merge events into schedule for display
   const mergedSchedule = { ...timetable.schedule };
   events.forEach((event) => {
+    // Validate event dates before processing
+    if (!isValidDate(event.start_time) || !isValidDate(event.end_time)) {
+      console.error('Invalid event date:', event);
+      return;
+    }
+
     const eventDate = format(new Date(event.start_time), 'yyyy-MM-dd');
     const eventTime = format(new Date(event.start_time), 'HH:mm');
     const startTime = new Date(event.start_time);
@@ -279,13 +291,18 @@ const TimetableView = () => {
     });
   });
 
-  const scheduleDates = Object.keys(mergedSchedule).sort().map(date => new Date(date));
+  const scheduleDates = Object.keys(mergedSchedule)
+    .sort()
+    .filter(date => isValidDate(date))
+    .map(date => new Date(date));
+  
   const filteredDates = selectedDate
     ? Object.keys(mergedSchedule).filter(date => {
+        if (!isValidDate(date)) return false;
         const dateObj = new Date(date);
         return format(dateObj, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
       })
-    : Object.keys(mergedSchedule).sort();
+    : Object.keys(mergedSchedule).sort().filter(date => isValidDate(date));
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -368,8 +385,10 @@ const TimetableView = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 space-y-4">
-              <p className="text-muted-foreground font-medium">
-            {format(new Date(timetable.start_date), "dd/MM/yyyy")} - {format(new Date(timetable.end_date), "dd/MM/yyyy")}
+          <p className="text-muted-foreground font-medium">
+            {isValidDate(timetable.start_date) && isValidDate(timetable.end_date)
+              ? `${format(new Date(timetable.start_date), "dd/MM/yyyy")} - ${format(new Date(timetable.end_date), "dd/MM/yyyy")}`
+              : 'Invalid date range'}
           </p>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -393,6 +412,13 @@ const TimetableView = () => {
             
             {filteredDates.map((date) => {
             const sessions = mergedSchedule[date];
+            
+            // Skip if date is invalid
+            if (!isValidDate(date)) {
+              console.error('Invalid date in schedule:', date);
+              return null;
+            }
+            
             const dateObj = new Date(date);
             
             return (
@@ -572,7 +598,9 @@ const TimetableView = () => {
           sessionDetails={{
             subject: selectedSession.session.subject,
             topic: selectedSession.session.topic,
-            date: format(new Date(selectedSession.date), "EEEE, dd/MM/yyyy"),
+            date: isValidDate(selectedSession.date) 
+              ? format(new Date(selectedSession.date), "EEEE, dd/MM/yyyy")
+              : selectedSession.date,
             time: selectedSession.session.time,
           }}
         />
