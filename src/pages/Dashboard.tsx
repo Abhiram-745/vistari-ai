@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<{ full_name?: string } | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [hasSubjects, setHasSubjects] = useState(false);
+  const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,22 +45,19 @@ const Dashboard = () => {
   }, [navigate]);
 
   const checkSubjects = async (userId: string) => {
-    const { data } = await supabase
-      .from("subjects")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1);
+    // Check for both subjects and timetables
+    const [subjectsResult, timetablesResult, profileResult] = await Promise.all([
+      supabase.from("subjects").select("id").eq("user_id", userId).limit(1),
+      supabase.from("timetables").select("id").eq("user_id", userId).limit(1),
+      supabase.from("profiles").select("full_name").eq("id", userId).single()
+    ]);
     
-    setHasSubjects(data && data.length > 0);
+    const hasSubjects = subjectsResult.data && subjectsResult.data.length > 0;
+    const hasTimetables = timetablesResult.data && timetablesResult.data.length > 0;
     
-    // Fetch profile
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", userId)
-      .single();
-    
-    setProfile(profileData);
+    // User has set up if they have either subjects or timetables
+    setHasData(hasSubjects || hasTimetables);
+    setProfile(profileResult.data);
     setLoading(false);
   };
 
@@ -96,7 +93,7 @@ const Dashboard = () => {
       <Header onNewTimetable={() => setShowOnboarding(true)} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        {!hasSubjects && !showOnboarding ? (
+        {!hasData && !showOnboarding ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-8 animate-fade-in">
             <div className="text-center space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-2">
@@ -124,7 +121,7 @@ const Dashboard = () => {
           <OnboardingWizard
             onComplete={() => {
               setShowOnboarding(false);
-              setHasSubjects(true);
+              setHasData(true);
               toast.success("Setup complete! You can now generate timetables.");
             }}
             onCancel={() => setShowOnboarding(false)}
