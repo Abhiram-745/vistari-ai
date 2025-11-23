@@ -208,6 +208,7 @@ Return ONLY valid JSON:
           { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },
           { role: 'user', content: prompt }
         ],
+        max_completion_tokens: 4000,
       }),
     });
 

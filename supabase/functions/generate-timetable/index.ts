@@ -378,6 +378,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
             },
             { role: "user", content: prompt },
           ],
+          max_completion_tokens: 8000,
         }),
       }
     );

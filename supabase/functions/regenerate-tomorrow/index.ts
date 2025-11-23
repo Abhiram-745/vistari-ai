@@ -204,6 +204,7 @@ Return ONLY valid JSON:
           },
           { role: 'user', content: prompt }
         ],
+        max_completion_tokens: 4000,
       }),
     });
 
