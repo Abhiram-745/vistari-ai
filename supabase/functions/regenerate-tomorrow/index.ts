@@ -123,7 +123,8 @@ serve(async (req) => {
 **STUDENT'S REFLECTION FROM TODAY**
 "${reflection || 'No reflection provided'}"
 
-**SELECTED TOPICS FOR TOMORROW** (These are the student's chosen focus areas)
+**SELECTED TOPICS FOR TOMORROW** (These are the student's chosen focus areas, ORDERED BY PRIORITY)
+The order below represents the student's priority ranking - first topics are HIGHEST priority:
 ${JSON.stringify(selectedTopics || [], null, 2)}
 
 **DIFFICULT TOPICS / FOCUS POINTS** (Student previously marked these as challenging - prioritize if selected)
@@ -150,14 +151,15 @@ ${JSON.stringify(tomorrowEvents?.map(e => ({
 
 **YOUR TASK**
 Generate a complete, well-balanced study schedule for tomorrow that:
-1. **Prioritizes selected topics** - these are what the student wants to focus on
-2. **Extra focus on difficult topics** - if any selected topics match difficult/focus points, give them prime study slots (morning or when student is freshest)
-3. **Includes incomplete sessions** if the reflection suggests they should be rescheduled
-4. **Works around all events** - never overlap with scheduled events
-5. **Respects timing** - all sessions must be between ${effectiveStartTime} and ${effectiveEndTime}
-6. **Includes breaks** - add ${breakDuration} minute breaks between sessions
-7. **Balances workload** - mix difficult and easier topics throughout the day, put harder topics in morning/peak focus times
-8. **Matches homework** - if selected topics mention homework, use correct subject from homework list
+1. **Prioritizes by order** - the selected topics list is ORDERED BY PRIORITY. Schedule higher priority topics (earlier in list) before lower priority ones, and give them the best time slots
+2. **Highest priority gets best slots** - the first topic should get prime study time (morning or when student is freshest based on timing)
+3. **Extra focus on difficult topics** - if any selected topics match difficult/focus points, give them even more attention and optimal slots
+4. **Includes incomplete sessions** if the reflection suggests they should be rescheduled
+5. **Works around all events** - never overlap with scheduled events
+6. **Respects timing** - all sessions must be between ${effectiveStartTime} and ${effectiveEndTime}
+7. **Includes breaks** - add ${breakDuration} minute breaks between sessions
+8. **Balances workload** - mix difficult and easier topics throughout the day, but always prioritize based on the topic order
+9. **Matches homework** - if selected topics mention homework, use correct subject from homework list
 
 **CRITICAL RULES**
 ✓ All times MUST be HH:MM format between 00:00-23:59
