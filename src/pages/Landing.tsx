@@ -2,83 +2,74 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
-import { 
-  Calendar, 
-  Brain, 
-  Target, 
-  TrendingUp, 
-  Users, 
-  BookOpen,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-  Star,
-  Heart,
-  Zap
-} from "lucide-react";
-
+import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
-  
-  const { scrollYProgress } = useScroll();
+  const {
+    scrollYProgress
+  } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-
-  return (
-    <div className="min-h-screen bg-background overflow-hidden">
+  return <div className="min-h-screen bg-background overflow-hidden">
       {/* Floating background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            y: [0, -30, 0],
-            rotate: [0, 5, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            y: [0, 40, 0],
-            rotate: [0, -5, 0],
-            scale: [1, 1.15, 1]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-40 right-10 w-[500px] h-[500px] bg-secondary/15 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 30, 0]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-20 left-1/3 w-80 h-80 bg-accent/10 rounded-full blur-3xl"
-        />
+        <motion.div animate={{
+        y: [0, -30, 0],
+        rotate: [0, 5, 0],
+        scale: [1, 1.1, 1]
+      }} transition={{
+        duration: 20,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }} className="absolute top-20 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <motion.div animate={{
+        y: [0, 40, 0],
+        rotate: [0, -5, 0],
+        scale: [1, 1.15, 1]
+      }} transition={{
+        duration: 25,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }} className="absolute top-40 right-10 w-[500px] h-[500px] bg-secondary/15 rounded-full blur-3xl" />
+        <motion.div animate={{
+        y: [0, -20, 0],
+        x: [0, 30, 0]
+      }} transition={{
+        duration: 15,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }} className="absolute bottom-20 left-1/3 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
       </div>
 
       {/* Hero Section - Problem First */}
-      <motion.section 
-        ref={heroRef}
-        style={{ y: heroY, opacity: heroOpacity }}
-        className="relative min-h-screen flex items-center justify-center px-6 pt-20 pb-32"
-      >
+      <motion.section ref={heroRef} style={{
+      y: heroY,
+      opacity: heroOpacity
+    }} className="relative min-h-screen flex items-center justify-center px-6 pt-20 pb-32">
         <div className="relative z-10 max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-12 text-center"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 1,
+          ease: [0.22, 1, 0.36, 1]
+        }} className="space-y-12 text-center">
             {/* Problem statement */}
             <div className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              y: 20
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              duration: 0.8,
+              delay: 0.2
+            }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30">
                 <Sparkles className="w-4 h-4 text-secondary" />
                 <span className="text-sm font-medium text-secondary-foreground">Trusted by 10,000+ students</span>
               </motion.div>
@@ -99,17 +90,17 @@ const Landing = () => {
             </div>
 
             {/* CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <Button
-                size="lg"
-                onClick={() => navigate("/auth")}
-                className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full"
-              >
+            <motion.div initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            duration: 0.8,
+            delay: 0.6
+          }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full">
                 Start your plan now
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -119,13 +110,19 @@ const Landing = () => {
             {/* Floating cards with animations - Dashboard Preview with Flow */}
             <div className="relative h-[600px] mt-20">
               {/* Step 1: Dashboard Header Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                whileHover={{ scale: 1.02, y: -5 }}
-                className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              y: 40
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              duration: 0.8,
+              delay: 0.8
+            }} whileHover={{
+              scale: 1.02,
+              y: -5
+            }} className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Sarah! 👋</h3>
@@ -148,52 +145,63 @@ const Landing = () => {
                 </div>
                 
                 {/* Step indicator */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.5 }}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
-                >
+                <motion.div initial={{
+                opacity: 0
+              }} animate={{
+                opacity: 1
+              }} transition={{
+                delay: 1.5
+              }} className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
                   Step 1: Your Dashboard
                 </motion.div>
               </motion.div>
 
               {/* Connecting Arrow 1 */}
-              <motion.div
-                initial={{ opacity: 0, pathLength: 0 }}
-                animate={{ opacity: 1, pathLength: 1 }}
-                transition={{ duration: 0.8, delay: 1.6 }}
-                className="absolute left-1/4 top-32 z-5"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              pathLength: 0
+            }} animate={{
+              opacity: 1,
+              pathLength: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 1.6
+            }} className="absolute left-1/4 top-32 z-5">
                 <svg width="120" height="120" viewBox="0 0 120 120" className="text-primary/40">
-                  <motion.path
-                    d="M 60 10 Q 30 60 40 110"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeDasharray="8 8"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1, delay: 1.6 }}
-                  />
-                  <motion.polygon
-                    points="40,110 35,100 45,100"
-                    fill="currentColor"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 2.4 }}
-                  />
+                  <motion.path d="M 60 10 Q 30 60 40 110" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
+                  pathLength: 0
+                }} animate={{
+                  pathLength: 1
+                }} transition={{
+                  duration: 1,
+                  delay: 1.6
+                }} />
+                  <motion.polygon points="40,110 35,100 45,100" fill="currentColor" initial={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} transition={{
+                  delay: 2.4
+                }} />
                 </svg>
               </motion.div>
 
               {/* Step 2: Study Session Card */}
-              <motion.div
-                initial={{ opacity: 0, x: -40, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ duration: 0.8, delay: 1.8 }}
-                whileHover={{ scale: 1.05, y: -10 }}
-                className="absolute left-8 top-44 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm z-10"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              x: -40,
+              scale: 0.9
+            }} animate={{
+              opacity: 1,
+              x: 0,
+              scale: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 1.8
+            }} whileHover={{
+              scale: 1.05,
+              y: -10
+            }} className="absolute left-8 top-44 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm z-10">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -214,52 +222,61 @@ const Landing = () => {
                 </div>
                 
                 {/* Step indicator */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 2.5 }}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
-                >
+                <motion.div initial={{
+                opacity: 0
+              }} animate={{
+                opacity: 1
+              }} transition={{
+                delay: 2.5
+              }} className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                   Step 2: Study Session
                 </motion.div>
               </motion.div>
 
               {/* Connecting Arrow 2 */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 2.6 }}
-                className="absolute left-1/2 top-[280px] -translate-x-1/2 z-5"
-              >
+              <motion.div initial={{
+              opacity: 0
+            }} animate={{
+              opacity: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 2.6
+            }} className="absolute left-1/2 top-[280px] -translate-x-1/2 z-5">
                 <svg width="200" height="100" viewBox="0 0 200 100" className="text-secondary/40">
-                  <motion.path
-                    d="M 10 20 Q 100 10 190 40"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeDasharray="8 8"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1, delay: 2.6 }}
-                  />
-                  <motion.polygon
-                    points="190,40 180,35 185,45"
-                    fill="currentColor"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 3.4 }}
-                  />
+                  <motion.path d="M 10 20 Q 100 10 190 40" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
+                  pathLength: 0
+                }} animate={{
+                  pathLength: 1
+                }} transition={{
+                  duration: 1,
+                  delay: 2.6
+                }} />
+                  <motion.polygon points="190,40 180,35 185,45" fill="currentColor" initial={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} transition={{
+                  delay: 3.4
+                }} />
                 </svg>
               </motion.div>
 
               {/* Step 3: Reflection Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.8, delay: 2.8 }}
-                whileHover={{ scale: 1.05, y: -10 }}
-                className="absolute right-8 top-56 bg-card border border-border/50 rounded-2xl p-5 shadow-lg max-w-xs backdrop-blur-sm z-10"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              y: 40,
+              scale: 0.9
+            }} animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 2.8
+            }} whileHover={{
+              scale: 1.05,
+              y: -10
+            }} className="absolute right-8 top-56 bg-card border border-border/50 rounded-2xl p-5 shadow-lg max-w-xs backdrop-blur-sm z-10">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <Brain className="w-5 h-5 text-secondary" />
@@ -288,52 +305,58 @@ const Landing = () => {
                 </div>
                 
                 {/* Step indicator */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 3.5 }}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
-                >
+                <motion.div initial={{
+                opacity: 0
+              }} animate={{
+                opacity: 1
+              }} transition={{
+                delay: 3.5
+              }} className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                   Step 3: Reflection
                 </motion.div>
               </motion.div>
 
               {/* Connecting Arrow 3 */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 3.6 }}
-                className="absolute right-1/4 top-[420px] z-5"
-              >
+              <motion.div initial={{
+              opacity: 0
+            }} animate={{
+              opacity: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 3.6
+            }} className="absolute right-1/4 top-[420px] z-5">
                 <svg width="120" height="100" viewBox="0 0 120 100" className="text-accent/40">
-                  <motion.path
-                    d="M 80 10 Q 60 50 70 90"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeDasharray="8 8"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1, delay: 3.6 }}
-                  />
-                  <motion.polygon
-                    points="70,90 65,80 75,80"
-                    fill="currentColor"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 4.4 }}
-                  />
+                  <motion.path d="M 80 10 Q 60 50 70 90" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
+                  pathLength: 0
+                }} animate={{
+                  pathLength: 1
+                }} transition={{
+                  duration: 1,
+                  delay: 3.6
+                }} />
+                  <motion.polygon points="70,90 65,80 75,80" fill="currentColor" initial={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} transition={{
+                  delay: 4.4
+                }} />
                 </svg>
               </motion.div>
 
               {/* Step 4: Insights Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 3.8 }}
-                whileHover={{ scale: 1.05 }}
-                className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              scale: 0.8
+            }} animate={{
+              opacity: 1,
+              scale: 1
+            }} transition={{
+              duration: 0.8,
+              delay: 3.8
+            }} whileHover={{
+              scale: 1.05
+            }} className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-5 h-5 text-primary" />
@@ -344,68 +367,84 @@ const Landing = () => {
                       <div className="text-xs text-muted-foreground mb-1">Mathematics</div>
                       <div className="text-lg font-bold text-primary">85%</div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                        <motion.div
-                          className="h-full bg-primary rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "85%" }}
-                          transition={{ duration: 1, delay: 4.5 }}
-                        />
+                        <motion.div className="h-full bg-primary rounded-full" initial={{
+                        width: 0
+                      }} animate={{
+                        width: "85%"
+                      }} transition={{
+                        duration: 1,
+                        delay: 4.5
+                      }} />
                       </div>
                     </div>
                     <div className="bg-card rounded-lg p-2 border border-border/50">
                       <div className="text-xs text-muted-foreground mb-1">Biology</div>
                       <div className="text-lg font-bold text-secondary">72%</div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                        <motion.div
-                          className="h-full bg-secondary rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "72%" }}
-                          transition={{ duration: 1, delay: 4.6 }}
-                        />
+                        <motion.div className="h-full bg-secondary rounded-full" initial={{
+                        width: 0
+                      }} animate={{
+                        width: "72%"
+                      }} transition={{
+                        duration: 1,
+                        delay: 4.6
+                      }} />
                       </div>
                     </div>
                     <div className="bg-card rounded-lg p-2 border border-border/50">
                       <div className="text-xs text-muted-foreground mb-1">Physics</div>
                       <div className="text-lg font-bold text-accent">91%</div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                        <motion.div
-                          className="h-full bg-accent rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "91%" }}
-                          transition={{ duration: 1, delay: 4.7 }}
-                        />
+                        <motion.div className="h-full bg-accent rounded-full" initial={{
+                        width: 0
+                      }} animate={{
+                        width: "91%"
+                      }} transition={{
+                        duration: 1,
+                        delay: 4.7
+                      }} />
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 {/* Step indicator */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 4.5 }}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
-                >
+                <motion.div initial={{
+                opacity: 0
+              }} animate={{
+                opacity: 1
+              }} transition={{
+                delay: 4.5
+              }} className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                   Step 4: AI Insights ✨
                 </motion.div>
               </motion.div>
 
               {/* Pulsing connection indicators */}
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 5 }}
-                className="absolute left-1/2 top-24 w-3 h-3 bg-primary rounded-full -translate-x-1/2 z-20"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 5.5 }}
-                className="absolute left-1/4 top-60 w-3 h-3 bg-primary rounded-full z-20"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 6 }}
-                className="absolute right-1/4 top-80 w-3 h-3 bg-secondary rounded-full z-20"
-              />
+              <motion.div animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.5, 1, 0.5]
+            }} transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 5
+            }} className="absolute left-1/2 top-24 w-3 h-3 bg-primary rounded-full -translate-x-1/2 z-20" />
+              <motion.div animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.5, 1, 0.5]
+            }} transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 5.5
+            }} className="absolute left-1/4 top-60 w-3 h-3 bg-primary rounded-full z-20" />
+              <motion.div animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.5, 1, 0.5]
+            }} transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 6
+            }} className="absolute right-1/4 top-80 w-3 h-3 bg-secondary rounded-full z-20" />
             </div>
           </motion.div>
         </div>
@@ -414,30 +453,36 @@ const Landing = () => {
       {/* Testimonial Highlight */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative bg-gradient-to-br from-card to-primary/5 border border-border rounded-[2rem] p-12 shadow-xl overflow-hidden"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="relative bg-gradient-to-br from-card to-primary/5 border border-border rounded-[2rem] p-12 shadow-xl overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
             <div className="relative z-10">
               <div className="flex gap-1 mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-6 h-6 fill-accent text-accent" />
-                ))}
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-6 h-6 fill-accent text-accent" />)}
               </div>
               <blockquote className="text-2xl sm:text-3xl font-display font-semibold leading-relaxed mb-8">
-                "This site helped me stop procrastinating and actually revise on time. I had 6 exams in 3 weeks and honestly felt lost. Now I have a plan and I'm sticking to it!"
+                "This site helped me stop procrastinating and actually revise on time. I had 6 ES tests in 3 weeks, back in December and honestly felt lost. Now I have a plan and I'm sticking to it!"
               </blockquote>
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
                   A
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">Abhiram Patel</p>
-                  <p className="text-muted-foreground">Year 10 Student · Got an A* in Maths</p>
+                  <p className="font-semibold text-lg">Abhiram Kakarla
+
+
+
+                </p>
+                  <p className="text-muted-foreground">Year 10 Student            </p>
                 </div>
               </div>
             </div>
@@ -448,13 +493,17 @@ const Landing = () => {
       {/* User Story Section */}
       <section className="py-32 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center mb-20">
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
               How real learners use it
             </h2>
@@ -464,31 +513,25 @@ const Landing = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "1",
-                title: "List everything",
-                description: "Sarah added all 6 subjects, marked difficult topics, and set her exam dates. Took 3 minutes.",
-                icon: <BookOpen className="w-6 h-6" />,
-                color: "from-primary to-primary-light"
-              },
-              {
-                step: "2",
-                title: "Get a smart plan",
-                description: "The app created a personalized schedule for Abhiram — extra time on tricky topics, breaks between sessions, and no cramming the day before exams.",
-                icon: <Brain className="w-6 h-6" />,
-                color: "from-secondary to-accent"
-              },
-              {
-                step: "3",
-                title: "Actually stick to it",
-                description: "Push notifications, progress tracking, and visual rewards kept Abhiram motivated. He completed 95% of sessions and aced his exams.",
-                icon: <Target className="w-6 h-6" />,
-                color: "from-accent to-primary"
-              }
-            ].map((item, index) => (
-              <StoryCard key={index} item={item} index={index} />
-            ))}
+            {[{
+            step: "1",
+            title: "List everything",
+            description: "Sarah added all 6 subjects, marked difficult topics, and set her exam dates. Took 3 minutes.",
+            icon: <BookOpen className="w-6 h-6" />,
+            color: "from-primary to-primary-light"
+          }, {
+            step: "2",
+            title: "Get a smart plan",
+            description: "The app created a personalized schedule for Abhiram — extra time on tricky topics, breaks between sessions, and no cramming the day before exams.",
+            icon: <Brain className="w-6 h-6" />,
+            color: "from-secondary to-accent"
+          }, {
+            step: "3",
+            title: "Actually stick to it",
+            description: "Push notifications, progress tracking, and visual rewards kept Abhiram motivated. He completed 95% of sessions and aced his exams.",
+            icon: <Target className="w-6 h-6" />,
+            color: "from-accent to-primary"
+          }].map((item, index) => <StoryCard key={index} item={item} index={index} />)}
           </div>
         </div>
       </section>
@@ -496,13 +539,17 @@ const Landing = () => {
       {/* Adaptive Scheduling Section */}
       <section className="py-32 px-6 bg-gradient-to-br from-muted/30 to-background">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center mb-20">
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
               Missed a session? <span className="text-primary">No problem.</span>
             </h2>
@@ -512,13 +559,17 @@ const Landing = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="space-y-6"
-            >
+            <motion.div initial={{
+            opacity: 0,
+            x: -30
+          }} whileInView={{
+            opacity: 1,
+            x: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Brain className="w-6 h-6 text-primary" />
@@ -556,13 +607,17 @@ const Landing = () => {
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
+            <motion.div initial={{
+            opacity: 0,
+            x: 30
+          }} whileInView={{
+            opacity: 1,
+            x: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="relative">
               <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-4 border-b">
@@ -602,13 +657,17 @@ const Landing = () => {
       {/* AI Insights & Analytics Section */}
       <section className="py-32 px-6">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center mb-20">
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
               Personalized insights that
               <br />
@@ -624,52 +683,71 @@ const Landing = () => {
           <div className="space-y-16">
             {/* Feature showcase */}
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="order-2 md:order-1"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              x: -30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="order-2 md:order-1">
                 <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
                   <h4 className="font-bold text-lg mb-6">Your Progress Dashboard</h4>
                   <div className="space-y-6">
-                    {[
-                      { subject: "Mathematics", confidence: 85, color: "primary" },
-                      { subject: "Biology", confidence: 72, color: "secondary" },
-                      { subject: "Chemistry", confidence: 68, color: "accent" },
-                      { subject: "Physics", confidence: 91, color: "primary" }
-                    ].map((item, i) => (
-                      <div key={i} className="space-y-2">
+                    {[{
+                    subject: "Mathematics",
+                    confidence: 85,
+                    color: "primary"
+                  }, {
+                    subject: "Biology",
+                    confidence: 72,
+                    color: "secondary"
+                  }, {
+                    subject: "Chemistry",
+                    confidence: 68,
+                    color: "accent"
+                  }, {
+                    subject: "Physics",
+                    confidence: 91,
+                    color: "primary"
+                  }].map((item, i) => <div key={i} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm">{item.subject}</span>
                           <span className="text-sm text-muted-foreground">{item.confidence}%</span>
                         </div>
                         <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${item.confidence}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: i * 0.1 }}
-                            className={`h-full bg-${item.color} rounded-full`}
-                            style={{
-                              background: `hsl(var(--${item.color}))`
-                            }}
-                          />
+                          <motion.div initial={{
+                        width: 0
+                      }} whileInView={{
+                        width: `${item.confidence}%`
+                      }} viewport={{
+                        once: true
+                      }} transition={{
+                        duration: 1,
+                        delay: i * 0.1
+                      }} className={`h-full bg-${item.color} rounded-full`} style={{
+                        background: `hsl(var(--${item.color}))`
+                      }} />
                         </div>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="space-y-6 order-1 md:order-2"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              x: 30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="space-y-6 order-1 md:order-2">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shrink-0">
                     <Brain className="w-6 h-6 text-white" />
@@ -714,13 +792,17 @@ const Landing = () => {
       {/* Features Grid - Less card-heavy */}
       <section className="py-32 px-6 bg-muted/30">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20 space-y-6"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center mb-20 space-y-6">
             <h2 className="text-4xl sm:text-5xl font-display font-bold">
               And there's more...
             </h2>
@@ -728,38 +810,34 @@ const Landing = () => {
 
           <div className="space-y-32">
             {/* Feature 1 */}
-            <FeatureRow
-              title="Plans that adapt to your life"
-              description="Got football practice? Family dinner? Friend's birthday? Your study plan automatically works around your schedule. No conflicts. No stress."
-              icon={<Calendar className="w-12 h-12" />}
-              gradient="from-primary to-primary-light"
-              direction="left"
-            />
+            <FeatureRow title="Plans that adapt to your life" description="Got football practice? Family dinner? Friend's birthday? Your study plan automatically works around your schedule. No conflicts. No stress." icon={<Calendar className="w-12 h-12" />} gradient="from-primary to-primary-light" direction="left" />
 
             {/* Feature 2 */}
-            <FeatureRow
-              title="Focus on what you struggle with"
-              description="Mark topics as difficult and get extra practice time. The smart algorithm ensures you master tough concepts before exam day."
-              icon={<Target className="w-12 h-12" />}
-              gradient="from-secondary to-accent"
-              direction="right"
-            />
+            <FeatureRow title="Focus on what you struggle with" description="Mark topics as difficult and get extra practice time. The smart algorithm ensures you master tough concepts before exam day." icon={<Target className="w-12 h-12" />} gradient="from-secondary to-accent" direction="right" />
 
             {/* Feature 3: Study with Friends - Enhanced with floating cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="grid md:grid-cols-2 gap-12 items-center"
-            >
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="space-y-6"
-              >
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{
+              opacity: 0,
+              x: -30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="space-y-6">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-white shadow-lg">
                   <Users className="w-12 h-12" />
                 </div>
@@ -793,14 +871,24 @@ const Landing = () => {
               {/* Floating Cards showing Study Groups UI */}
               <div className="relative h-[500px]">
                 {/* Study Group Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 40, rotate: -2 }}
-                  whileInView={{ opacity: 1, y: 0, rotate: -2 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  whileHover={{ rotate: 0, scale: 1.03, y: -10 }}
-                  className="absolute left-0 top-0 bg-card border border-border rounded-3xl p-6 shadow-xl max-w-md w-full backdrop-blur-sm z-10"
-                >
+                <motion.div initial={{
+                opacity: 0,
+                y: 40,
+                rotate: -2
+              }} whileInView={{
+                opacity: 1,
+                y: 0,
+                rotate: -2
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.2
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.03,
+                y: -10
+              }} className="absolute left-0 top-0 bg-card border border-border rounded-3xl p-6 shadow-xl max-w-md w-full backdrop-blur-sm z-10">
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -839,14 +927,24 @@ const Landing = () => {
                 </motion.div>
 
                 {/* Shared Timetable Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 40, rotate: 3 }}
-                  whileInView={{ opacity: 1, y: 0, rotate: 3 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  whileHover={{ rotate: 0, scale: 1.03, y: -10 }}
-                  className="absolute right-0 top-48 bg-card border border-border rounded-2xl p-5 shadow-xl max-w-sm backdrop-blur-sm z-10"
-                >
+                <motion.div initial={{
+                opacity: 0,
+                y: 40,
+                rotate: 3
+              }} whileInView={{
+                opacity: 1,
+                y: 0,
+                rotate: 3
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.4
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.03,
+                y: -10
+              }} className="absolute right-0 top-48 bg-card border border-border rounded-2xl p-5 shadow-xl max-w-sm backdrop-blur-sm z-10">
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -878,13 +976,18 @@ const Landing = () => {
                 </motion.div>
 
                 {/* Leaderboard Badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                  className="absolute bottom-8 left-1/4 bg-gradient-to-r from-accent to-primary text-white rounded-2xl px-6 py-4 shadow-xl backdrop-blur-sm z-20"
-                >
+                <motion.div initial={{
+                opacity: 0,
+                scale: 0.8
+              }} whileInView={{
+                opacity: 1,
+                scale: 1
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.6
+              }} className="absolute bottom-8 left-1/4 bg-gradient-to-r from-accent to-primary text-white rounded-2xl px-6 py-4 shadow-xl backdrop-blur-sm z-20">
                   <div className="flex items-center gap-3">
                     <div className="text-3xl">🏆</div>
                     <div>
@@ -895,13 +998,18 @@ const Landing = () => {
                 </motion.div>
 
                 {/* Customize Badge */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.8 }}
-                  className="absolute bottom-0 right-0 bg-secondary/10 border border-secondary/30 text-secondary rounded-xl px-4 py-3 shadow-md backdrop-blur-sm max-w-xs"
-                >
+                <motion.div initial={{
+                opacity: 0,
+                x: 30
+              }} whileInView={{
+                opacity: 1,
+                x: 0
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.8
+              }} className="absolute bottom-0 right-0 bg-secondary/10 border border-secondary/30 text-secondary rounded-xl px-4 py-3 shadow-md backdrop-blur-sm max-w-xs">
                   <div className="flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4" />
                     <p className="font-semibold">Auto-customizes to your schedule!</p>
@@ -916,60 +1024,61 @@ const Landing = () => {
       {/* More Testimonials */}
       <section className="py-32 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
               Students love it
             </h2>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                quote: "I went from feeling completely lost to having a clear path forward. Got A's in all my subjects!",
-                author: "Michael Thompson",
-                role: "GCSE Student",
-                initial: "M"
-              },
-              {
-                quote: "The smart scheduling is incredible. It knows exactly when I need breaks and when to push harder.",
-                author: "Emma Rodriguez",
-                role: "A-Level Student",
-                initial: "E"
-              },
-              {
-                quote: "Love how it blocks out my events automatically. No more double-booking study sessions with my part-time job!",
-                author: "James Wilson",
-                role: "Year 11 Student",
-                initial: "J"
-              },
-              {
-                quote: "Study groups feature is brilliant. We all share our plans and keep each other accountable.",
-                author: "Priya Patel",
-                role: "University Student",
-                initial: "P"
-              }
-            ].map((testimonial, index) => (
-              <TestimonialCard key={index} testimonial={testimonial} index={index} />
-            ))}
+            {[{
+            quote: "I went from feeling completely lost to having a clear path forward. Got A's in all my subjects!",
+            author: "Michael Thompson",
+            role: "GCSE Student",
+            initial: "M"
+          }, {
+            quote: "The smart scheduling is incredible. It knows exactly when I need breaks and when to push harder.",
+            author: "Emma Rodriguez",
+            role: "A-Level Student",
+            initial: "E"
+          }, {
+            quote: "Love how it blocks out my events automatically. No more double-booking study sessions with my part-time job!",
+            author: "James Wilson",
+            role: "Year 11 Student",
+            initial: "J"
+          }, {
+            quote: "Study groups feature is brilliant. We all share our plans and keep each other accountable.",
+            author: "Priya Patel",
+            role: "University Student",
+            initial: "P"
+          }].map((testimonial, index) => <TestimonialCard key={index} testimonial={testimonial} index={index} />)}
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
       <section className="py-32 px-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="max-w-5xl mx-auto text-center space-y-10 p-16 rounded-[3rem] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 relative overflow-hidden"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        scale: 0.95
+      }} whileInView={{
+        opacity: 1,
+        scale: 1
+      }} viewport={{
+        once: true
+      }} transition={{
+        duration: 0.8
+      }} className="max-w-5xl mx-auto text-center space-y-10 p-16 rounded-[3rem] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl" />
@@ -981,11 +1090,7 @@ const Landing = () => {
             <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto">
               Join thousands of students who are studying smarter, not harder.
             </p>
-            <Button
-              size="lg"
-              onClick={() => navigate("/auth")}
-              className="text-lg px-12 py-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-xl group rounded-full"
-            >
+            <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-12 py-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-xl group rounded-full">
               Create your plan — it's free
               <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -1029,25 +1134,32 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
-const StoryCard = ({ item, index }: { item: any; index: number }) => {
+const StoryCard = ({
+  item,
+  index
+}: {
+  item: any;
+  index: number;
+}) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay: index * 0.2 }}
-      className="relative"
-    >
-      <div className="absolute -top-6 -left-6 w-16 h-16 rounded-2xl bg-gradient-to-br shadow-lg flex items-center justify-center text-white font-display font-bold text-2xl z-10"
-        style={{ backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }}
-      >
+  const isInView = useInView(ref, {
+    once: true
+  });
+  return <motion.div ref={ref} initial={{
+    opacity: 0,
+    y: 50
+  }} animate={isInView ? {
+    opacity: 1,
+    y: 0
+  } : {}} transition={{
+    duration: 0.8,
+    delay: index * 0.2
+  }} className="relative">
+      <div className="absolute -top-6 -left-6 w-16 h-16 rounded-2xl bg-gradient-to-br shadow-lg flex items-center justify-center text-white font-display font-bold text-2xl z-10" style={{
+      backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))`
+    }}>
         <div className={`w-full h-full rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center`}>
           {item.step}
         </div>
@@ -1060,22 +1172,28 @@ const StoryCard = ({ item, index }: { item: any; index: number }) => {
         <h3 className="text-2xl font-display font-bold mb-4">{item.title}</h3>
         <p className="text-muted-foreground leading-relaxed">{item.description}</p>
       </div>
-    </motion.div>
-  );
+    </motion.div>;
 };
-
-const FeatureRow = ({ title, description, icon, gradient, direction }: any) => {
+const FeatureRow = ({
+  title,
+  description,
+  icon,
+  gradient,
+  direction
+}: any) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: direction === "left" ? -50 : 50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.8 }}
-      className={`flex flex-col ${direction === "right" ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-16`}
-    >
+  const isInView = useInView(ref, {
+    once: true
+  });
+  return <motion.div ref={ref} initial={{
+    opacity: 0,
+    x: direction === "left" ? -50 : 50
+  }} animate={isInView ? {
+    opacity: 1,
+    x: 0
+  } : {}} transition={{
+    duration: 0.8
+  }} className={`flex flex-col ${direction === "right" ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-16`}>
       <div className="flex-1 space-y-6">
         <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg`}>
           {icon}
@@ -1085,31 +1203,35 @@ const FeatureRow = ({ title, description, icon, gradient, direction }: any) => {
       </div>
       
       <div className="flex-1">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className={`aspect-video rounded-3xl bg-gradient-to-br ${gradient} opacity-20 shadow-2xl`}
-        />
+        <motion.div whileHover={{
+        scale: 1.02
+      }} className={`aspect-video rounded-3xl bg-gradient-to-br ${gradient} opacity-20 shadow-2xl`} />
       </div>
-    </motion.div>
-  );
+    </motion.div>;
 };
-
-const TestimonialCard = ({ testimonial, index }: { testimonial: any; index: number }) => {
+const TestimonialCard = ({
+  testimonial,
+  index
+}: {
+  testimonial: any;
+  index: number;
+}) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay: index * 0.1 }}
-      className="bg-card border border-border rounded-3xl p-8 hover:shadow-lg transition-all duration-300"
-    >
+  const isInView = useInView(ref, {
+    once: true
+  });
+  return <motion.div ref={ref} initial={{
+    opacity: 0,
+    y: 30
+  }} animate={isInView ? {
+    opacity: 1,
+    y: 0
+  } : {}} transition={{
+    duration: 0.8,
+    delay: index * 0.1
+  }} className="bg-card border border-border rounded-3xl p-8 hover:shadow-lg transition-all duration-300">
       <div className="flex gap-1 mb-6">
-        {[...Array(5)].map((_, i) => (
-          <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-        ))}
+        {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-accent text-accent" />)}
       </div>
       <p className="text-lg text-foreground leading-relaxed mb-6">"{testimonial.quote}"</p>
       <div className="flex items-center gap-4">
@@ -1121,8 +1243,6 @@ const TestimonialCard = ({ testimonial, index }: { testimonial: any; index: numb
           <p className="text-sm text-muted-foreground">{testimonial.role}</p>
         </div>
       </div>
-    </motion.div>
-  );
+    </motion.div>;
 };
-
 export default Landing;
