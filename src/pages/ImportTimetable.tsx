@@ -77,18 +77,29 @@ const ImportTimetable = () => {
     const topicsData = sharedTimetable.topics || [];
     setTopics(topicsData);
     
-    // Parse topics for difficulty step - topics is already an array of {name, subject_id}
-    const topicsArray = Array.isArray(topicsData) 
-      ? topicsData 
-      : Object.entries(topicsData).flatMap(([subjectIdx, topicList]: [string, any]) => {
-          if (Array.isArray(topicList)) {
-            return topicList.map((topicName: string) => ({
-              name: topicName,
-              subject_id: subjectIdx
-            }));
-          }
-          return [];
-        });
+    // Parse topics for difficulty step
+    // Topics from database are array of {name, subject_id} where subject_id is the UUID
+    // We need to map them to work with DifficultTopicsStep
+    let topicsArray: any[] = [];
+    
+    if (Array.isArray(topicsData) && topicsData.length > 0) {
+      // Topics are already in the correct format from the database
+      topicsArray = topicsData.map((topic: any) => ({
+        name: topic.name,
+        subject_id: topic.subject_id
+      }));
+    } else if (typeof topicsData === 'object' && !Array.isArray(topicsData)) {
+      // Fallback for old format where topics might be object with subject indices
+      topicsArray = Object.entries(topicsData).flatMap(([subjectIdx, topicList]: [string, any]) => {
+        if (Array.isArray(topicList)) {
+          return topicList.map((topicName: string) => ({
+            name: topicName,
+            subject_id: subjectsArray[parseInt(subjectIdx)]?.id || subjectIdx
+          }));
+        }
+        return [];
+      });
+    }
     
     setParsedTopics(topicsArray);
     
@@ -259,7 +270,8 @@ const ImportTimetable = () => {
                   Select topics you want to focus on and rate your confidence (the AI will allocate more time to lower-confidence topics).
                 </p>
                 <DifficultTopicsStep
-                  subjects={subjects.map((s: any, idx: number) => ({
+                  subjects={subjects.map((s: any) => ({
+                    id: typeof s === 'object' ? s.id : undefined,
                     name: typeof s === 'string' ? s : s.name,
                     exam_board: typeof s === 'object' ? s.exam_board : undefined
                   }))}
