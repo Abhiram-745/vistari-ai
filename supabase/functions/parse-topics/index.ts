@@ -57,18 +57,27 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant that extracts study topics from text and images. Extract all topics mentioned and format them as a structured list. When analyzing images, look for checklists, topic lists, notes, or any educational content. Focus on identifying clear topic names only.`
+            content: `You are an expert at extracting study topics from text and images. 
+
+Your task:
+1. Carefully analyze the provided text and/or images
+2. Extract ALL distinct study topics, chapters, or subtopics mentioned
+3. Look for: checklists, bullet points, numbered lists, topic headers, chapter names, subject content
+4. Return ONLY the topic names - be concise but clear
+5. Each topic should be a distinct learning unit
+
+For images: Look for handwritten notes, typed checklists, textbook pages, revision guides, or any educational content.`
           },
           {
             role: 'user',
             content: userContent
           }
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
         tools: [
           {
             type: "function",
@@ -119,9 +128,11 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('AI Response:', JSON.stringify(data, null, 2));
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     
     if (!toolCall) {
+      console.error('No tool call in response. Full response:', data);
       throw new Error('No topics extracted from AI response');
     }
 
