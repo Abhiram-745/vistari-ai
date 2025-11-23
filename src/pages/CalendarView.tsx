@@ -105,11 +105,17 @@ const DroppableDay = ({ date, items, children }: { date: Date; items: CalendarIt
       </div>
       <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-300px)]">
         {items
-          .filter((item) => item.date === format(date, "yyyy-MM-dd"))
+          .filter((item) => {
+            const matchesDate = item.date === format(date, "yyyy-MM-dd");
+            return matchesDate;
+          })
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .map((item) => (
             <DraggableItem key={item.id} item={item} />
           ))}
+        {items.filter((item) => item.date === format(date, "yyyy-MM-dd")).length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-4">No sessions</p>
+        )}
         {children}
       </div>
     </div>
@@ -168,24 +174,31 @@ const CalendarView = () => {
         const timetable = timetables[0];
         setTimetableId(timetable.id);
         
-        const schedule = timetable.schedule as unknown as TimetableSession[];
-        schedule.forEach((daySchedule) => {
-          const scheduleDate = parseISO(daySchedule.date);
-          if (scheduleDate >= currentWeek && scheduleDate <= addDays(currentWeek, 6)) {
-            daySchedule.sessions.forEach((session, index) => {
-              items.push({
-                id: `session-${daySchedule.date}-${index}`,
-                type: "session",
-                title: `${session.subject}: ${session.topic}`,
-                date: daySchedule.date,
-                startTime: session.startTime,
-                endTime: session.endTime,
-                color: "primary",
-                data: { ...session, date: daySchedule.date, sessionIndex: index },
-              });
-            });
-          }
-        });
+        const schedule = timetable.schedule;
+        console.log("Raw schedule data:", schedule, typeof schedule);
+        
+        // Handle schedule data properly
+        if (Array.isArray(schedule)) {
+          schedule.forEach((daySchedule: any) => {
+            const scheduleDate = parseISO(daySchedule.date);
+            if (scheduleDate >= currentWeek && scheduleDate <= addDays(currentWeek, 6)) {
+              if (Array.isArray(daySchedule.sessions)) {
+                daySchedule.sessions.forEach((session: any, index: number) => {
+                  items.push({
+                    id: `session-${daySchedule.date}-${index}`,
+                    type: "session",
+                    title: `${session.subject}: ${session.topic}`,
+                    date: daySchedule.date,
+                    startTime: session.startTime,
+                    endTime: session.endTime,
+                    color: "primary",
+                    data: { ...session, date: daySchedule.date, sessionIndex: index },
+                  });
+                });
+              }
+            }
+          });
+        }
       }
 
       // Process events
@@ -208,6 +221,12 @@ const CalendarView = () => {
         });
       }
 
+      console.log("Calendar items created:", items);
+      console.log("Items by date:", items.reduce((acc, item) => {
+        acc[item.date] = (acc[item.date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>));
+      
       setCalendarItems(items);
     } catch (error) {
       console.error("Error fetching calendar data:", error);
@@ -244,29 +263,48 @@ const CalendarView = () => {
 
         if (!timetable) throw new Error("Timetable not found");
 
-        const schedule = [...(timetable.schedule as unknown as TimetableSession[])];
+        let schedule = timetable.schedule;
+        console.log("Current schedule before update:", schedule);
+        
+        // Ensure schedule is an array
+        if (!Array.isArray(schedule)) {
+          console.error("Schedule is not an array:", schedule);
+          throw new Error("Invalid schedule format");
+        }
+        
+        schedule = [...schedule];
         
         // Remove from old date
-        const oldDayIndex = schedule.findIndex((day) => day.date === draggedItem.date);
-        if (oldDayIndex !== -1) {
+        const oldDayIndex = schedule.findIndex((day: any) => day.date === draggedItem.date);
+        if (oldDayIndex !== -1 && schedule[oldDayIndex]) {
           const sessionIndex = draggedItem.data.sessionIndex;
-          schedule[oldDayIndex].sessions.splice(sessionIndex, 1);
+          const oldDay = schedule[oldDayIndex] as any;
+          if (Array.isArray(oldDay.sessions)) {
+            oldDay.sessions.splice(sessionIndex, 1);
+          }
         }
 
         // Add to new date
-        let newDayIndex = schedule.findIndex((day) => day.date === newDate);
+        let newDayIndex = schedule.findIndex((day: any) => day.date === newDate);
         if (newDayIndex === -1) {
-          schedule.push({ date: newDate, sessions: [] });
+          schedule.push({ date: newDate, sessions: [] } as any);
           newDayIndex = schedule.length - 1;
         }
 
-        schedule[newDayIndex].sessions.push({
+        const newDay = schedule[newDayIndex] as any;
+        if (!Array.isArray(newDay.sessions)) {
+          newDay.sessions = [];
+        }
+        
+        newDay.sessions.push({
           ...draggedItem.data,
           date: newDate,
         });
 
         // Sort sessions by start time
-        schedule[newDayIndex].sessions.sort((a, b) => a.startTime.localeCompare(b.startTime));
+        newDay.sessions.sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
+
+        console.log("Updated schedule:", schedule);
 
         const { error } = await supabase
           .from("timetables")
