@@ -237,9 +237,19 @@ ${preferences.duration_mode === "fixed"
 
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
+**TEST DAY BLOCKING (CRITICAL):**
+${testDates.length > 0 ? `The following dates are TEST DAYS and are COMPLETELY BLOCKED - DO NOT schedule ANY study sessions on these dates:
+${testDates.map((td: any) => {
+  const subject = subjects.find((s: any) => s.id === td.subject_id);
+  return `- ${td.test_date}: ${subject?.name} ${td.test_type} [BLOCKED - NO STUDY SESSIONS]`;
+}).join('\n')}
+
+Students cannot study on test days. Schedule all revision BEFORE the test date, never on the test date itself.` : ''}
+
 **CRITICAL REQUIREMENTS:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
 ${events.length > 0 ? "0. **BLOCKED EVENT TIMES**: The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE. You MUST NOT schedule any study sessions that overlap with these event times. Work around them by scheduling sessions before or after these blocked periods." : ""}
+${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedule ANY sessions on the dates listed in 'TEST DAY BLOCKING'. These entire days are unavailable for studying." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **DURATION MODE COMPLIANCE**: ${preferences.duration_mode === "fixed" 
   ? `FIXED MODE - ALL sessions MUST be EXACTLY ${preferences.session_duration} minutes and ALL breaks MUST be EXACTLY ${preferences.break_duration} minutes. NO EXCEPTIONS.`
