@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Target, Plus, Edit2, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { startOfWeek, format } from "date-fns";
+import { startOfWeek, endOfWeek, format } from "date-fns";
 
 interface WeeklyGoalsWidgetProps {
   userId: string;
@@ -17,26 +17,79 @@ export const WeeklyGoalsWidget = ({ userId }: WeeklyGoalsWidgetProps) => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [targetHours, setTargetHours] = useState("");
+  const [currentHours, setCurrentHours] = useState(0);
 
   useEffect(() => {
     fetchWeeklyGoal();
+    
+    // Set up realtime subscription for study sessions
+    const channel = supabase
+      .channel('study-sessions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'study_sessions',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          // Refetch when sessions change
+          fetchWeeklyGoal();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const fetchWeeklyGoal = async () => {
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     
-    const { data, error } = await supabase
+    // Fetch weekly goal
+    const { data: goalData, error: goalError } = await supabase
       .from("weekly_goals")
       .select("*")
       .eq("user_id", userId)
       .eq("week_start", weekStart)
       .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching goal:", error);
-    } else {
-      setGoal(data);
+    if (goalError) {
+      console.error("Error fetching goal:", goalError);
     }
+
+    // Fetch completed study sessions for this week and calculate total hours
+    const { data: sessions, error: sessionsError } = await supabase
+      .from("study_sessions")
+      .select("actual_duration_minutes, status")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .gte("planned_start", `${weekStart}T00:00:00`)
+      .lte("planned_start", `${weekEnd}T23:59:59`);
+
+    if (sessionsError) {
+      console.error("Error fetching sessions:", sessionsError);
+    }
+
+    // Calculate total hours from completed sessions
+    const totalMinutes = sessions?.reduce((sum, session) => 
+      sum + (session.actual_duration_minutes || 0), 0) || 0;
+    const totalHours = Math.round((totalMinutes / 60) * 10) / 10; // Round to 1 decimal
+
+    setCurrentHours(totalHours);
+    setGoal(goalData);
+    
+    // Update the database with current hours if goal exists
+    if (goalData) {
+      await supabase
+        .from("weekly_goals")
+        .update({ current_hours: totalHours })
+        .eq("id", goalData.id);
+    }
+    
     setLoading(false);
   };
 
@@ -86,7 +139,7 @@ export const WeeklyGoalsWidget = ({ userId }: WeeklyGoalsWidgetProps) => {
   };
 
   const progressPercentage = goal
-    ? Math.min((goal.current_hours / goal.target_hours) * 100, 100)
+    ? Math.min((currentHours / goal.target_hours) * 100, 100)
     : 0;
 
   if (loading) {
@@ -167,7 +220,7 @@ export const WeeklyGoalsWidget = ({ userId }: WeeklyGoalsWidgetProps) => {
           <div className="space-y-4">
             <div className="text-center space-y-2">
               <div className="text-4xl font-bold">
-                {goal.current_hours}
+                {currentHours}
                 <span className="text-muted-foreground text-2xl"> / {goal.target_hours}h</span>
               </div>
               <Progress value={progressPercentage} className="h-3" />
@@ -183,7 +236,7 @@ export const WeeklyGoalsWidget = ({ userId }: WeeklyGoalsWidgetProps) => {
               </div>
             ) : (
               <div className="text-center text-sm text-muted-foreground">
-                {goal.target_hours - goal.current_hours} hours remaining this week
+                {Math.max(0, goal.target_hours - currentHours)} hours remaining this week
               </div>
             )}
           </div>
