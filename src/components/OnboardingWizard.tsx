@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import TimetableModeStep, { TimetableMode } from "./onboarding/TimetableModeStep";
 import SubjectsStep from "./onboarding/SubjectsStep";
 import TopicsStep from "./onboarding/TopicsStep";
 import DifficultTopicsStep from "./onboarding/DifficultTopicsStep";
@@ -56,6 +57,7 @@ export interface StudyPreferences {
 
 const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   const [step, setStep] = useState(1);
+  const [timetableMode, setTimetableMode] = useState<TimetableMode | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicAnalysis, setTopicAnalysis] = useState<any>(null);
@@ -77,7 +79,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   });
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
 
-  const totalSteps = 7;
+  const totalSteps = 8;
   const progress = (step / totalSteps) * 100;
 
   const handleNext = () => {
@@ -95,6 +97,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   };
 
   const stepTitles = [
+    "Choose Your Mode",
     "Your GCSE Subjects",
     "Topics You're Studying",
     "AI Topic Analysis",
@@ -116,23 +119,30 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
         </div>
         <CardTitle className="text-2xl">{stepTitles[step - 1]}</CardTitle>
         <CardDescription>
-          {step === 1 && "Add the subjects you're taking for your GCSEs"}
-          {step === 2 && "Tell us which topics you're currently studying"}
-          {step === 3 && "AI will analyze your topics to prioritize difficult areas"}
-          {step === 4 && "When are your tests scheduled?"}
-          {step === 5 && "Set your study preferences"}
-          {step === 6 && "Add any homework assignments to include in your timetable"}
-          {step === 7 && "Review and generate your personalized timetable"}
+          {step === 1 && "Select the type of timetable that fits your study goals"}
+          {step === 2 && "Add the subjects you're taking for your GCSEs"}
+          {step === 3 && "Tell us which topics you're currently studying"}
+          {step === 4 && "AI will analyze your topics to prioritize difficult areas"}
+          {step === 5 && "When are your tests scheduled?"}
+          {step === 6 && "Set your study preferences"}
+          {step === 7 && "Add any homework assignments to include in your timetable"}
+          {step === 8 && "Review and generate your personalized timetable"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {step === 1 && (
-          <SubjectsStep subjects={subjects} setSubjects={setSubjects} />
+          <TimetableModeStep 
+            selectedMode={timetableMode} 
+            onModeSelect={setTimetableMode}
+          />
         )}
         {step === 2 && (
-          <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
+          <SubjectsStep subjects={subjects} setSubjects={setSubjects} />
         )}
         {step === 3 && (
+          <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
+        )}
+        {step === 4 && (
           <DifficultTopicsStep 
             subjects={subjects} 
             topics={topics} 
@@ -140,16 +150,16 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
             onSkip={handleNext}
           />
         )}
-        {step === 4 && (
+        {step === 5 && (
           <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
         )}
-        {step === 5 && (
+        {step === 6 && (
           <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
         )}
-        {step === 6 && (
+        {step === 7 && (
           <HomeworkStep subjects={subjects} homeworks={homeworks} setHomeworks={setHomeworks} />
         )}
-        {step === 7 && (
+        {step === 8 && (
           <GenerateStep
             subjects={subjects}
             topics={topics}
@@ -157,6 +167,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
             preferences={preferences}
             homeworks={homeworks}
             topicAnalysis={topicAnalysis}
+            timetableMode={timetableMode}
             onComplete={onComplete}
           />
         )}
@@ -173,9 +184,10 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
               onClick={handleNext}
               className="bg-gradient-primary hover:opacity-90"
               disabled={
-                (step === 1 && subjects.length === 0) ||
-                (step === 2 && topics.length === 0) ||
-                (step === 4 && testDates.length === 0)
+                (step === 1 && !timetableMode) ||
+                (step === 2 && subjects.length === 0) ||
+                (step === 3 && topics.length === 0) ||
+                (step === 5 && testDates.length === 0)
               }
             >
               Next
