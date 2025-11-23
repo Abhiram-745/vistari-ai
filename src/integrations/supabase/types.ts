@@ -735,6 +735,65 @@ export type Database = {
           },
         ]
       }
+      timetable_history: {
+        Row: {
+          change_description: string | null
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          preferences: Json | null
+          schedule: Json
+          start_date: string
+          subjects: Json | null
+          test_dates: Json | null
+          timetable_id: string
+          topics: Json | null
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          change_description?: string | null
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          preferences?: Json | null
+          schedule: Json
+          start_date: string
+          subjects?: Json | null
+          test_dates?: Json | null
+          timetable_id: string
+          topics?: Json | null
+          user_id: string
+          version_number: number
+        }
+        Update: {
+          change_description?: string | null
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          preferences?: Json | null
+          schedule?: Json
+          start_date?: string
+          subjects?: Json | null
+          test_dates?: Json | null
+          timetable_id?: string
+          topics?: Json | null
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_history_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timetables: {
         Row: {
           created_at: string | null
