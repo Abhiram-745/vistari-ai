@@ -141,12 +141,18 @@ ${JSON.stringify(homeworkList?.map(h => ({
   duration: h.duration
 })) || [], null, 2)}
 
-**EVENTS TOMORROW** (NEVER overlap with these)
-${JSON.stringify(tomorrowEvents?.map(e => ({
-  title: e.title,
-  startTime: e.start_time,
-  endTime: e.end_time
-})) || [], null, 2)}
+**🔴 BLOCKED EVENT TIMES TOMORROW 🔴**
+${tomorrowEvents && tomorrowEvents.length > 0 ? 
+  `These times are COMPLETELY BLOCKED - DO NOT schedule anything during these periods:
+${tomorrowEvents.map(e => {
+  const start = new Date(e.start_time);
+  const end = new Date(e.end_time);
+  const durationMins = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+  return `⛔ ${e.title}: ${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} → ${end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${durationMins} mins BLOCKED)`;
+}).join('\n')}
+
+CRITICAL: The ENTIRE duration of each event is unavailable. Schedule sessions BEFORE events start OR AFTER events end.` 
+  : 'No events tomorrow - full time window available.'}
 
 **TEST DAY CHECK**
 ${timetable.test_dates && Array.isArray(timetable.test_dates) && timetable.test_dates.length > 0 ? 
@@ -173,8 +179,17 @@ The user CANNOT study on test days. Return: {"schedule": [], "summary": "Tomorro
    - Low confidence (1-4): 75-90 minutes
    - Medium confidence (5-7): 60-75 minutes  
    - High confidence (8-10): 45-60 minutes
-5. **Homework precision**: Use EXACT duration from homework list (already includes time needed)
-6. **Event avoidance**: Never schedule during events - work around them completely
+5. **🔴 HOMEWORK DEADLINE RULE 🔴**: 
+   - ✗ NEVER schedule homework ON its due date
+   - ✓ ALWAYS schedule homework AT LEAST 1 day BEFORE the due date
+   - If homework is due tomorrow, DO NOT include it in tomorrow's schedule
+   - Only schedule homework if its due date is AFTER tomorrow
+   - Use EXACT duration from homework list (already calculated correctly)
+6. **🔴 EVENT BLOCKING 🔴**: 
+   - Events create COMPLETE time blocks that are UNAVAILABLE
+   - If event is 18:00-21:00, you CANNOT schedule at 18:00, 18:30, 19:00, 20:00, or 20:30
+   - Schedule sessions BEFORE event starts OR AFTER event ends
+   - Never overlap with any part of an event's duration
 7. **Time format**: All times in HH:MM format (00:00-23:59)
 8. **Sequential scheduling**: Calculate each start time from previous end time + break (if break added)
 

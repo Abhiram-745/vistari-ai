@@ -191,17 +191,36 @@ serve(async (req) => {
       : "";
 
     const eventsContext = events.length > 0
-      ? "\n\n**🚫 SCHEDULED EVENTS - COMPLETELY BLOCKED TIME SLOTS 🚫**\n" +
-        "**CRITICAL INSTRUCTION: These times are ABSOLUTELY UNAVAILABLE - you MUST NOT schedule ANY study sessions, breaks, or ANY activities during these exact time ranges. Skip over these times entirely.**\n\n" +
-        events
-          .map((evt: any) => {
-            const startDate = new Date(evt.start_time);
-            const endDate = new Date(evt.end_time);
-            const durationMins = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-            return `⛔ ${evt.title}: ${startDate.toLocaleDateString()} from ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} to ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${durationMins} minutes) [COMPLETELY BLOCKED - SKIP THIS TIME]${evt.description ? ` - ${evt.description}` : ''}`;
-          })
-          .join("\n") +
-        "\n\n**EXAMPLE**: If an event is scheduled 18:00-21:00, do NOT schedule anything at 18:00, 18:15, 18:30... 20:45. The next session must start at 21:00 or later.\n"
+      ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 BLOCKED EVENT TIMES - ABSOLUTE NO-SCHEDULE ZONES 🔴
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These time slots are COMPLETELY UNAVAILABLE for study sessions:
+
+${events.map((evt: any) => {
+  const startDate = new Date(evt.start_time);
+  const endDate = new Date(evt.end_time);
+  const durationMins = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+  return `⛔ EVENT: ${evt.title}
+   📅 Date: ${startDate.toLocaleDateString()}
+   ⏰ Time: ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} → ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+   ⏱️  Duration: ${durationMins} minutes BLOCKED
+   ${evt.description ? `📝 ${evt.description}` : ''}
+   ⚠️  DO NOT SCHEDULE ANYTHING FROM ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} TO ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+}).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRITICAL EVENT BLOCKING RULES:
+✗ If event is 18:00-21:00 (180 mins), the ENTIRE 3-hour block is BLOCKED
+✗ You cannot schedule at 18:00, 18:15, 18:30, 19:00, 19:30, 20:00, 20:30, 20:45
+✓ Next available time slot is 21:00 or later
+✓ Schedule work BEFORE event starts OR AFTER event ends
+✓ Events take ABSOLUTE PRIORITY over all study activities
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`
       : "";
 
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
@@ -293,13 +312,27 @@ Students cannot study on test days. Schedule all revision BEFORE the test date, 
 
 **🔴 CRITICAL REQUIREMENTS - MUST FOLLOW 🔴:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
-${events.length > 0 ? `0. **⛔ BLOCKED EVENT TIMES - ABSOLUTELY NO SCHEDULING DURING EVENTS ⛔**: 
-   - The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE
-   - You MUST NOT schedule ANY study sessions, breaks, or ANY activity that overlaps with event times
-   - When an event blocks time (e.g., 18:00-21:00), skip that ENTIRE period completely
-   - Resume scheduling ONLY AFTER the event ends (e.g., start at 21:00 or later, never at 18:15 or 19:00)
-   - Work around events by scheduling sessions before events start or after events end
-   - Events have ABSOLUTE PRIORITY over all study activities` : ""}
+${events.length > 0 ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. **⛔ EVENT BLOCKING - ABSOLUTE PRIORITY ⛔**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   ⚠️  CRITICAL: Events listed above create COMPLETE TIME BLOCKS
+   
+   WHEN YOU SEE AN EVENT FROM 18:00 TO 21:00:
+   ✗ You CANNOT schedule anything at: 18:00, 18:15, 18:30, 18:45, 19:00, 19:15, 19:30, 19:45, 20:00, 20:15, 20:30, 20:45
+   ✓ The ENTIRE 180-minute duration from 18:00 to 21:00 is BLOCKED
+   ✓ Next available slot is 21:00 or after
+   
+   VERIFICATION STEP:
+   - Before scheduling any session, check if it overlaps with ANY event time
+   - If session would start during an event, SKIP that time completely
+   - If session would end during an event, SKIP that time completely
+   - Schedule ONLY in gaps between events
+   
+   Events are NOT negotiable. They have ABSOLUTE priority.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+` : ""}
 ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedule ANY sessions on the dates listed in 'TEST DAY BLOCKING'. These entire days are unavailable for studying." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **TWO-SESSION STRUCTURE**: Where time allows, most topics should have 2 sessions (Practice + Exam Questions), except:
@@ -331,20 +364,39 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
 11. MUST schedule study sessions ONLY within the specified time periods for each day
 12. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
 10. **HOMEWORK INTEGRATION (CRITICAL)**: 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚠️  HOMEWORK HAS HARD DEADLINES - CANNOT BE DONE ON DUE DATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
    - Homework is NOT optional - it has hard deadlines and MUST be scheduled
-   - **CRITICAL SCHEDULING RULE**: Schedule homework AT LEAST 1-3 days BEFORE the due date, NEVER on the due date itself
-   - For homework due on date X, schedule it on date X-1, X-2, or X-3 (earlier is better)
-   - Example: If homework is due 2025-11-24, schedule it on 2025-11-23, 2025-11-22, or 2025-11-21 - NOT on 2025-11-24
+   
+   **🔴 CRITICAL SCHEDULING RULE 🔴**
+   ✗ NEVER schedule homework ON its due date
+   ✓ ALWAYS schedule homework 1-3 days BEFORE the due date
+   
+   SCHEDULING FORMULA:
+   If homework due date = X
+   Then schedule on: X-1, X-2, or X-3 (preferably X-2 or X-3)
+   
+   EXAMPLES:
+   • Homework due 2025-11-24 → Schedule on 2025-11-21, 2025-11-22, or 2025-11-23
+   • Homework due 2025-11-25 → Schedule on 2025-11-22, 2025-11-23, or 2025-11-24
+   • WRONG: Homework due 2025-11-24 → Schedule on 2025-11-24 ❌
+   
    - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration (e.g., 150, 60, 30 mins)
    - Break large homework (>120 mins) into 2-3 sessions across different days, each using portion of total duration
    - Homework sessions MUST use type="homework" and include homeworkDueDate field
    - Topic field should contain the homework title
    - Subject field should match the homework subject
    - Notes field should describe the homework (e.g., "Complete algebra homework - Due: YYYY-MM-DD")
-   - **VERIFICATION**: The number of homework sessions in the schedule MUST equal the number of homework assignments provided
-   - Schedule homework earlier rather than later - front-load homework in the schedule
-   - **FINAL CHECK**: Verify that NO homework session is scheduled on its due date - all must be BEFORE
+   
+   **VERIFICATION CHECKLIST**:
+   ✓ Number of homework sessions = Number of homework assignments provided
+   ✓ ALL homework scheduled 1-3 days before due date
+   ✓ NO homework session on its actual due date
+   ✓ Front-load homework in the schedule (schedule earlier rather than later)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Create a detailed, balanced study schedule that:
 1. **FIRST AND FOREMOST: Schedule ALL homework assignments** 
