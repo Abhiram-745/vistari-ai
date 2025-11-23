@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +33,7 @@ export const DailyInsightsPanel = ({
   const [completedSessions, setCompletedSessions] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [dailyReflectionId, setDailyReflectionId] = useState<string | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load existing reflection for this date
   useEffect(() => {
@@ -42,21 +43,34 @@ export const DailyInsightsPanel = ({
   const loadDailyReflection = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found when loading daily reflection');
+        return;
+      }
+
+      console.log('Loading daily reflection for:', { date, timetableId, userId: user.id });
 
       const { data, error } = await supabase
         .from("topic_reflections")
         .select("*")
         .eq("timetable_id", timetableId)
         .eq("session_date", date)
-        .eq("session_index", -1) // Use -1 for daily reflections
+        .eq("session_index", -1)
         .maybeSingle();
 
+      if (error) {
+        console.error("Error loading daily reflection:", error);
+        return;
+      }
+
       if (data) {
+        console.log('Loaded daily reflection:', data);
         setDailyReflectionId(data.id);
         const reflectionData = data.reflection_data as any;
         setReflection(reflectionData?.dailyReflection || "");
         setCompletedSessions(reflectionData?.completedSessions || []);
+      } else {
+        console.log('No existing daily reflection found');
       }
     } catch (error) {
       console.error("Error loading daily reflection:", error);
@@ -64,47 +78,71 @@ export const DailyInsightsPanel = ({
   };
 
   const saveDailyReflection = async (reflectionText: string, completed: number[]) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const reflectionData = {
-        dailyReflection: reflectionText,
-        completedSessions: completed,
-      };
-
-      if (dailyReflectionId) {
-        // Update existing reflection
-        await supabase
-          .from("topic_reflections")
-          .update({
-            reflection_data: reflectionData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", dailyReflectionId);
-      } else {
-        // Create new reflection
-        const { data } = await supabase
-          .from("topic_reflections")
-          .insert({
-            user_id: user.id,
-            timetable_id: timetableId,
-            session_date: date,
-            session_index: -1, // Use -1 for daily reflections
-            subject: "Daily",
-            topic: "Daily Reflection",
-            reflection_data: reflectionData,
-          })
-          .select()
-          .single();
-
-        if (data) {
-          setDailyReflectionId(data.id);
-        }
-      }
-    } catch (error) {
-      console.error("Error saving daily reflection:", error);
+    // Debounce the save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.error('No user found when saving daily reflection');
+          return;
+        }
+
+        const reflectionData = {
+          dailyReflection: reflectionText,
+          completedSessions: completed,
+        };
+
+        console.log('Saving daily reflection:', { reflectionData, dailyReflectionId, date, timetableId });
+
+        if (dailyReflectionId) {
+          // Update existing reflection
+          const { error } = await supabase
+            .from("topic_reflections")
+            .update({
+              reflection_data: reflectionData,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", dailyReflectionId);
+
+          if (error) {
+            console.error("Error updating daily reflection:", error);
+            toast.error("Failed to save reflection");
+          } else {
+            console.log('Successfully updated daily reflection');
+          }
+        } else {
+          // Create new reflection
+          const { data, error } = await supabase
+            .from("topic_reflections")
+            .insert({
+              user_id: user.id,
+              timetable_id: timetableId,
+              session_date: date,
+              session_index: -1,
+              subject: "Daily",
+              topic: "Daily Reflection",
+              reflection_data: reflectionData,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error("Error creating daily reflection:", error);
+            toast.error("Failed to save reflection");
+          } else if (data) {
+            console.log('Successfully created daily reflection:', data);
+            setDailyReflectionId(data.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error saving daily reflection:", error);
+        toast.error("Failed to save reflection");
+      }
+    }, 1000); // Debounce for 1 second
   };
 
   const handleSessionToggle = (index: number) => {
