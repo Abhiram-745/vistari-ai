@@ -6,7 +6,6 @@ import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, 
 import sessionLegend from "@/assets/session-legend.png";
 import aiTopicParse from "@/assets/ai-topic-parse.png";
 import topicPriorityOrder from "@/assets/topic-priority-order.png";
-
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -75,7 +74,7 @@ const Landing = () => {
               delay: 0.2
             }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30">
                 <Sparkles className="w-4 h-4 text-secondary" />
-                <span className="text-sm font-medium text-secondary-foreground">Trusted by 10,000+ students</span>
+                <span className="text-sm font-medium text-secondary-foreground">Trusted by 100+ students</span>
               </motion.div>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold tracking-tight leading-[1.1]">
