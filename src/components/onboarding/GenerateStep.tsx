@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Subject, Topic, TestDate, StudyPreferences } from "../OnboardingWizard"
 import { Homework } from "./HomeworkStep";
 import { checkCanCreateTimetable, incrementUsage } from "@/hooks/useUserRole";
 import PaywallDialog from "@/components/PaywallDialog";
+import FeasibilityCheck from "./FeasibilityCheck";
+import { calculateFeasibility, FeasibilityResult } from "@/utils/feasibilityCalculator";
 
 interface GenerateStepProps {
   subjects: Subject[];
@@ -34,6 +36,66 @@ const GenerateStep = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
+  const [feasibility, setFeasibility] = useState<FeasibilityResult | null>(null);
+  const [events, setEvents] = useState<any[]>([]);
+
+  // Fetch events when dates change
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!startDate || !endDate) return;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: eventsData, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("user_id", user.id)
+          .gte("start_time", `${startDate}T00:00:00`)
+          .lte("start_time", `${endDate}T23:59:59`)
+          .order("start_time", { ascending: true });
+
+        if (error) throw error;
+
+        const uniqueEvents = Array.from(
+          new Map(
+            (eventsData || []).map((evt) => [
+              `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+              evt,
+            ])
+          ).values()
+        );
+
+        setEvents(uniqueEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, [startDate, endDate]);
+
+  // Calculate feasibility when inputs change
+  useEffect(() => {
+    if (!startDate || !endDate || !subjects.length || !topics.length) {
+      setFeasibility(null);
+      return;
+    }
+
+    const result = calculateFeasibility(
+      subjects,
+      topics,
+      testDates,
+      preferences,
+      homeworks,
+      startDate,
+      endDate,
+      events
+    );
+
+    setFeasibility(result);
+  }, [subjects, topics, testDates, preferences, homeworks, startDate, endDate, events]);
 
   const handleGenerate = async () => {
     if (!startDate || !endDate) {
@@ -265,6 +327,13 @@ const GenerateStep = ({
           </div>
         </div>
       </div>
+
+      {/* Feasibility Check - shows after dates are selected */}
+      {feasibility && (
+        <div className="animate-fade-in">
+          <FeasibilityCheck result={feasibility} />
+        </div>
+      )}
 
       <Button
         onClick={handleGenerate}
