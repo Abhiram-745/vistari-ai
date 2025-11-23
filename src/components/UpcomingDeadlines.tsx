@@ -91,14 +91,20 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
   };
 
   const getDaysUntil = (dateString: string) => {
-    const days = differenceInDays(new Date(dateString), new Date());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(dateString + 'T00:00:00');
+    const days = differenceInDays(targetDate, today);
     if (days === 0) return "Today";
     if (days === 1) return "Tomorrow";
     return `${days} days`;
   };
 
   const getUrgencyColor = (dateString: string) => {
-    const days = differenceInDays(new Date(dateString), new Date());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(dateString + 'T00:00:00');
+    const days = differenceInDays(targetDate, today);
     if (days <= 1) return "text-red-600 dark:text-red-400";
     if (days <= 3) return "text-orange-600 dark:text-orange-400";
     if (days <= 7) return "text-yellow-600 dark:text-yellow-400";

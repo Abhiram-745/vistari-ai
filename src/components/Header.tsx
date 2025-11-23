@@ -83,7 +83,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
             {/* Logo */}
             <div 
               className="flex items-center space-x-3 cursor-pointer group transition-all duration-300 hover:scale-110" 
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-hero rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-all duration-300 animate-pulse"></div>
@@ -104,7 +104,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
               >
                 <Home className="h-4 w-4" />
@@ -134,7 +134,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
               >
                 <BookOpen className="h-4 w-4" />
@@ -240,7 +240,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-primary/10" />
                 <DropdownMenuItem 
-                  onClick={() => navigate("/")} 
+                  onClick={() => navigate("/dashboard")} 
                   className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
                 >
                   <Home className="mr-3 h-4 w-4 text-primary" />
