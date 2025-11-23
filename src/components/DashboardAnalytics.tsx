@@ -381,11 +381,15 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                               }
                               
                               // Count easy aspects as completed, hard aspects as not completed
-                              if (data?.easyAspects) {
-                                topicMap[topicKey].completed += data.easyAspects.length;
+                              if (data?.easyAspects && Array.isArray(data.easyAspects)) {
+                                topicMap[topicKey].completed += data.easyAspects.filter((a: any) => 
+                                  (typeof a === 'string') || (a && typeof a === 'object' && a.type === 'text' && a.content)
+                                ).length;
                               }
-                              if (data?.hardAspects) {
-                                topicMap[topicKey].notCompleted += data.hardAspects.length;
+                              if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                                topicMap[topicKey].notCompleted += data.hardAspects.filter((a: any) => 
+                                  (typeof a === 'string') || (a && typeof a === 'object' && a.type === 'text' && a.content)
+                                ).length;
                               }
                             });
                             
@@ -434,75 +438,95 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                     <CardTitle className="text-base">Mistake Genome</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-[400px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={(() => {
-                            // Build mistake patterns from hard aspects
-                            const mistakeMap: { [key: string]: number } = {};
+                    {(() => {
+                      // Build mistake patterns from hard aspects
+                      const mistakeMap: { [key: string]: number } = {};
+                      
+                      reflections.forEach((ref) => {
+                        const data = ref.reflection_data as any;
+                        if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                          data.hardAspects.forEach((aspect: any) => {
+                            // Extract text content from aspect object or use as string
+                            let aspectText = '';
+                            if (typeof aspect === 'string') {
+                              aspectText = aspect;
+                            } else if (aspect && typeof aspect === 'object' && aspect.type === 'text' && aspect.content) {
+                              aspectText = aspect.content;
+                            }
                             
-                            reflections.forEach((ref) => {
-                              const data = ref.reflection_data as any;
-                              if (data?.hardAspects && Array.isArray(data.hardAspects)) {
-                                data.hardAspects.forEach((aspect: any) => {
-                                  // Skip non-string values
-                                  if (typeof aspect !== 'string') return;
-                                  
-                                  // Categorize mistakes by keywords
-                                  let category = 'Other';
-                                  const lowerAspect = aspect.toLowerCase();
-                                  if (lowerAspect.includes('formula') || lowerAspect.includes('equation')) {
-                                    category = 'Formulas';
-                                  } else if (lowerAspect.includes('concept') || lowerAspect.includes('theory')) {
-                                    category = 'Concepts';
-                                  } else if (lowerAspect.includes('problem') || lowerAspect.includes('question')) {
-                                    category = 'Problem Solving';
-                                  } else if (lowerAspect.includes('memory') || lowerAspect.includes('remember')) {
-                                    category = 'Memory';
-                                  } else if (lowerAspect.includes('calculation') || lowerAspect.includes('math')) {
-                                    category = 'Calculations';
-                                  } else if (lowerAspect.includes('application') || lowerAspect.includes('apply')) {
-                                    category = 'Application';
-                                  }
-                                  
-                                  mistakeMap[category] = (mistakeMap[category] || 0) + 1;
-                                });
-                              }
-                            });
+                            if (!aspectText) return;
                             
-                            return Object.entries(mistakeMap)
-                              .map(([category, count]) => ({
-                                category,
-                                mistakes: count,
-                              }))
-                              .sort((a, b) => b.mistakes - a.mistakes);
-                          })()}
-                          margin={{ top: 20, right: 30, bottom: 60, left: 40 }}
-                        >
-                          <XAxis 
-                            dataKey="category" 
-                            angle={-45}
-                            textAnchor="end"
-                            height={80}
-                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                          />
-                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                          <Tooltip 
-                            contentStyle={{
-                              backgroundColor: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
-                            }}
-                          />
-                          <Bar 
-                            dataKey="mistakes" 
-                            fill="hsl(var(--destructive))" 
-                            radius={[8, 8, 0, 0]}
-                            name="Difficulty Count"
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                            // Categorize mistakes by keywords
+                            let category = 'Other';
+                            const lowerAspect = aspectText.toLowerCase();
+                            if (lowerAspect.includes('formula') || lowerAspect.includes('equation')) {
+                              category = 'Formulas';
+                            } else if (lowerAspect.includes('concept') || lowerAspect.includes('theory')) {
+                              category = 'Concepts';
+                            } else if (lowerAspect.includes('problem') || lowerAspect.includes('question')) {
+                              category = 'Problem Solving';
+                            } else if (lowerAspect.includes('memory') || lowerAspect.includes('remember')) {
+                              category = 'Memory';
+                            } else if (lowerAspect.includes('calculation') || lowerAspect.includes('math')) {
+                              category = 'Calculations';
+                            } else if (lowerAspect.includes('application') || lowerAspect.includes('apply')) {
+                              category = 'Application';
+                            }
+                            
+                            mistakeMap[category] = (mistakeMap[category] || 0) + 1;
+                          });
+                        }
+                      });
+                      
+                      const chartData = Object.entries(mistakeMap)
+                        .map(([category, count]) => ({
+                          category,
+                          mistakes: count,
+                        }))
+                        .sort((a, b) => b.mistakes - a.mistakes);
+                      
+                      if (chartData.length === 0) {
+                        return (
+                          <div className="flex flex-col items-center justify-center h-[400px] text-center space-y-2">
+                            <Target className="h-12 w-12 text-muted-foreground/50" />
+                            <p className="text-sm text-muted-foreground">
+                              No challenging aspects recorded yet
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Complete study sessions and mark difficult topics to see your mistake patterns
+                            </p>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div className="h-[400px] w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={chartData}
+                              margin={{ top: 20, right: 30, bottom: 60, left: 40 }}
+                            >
+                              <XAxis 
+                                dataKey="category" 
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                                tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                              />
+                              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px',
+                                }}
+                              />
+                              <Bar dataKey="mistakes" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
