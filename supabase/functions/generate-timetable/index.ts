@@ -191,11 +191,11 @@ serve(async (req) => {
       : "";
 
     const eventsContext = events.length > 0
-      ? "\n\n**SCHEDULED EVENTS** (DO NOT schedule study sessions during these times):\n" + events
+      ? "\n\n**SCHEDULED EVENTS - BLOCKED TIME SLOTS** (CRITICAL: These times are COMPLETELY BLOCKED - DO NOT schedule ANY study sessions during these exact times):\n" + events
           .map((evt: any) => {
             const startDate = new Date(evt.start_time);
             const endDate = new Date(evt.end_time);
-            return `- ${evt.title}: ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}${evt.description ? ` (${evt.description})` : ''}`;
+            return `- ${evt.title}: ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} [BLOCKED]${evt.description ? ` (${evt.description})` : ''}`;
           })
           .join("\n")
       : "";
@@ -239,6 +239,7 @@ TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 **CRITICAL REQUIREMENTS:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
+${events.length > 0 ? "0. **BLOCKED EVENT TIMES**: The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE. You MUST NOT schedule any study sessions that overlap with these event times. Work around them by scheduling sessions before or after these blocked periods." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **DURATION MODE COMPLIANCE**: ${preferences.duration_mode === "fixed" 
   ? `FIXED MODE - ALL sessions MUST be EXACTLY ${preferences.session_duration} minutes and ALL breaks MUST be EXACTLY ${preferences.break_duration} minutes. NO EXCEPTIONS.`

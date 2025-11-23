@@ -113,6 +113,74 @@ export const EventsWidget = () => {
     return instances;
   };
 
+  const regenerateTimetables = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get all active timetables that span future dates
+      const today = format(new Date(), "yyyy-MM-dd");
+      const { data: timetables, error } = await supabase
+        .from("timetables")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("end_date", today)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error || !timetables || timetables.length === 0) {
+        console.log("No active timetables to regenerate");
+        return;
+      }
+
+      toast.info("Regenerating timetables to account for events...", {
+        duration: 3000,
+      });
+
+      // Regenerate each active timetable
+      for (const timetable of timetables) {
+        // Fetch all the necessary data
+        const { data: preferences } = await supabase
+          .from("study_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        const { data: events } = await supabase
+          .from("events")
+          .select("*")
+          .eq("user_id", user.id)
+          .gte("end_time", timetable.start_date)
+          .lte("start_time", timetable.end_date);
+
+        const { data: homeworks } = await supabase
+          .from("homeworks")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("completed", false)
+          .gte("due_date", timetable.start_date)
+          .lte("due_date", timetable.end_date);
+
+        // Call the regenerate-tomorrow edge function for each timetable
+        await supabase.functions.invoke("regenerate-tomorrow", {
+          body: {
+            timetableId: timetable.id,
+            subjects: timetable.subjects || [],
+            topics: timetable.topics || [],
+            testDates: timetable.test_dates || [],
+            preferences: preferences || timetable.preferences,
+            homeworks: homeworks || [],
+            events: events || [],
+            startDate: timetable.start_date,
+            endDate: timetable.end_date,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error regenerating timetables:", error);
+    }
+  };
+
   const handleAddEvent = async () => {
     // Validate input
     const validation = eventSchema.safeParse({
@@ -218,6 +286,9 @@ export const EventsWidget = () => {
       setRecurrenceRule("none");
       setRecurrenceEndDate("");
       fetchEvents();
+      
+      // Automatically regenerate timetables to account for the new event
+      regenerateTimetables();
     } catch (error) {
       console.error("Error adding event:", error);
       toast.error("Failed to add event");
@@ -238,6 +309,9 @@ export const EventsWidget = () => {
       }
 
       fetchEvents();
+      
+      // Automatically regenerate timetables to account for the removed event
+      regenerateTimetables();
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event");
