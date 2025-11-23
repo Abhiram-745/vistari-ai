@@ -257,11 +257,18 @@ const TimetableView = () => {
 
   // Merge events into schedule for display - memoized to prevent duplicates
   const mergedSchedule = useMemo(() => {
-    const schedule = { ...timetable.schedule };
+    // CRITICAL: First, remove ALL existing events from the schedule
+    // This prevents duplicates when events are already stored in timetable.schedule
+    const cleanedSchedule: TimetableSchedule = {};
     
-    // Create a set to track which events we've already added
-    const addedEvents = new Set<string>();
+    Object.keys(timetable.schedule).forEach((date) => {
+      // Filter out all sessions with type='event' to get a clean base schedule
+      cleanedSchedule[date] = timetable.schedule[date].filter(
+        (session) => session.type !== 'event'
+      );
+    });
     
+    // Now add fresh events from the events table
     events.forEach((event) => {
       // Validate event dates before processing
       if (!isValidDate(event.start_time) || !isValidDate(event.end_time)) {
@@ -275,15 +282,6 @@ const TimetableView = () => {
       const endTime = new Date(event.end_time);
       const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-      // Create a unique key for this event
-      const eventKey = `${event.id}-${eventDate}-${eventTime}`;
-      
-      // Skip if we've already added this event
-      if (addedEvents.has(eventKey)) {
-        return;
-      }
-      addedEvents.add(eventKey);
-
       const eventSession: TimetableSession = {
         time: eventTime,
         duration: durationMinutes,
@@ -292,30 +290,24 @@ const TimetableView = () => {
         type: 'event',
       };
 
-      if (!schedule[eventDate]) {
-        schedule[eventDate] = [];
+      if (!cleanedSchedule[eventDate]) {
+        cleanedSchedule[eventDate] = [];
       }
       
-      // Check if this exact event session already exists in the schedule
-      const isDuplicate = schedule[eventDate].some(
-        (s) => s.type === 'event' && 
-               s.time === eventSession.time && 
-               s.subject === eventSession.subject && 
-               s.duration === eventSession.duration
-      );
-      
-      if (!isDuplicate) {
-        // Add event and sort sessions by time
-        schedule[eventDate].push(eventSession);
-        schedule[eventDate].sort((a, b) => {
-          const timeA = a.time.split(':').map(Number);
-          const timeB = b.time.split(':').map(Number);
-          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-        });
-      }
+      // Add event to the cleaned schedule
+      cleanedSchedule[eventDate].push(eventSession);
     });
     
-    return schedule;
+    // Sort all dates by time
+    Object.keys(cleanedSchedule).forEach((date) => {
+      cleanedSchedule[date].sort((a, b) => {
+        const timeA = a.time.split(':').map(Number);
+        const timeB = b.time.split(':').map(Number);
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+      });
+    });
+    
+    return cleanedSchedule;
   }, [timetable.schedule, events]);
 
   const scheduleDates = Object.keys(mergedSchedule)
