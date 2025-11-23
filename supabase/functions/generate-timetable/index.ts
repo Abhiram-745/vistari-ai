@@ -191,13 +191,17 @@ serve(async (req) => {
       : "";
 
     const eventsContext = events.length > 0
-      ? "\n\n**SCHEDULED EVENTS - BLOCKED TIME SLOTS** (CRITICAL: These times are COMPLETELY BLOCKED - DO NOT schedule ANY study sessions during these exact times):\n" + events
+      ? "\n\n**🚫 SCHEDULED EVENTS - COMPLETELY BLOCKED TIME SLOTS 🚫**\n" +
+        "**CRITICAL INSTRUCTION: These times are ABSOLUTELY UNAVAILABLE - you MUST NOT schedule ANY study sessions, breaks, or ANY activities during these exact time ranges. Skip over these times entirely.**\n\n" +
+        events
           .map((evt: any) => {
             const startDate = new Date(evt.start_time);
             const endDate = new Date(evt.end_time);
-            return `- ${evt.title}: ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} [BLOCKED]${evt.description ? ` (${evt.description})` : ''}`;
+            const durationMins = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+            return `⛔ ${evt.title}: ${startDate.toLocaleDateString()} from ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} to ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${durationMins} minutes) [COMPLETELY BLOCKED - SKIP THIS TIME]${evt.description ? ` - ${evt.description}` : ''}`;
           })
-          .join("\n")
+          .join("\n") +
+        "\n\n**EXAMPLE**: If an event is scheduled 18:00-21:00, do NOT schedule anything at 18:00, 18:15, 18:30... 20:45. The next session must start at 21:00 or later.\n"
       : "";
 
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
@@ -287,9 +291,15 @@ ${testDates.map((td: any) => {
 
 Students cannot study on test days. Schedule all revision BEFORE the test date, never on the test date itself.` : ''}
 
-**CRITICAL REQUIREMENTS:**
+**🔴 CRITICAL REQUIREMENTS - MUST FOLLOW 🔴:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
-${events.length > 0 ? "0. **BLOCKED EVENT TIMES**: The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE. You MUST NOT schedule any study sessions that overlap with these event times. Work around them by scheduling sessions before or after these blocked periods." : ""}
+${events.length > 0 ? `0. **⛔ BLOCKED EVENT TIMES - ABSOLUTELY NO SCHEDULING DURING EVENTS ⛔**: 
+   - The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE
+   - You MUST NOT schedule ANY study sessions, breaks, or ANY activity that overlaps with event times
+   - When an event blocks time (e.g., 18:00-21:00), skip that ENTIRE period completely
+   - Resume scheduling ONLY AFTER the event ends (e.g., start at 21:00 or later, never at 18:15 or 19:00)
+   - Work around events by scheduling sessions before events start or after events end
+   - Events have ABSOLUTE PRIORITY over all study activities` : ""}
 ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedule ANY sessions on the dates listed in 'TEST DAY BLOCKING'. These entire days are unavailable for studying." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
 2. **TWO-SESSION STRUCTURE**: Where time allows, most topics should have 2 sessions (Practice + Exam Questions), except:
@@ -346,38 +356,51 @@ Create a detailed, balanced study schedule that:
      ? `- **FIXED DURATION**: Each homework session MUST be ${preferences.session_duration} minutes. Split larger homework into multiple ${preferences.session_duration}-min sessions if needed.`
      : "- **EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins). Split large homework (>120 mins) into 2-3 sessions if needed."}
    - Use type="homework", include homeworkDueDate, use homework title as topic
-2. **IMPLEMENTS TWO-SESSION STRUCTURE**: For each topic, intelligently create appropriate sessions:
+2. **🎯 MANDATORY: FILL THE ENTIRE TIME WINDOW TO THE END 🎯**
+   - **CRITICAL**: If user requests study until 23:30, you MUST generate sessions that reach 23:30
+   - The LAST session must end at or very close to the user's requested end time
+   - **NEVER stop early** - if the user wants to study until 23:30, don't stop at 21:00 or 22:00
+   - If you run out of selected topics BEFORE reaching the end time, you MUST add more content:
+     * Repeat important/difficult topics with additional practice sessions
+     * Add extra exam question sessions for topics with upcoming tests
+     * Create extended revision sessions for topics that need reinforcement
+     * Add more homework sessions if homework exists
+     * Add "General Revision" sessions covering multiple topics
+   - The schedule MUST fill the ENTIRE time window from start to end for EVERY enabled study day
+   - **VERIFICATION**: Check that the last session on each day ends at or near the user's requested end time
+   - Work around blocked event times - schedule before events or after events end
+3. **IMPLEMENTS TWO-SESSION STRUCTURE**: For each topic, intelligently create appropriate sessions:
    - **Most topics**: 2 sessions (Practice with recommended tools + Exam questions)
    - **First topic in non-maths subjects**: 2 sessions (Revision notes + Exam questions)
    - **High priority/difficult topics**: 3-4+ sessions (mix of practice and exam question sessions)
    - **Low priority/time-limited topics**: 1 session (combined approach)
    - Session type should be indicated in notes field with resource recommendations
-3. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
-4. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
+4. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
+5. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
    - The EXACT number of study sessions specified (typically 4-6 sessions each)
    - A MIX of "practice" and "exam questions" sessions
    ${preferences.duration_mode === "flexible" 
      ? "- Each session using LONGER duration (60-90 minutes per session)"
      : `- Each session using the FIXED ${preferences.session_duration} minute duration`}
    - Sessions distributed throughout the timetable period (spread across different days/weeks)
-5. **APPROPRIATE TIME FOR REGULAR TOPICS**: Non-focus topics get 1-2 sessions each (time permitting)
+6. **APPROPRIATE TIME FOR REGULAR TOPICS**: Non-focus topics get 1-2 sessions each (time permitting)
    ${preferences.duration_mode === "flexible" 
      ? "- Each session: 30-45 minutes"
      : `- Each session: ${preferences.session_duration} minutes`}
-6. **RESOURCE RECOMMENDATIONS IN NOTES**: Every session must include recommended study resources in the notes field:
+7. **RESOURCE RECOMMENDATIONS IN NOTES**: Every session must include recommended study resources in the notes field:
    - Practice sessions: "Practice using [Dr Frost Maths / Revisely / SaveMyExams]"
    - Exam questions: "Exam questions from [PMT / Study Mind / SaveMyExams]"
    - Revision notes: "Read and summarize revision notes"
-7. **SESSION DURATION COMPLIANCE**: ${preferences.duration_mode === "fixed" 
+8. **SESSION DURATION COMPLIANCE**: ${preferences.duration_mode === "fixed" 
   ? `ALL sessions must be EXACTLY ${preferences.session_duration} minutes and ALL breaks must be EXACTLY ${preferences.break_duration} minutes. This is a STRICT requirement in fixed mode.`
   : "Session lengths should vary intelligently based on task type (homework exact duration, focus topics 60-90 mins, regular topics 30-45 mins)."}
-8. Allocates more time to subjects with upcoming tests
-9. Includes regular breaks between study sessions
-10. ALWAYS schedules sessions within the specific time periods for each enabled day
-11. Balances all subjects to avoid burnout
-12. Includes revision of previously covered material
-13. STOPS scheduling revision for each topic after its test date
-14. Ensures consistent daily coverage on all enabled study days
+9. Allocates more time to subjects with upcoming tests
+10. Includes regular breaks between study sessions
+11. ALWAYS schedules sessions within the specific time periods for each enabled day
+12. Balances all subjects to avoid burnout
+13. Includes revision of previously covered material
+14. STOPS scheduling revision for each topic after its test date
+15. Ensures consistent daily coverage on all enabled study days
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
