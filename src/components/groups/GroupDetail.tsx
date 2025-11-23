@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import { GroupTimetables } from "./GroupTimetables";
+import { GroupResources } from "./GroupResources";
 
 interface GroupMember {
   id: string;
@@ -256,9 +257,7 @@ const GroupDetail = () => {
           </TabsContent>
 
           <TabsContent value="resources">
-            <Card className="p-6 text-center">
-              <p className="text-muted-foreground">Resources feature coming soon</p>
-            </Card>
+            <GroupResources groupId={id!} />
           </TabsContent>
         </Tabs>
       </div>
