@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -255,41 +255,68 @@ const TimetableView = () => {
     return d instanceof Date && !isNaN(d.getTime());
   };
 
-  // Merge events into schedule for display
-  const mergedSchedule = { ...timetable.schedule };
-  events.forEach((event) => {
-    // Validate event dates before processing
-    if (!isValidDate(event.start_time) || !isValidDate(event.end_time)) {
-      console.error('Invalid event date:', event);
-      return;
-    }
-
-    const eventDate = format(new Date(event.start_time), 'yyyy-MM-dd');
-    const eventTime = format(new Date(event.start_time), 'HH:mm');
-    const startTime = new Date(event.start_time);
-    const endTime = new Date(event.end_time);
-    const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
-
-    const eventSession: TimetableSession = {
-      time: eventTime,
-      duration: durationMinutes,
-      subject: event.title,
-      topic: event.description || 'Event',
-      type: 'event',
-    };
-
-    if (!mergedSchedule[eventDate]) {
-      mergedSchedule[eventDate] = [];
-    }
+  // Merge events into schedule for display - memoized to prevent duplicates
+  const mergedSchedule = useMemo(() => {
+    const schedule = { ...timetable.schedule };
     
-    // Add event and sort sessions by time
-    mergedSchedule[eventDate].push(eventSession);
-    mergedSchedule[eventDate].sort((a, b) => {
-      const timeA = a.time.split(':').map(Number);
-      const timeB = b.time.split(':').map(Number);
-      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    // Create a set to track which events we've already added
+    const addedEvents = new Set<string>();
+    
+    events.forEach((event) => {
+      // Validate event dates before processing
+      if (!isValidDate(event.start_time) || !isValidDate(event.end_time)) {
+        console.error('Invalid event date:', event);
+        return;
+      }
+
+      const eventDate = format(new Date(event.start_time), 'yyyy-MM-dd');
+      const eventTime = format(new Date(event.start_time), 'HH:mm');
+      const startTime = new Date(event.start_time);
+      const endTime = new Date(event.end_time);
+      const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+
+      // Create a unique key for this event
+      const eventKey = `${event.id}-${eventDate}-${eventTime}`;
+      
+      // Skip if we've already added this event
+      if (addedEvents.has(eventKey)) {
+        return;
+      }
+      addedEvents.add(eventKey);
+
+      const eventSession: TimetableSession = {
+        time: eventTime,
+        duration: durationMinutes,
+        subject: event.title,
+        topic: event.description || 'Event',
+        type: 'event',
+      };
+
+      if (!schedule[eventDate]) {
+        schedule[eventDate] = [];
+      }
+      
+      // Check if this exact event session already exists in the schedule
+      const isDuplicate = schedule[eventDate].some(
+        (s) => s.type === 'event' && 
+               s.time === eventSession.time && 
+               s.subject === eventSession.subject && 
+               s.duration === eventSession.duration
+      );
+      
+      if (!isDuplicate) {
+        // Add event and sort sessions by time
+        schedule[eventDate].push(eventSession);
+        schedule[eventDate].sort((a, b) => {
+          const timeA = a.time.split(':').map(Number);
+          const timeB = b.time.split(':').map(Number);
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+        });
+      }
     });
-  });
+    
+    return schedule;
+  }, [timetable.schedule, events]);
 
   const scheduleDates = Object.keys(mergedSchedule)
     .sort()
