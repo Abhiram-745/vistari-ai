@@ -160,6 +160,26 @@ const ImportTimetable = () => {
       if (eventsData) {
         setEvents(eventsData);
       }
+
+      // Load user homework
+      const { data: homeworkData } = await supabase
+        .from('homeworks')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('completed', false)
+        .gte('due_date', new Date().toISOString().split('T')[0]);
+
+      if (homeworkData) {
+        const formattedHomework = homeworkData.map(hw => ({
+          id: hw.id,
+          subject: hw.subject,
+          title: hw.title,
+          description: hw.description || '',
+          due_date: hw.due_date,
+          duration: hw.duration || 60
+        }));
+        setHomeworks(formattedHomework);
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
