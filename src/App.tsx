@@ -29,26 +29,33 @@ const App = () => (
       <Sonner />
       <PWAInstallPrompt />
       <BrowserRouter>
-        <SidebarProvider>
-          <div className="flex min-h-screen w-full">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/calendar" element={<CalendarView />} />
-              <Route path="/social" element={<Social />} />
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/groups/:id" element={<GroupDetail />} />
-              <Route path="/import-timetable" element={<ImportTimetable />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/homework" element={<Homework />} />
-              <Route path="/topic-mastery" element={<TopicMastery />} />
-              <Route path="/timetable/:id" element={<TimetableView />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </SidebarProvider>
+        <Routes>
+          {/* Auth routes without sidebar */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Authenticated routes with sidebar */}
+          <Route path="/*" element={
+            <SidebarProvider>
+              <div className="flex min-h-screen w-full">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/calendar" element={<CalendarView />} />
+                  <Route path="/social" element={<Social />} />
+                  <Route path="/groups" element={<Groups />} />
+                  <Route path="/groups/:id" element={<GroupDetail />} />
+                  <Route path="/import-timetable" element={<ImportTimetable />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/homework" element={<Homework />} />
+                  <Route path="/topic-mastery" element={<TopicMastery />} />
+                  <Route path="/timetable/:id" element={<TimetableView />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </SidebarProvider>
+          } />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
