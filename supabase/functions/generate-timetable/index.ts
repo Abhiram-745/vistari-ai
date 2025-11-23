@@ -235,6 +235,47 @@ ${preferences.duration_mode === "fixed"
 - Breaks: Use 10-15 minutes between sessions
 - The ${preferences.session_duration} minute default is just a guideline - adjust durations intelligently`}
 
+**CRITICAL SESSION STRUCTURE & RECOMMENDED RESOURCES:**
+
+For ALL subjects (except the very first topic of each subject):
+- Each topic should have TWO different session types where possible:
+  1. **Practice Session** - Active practice using recommended tools:
+     - Mathematics: Dr Frost Maths, Corbett Maths
+     - Physics: Revisely, SaveMyExams, Isaac Physics
+     - Chemistry: Revisely, SaveMyExams
+     - Biology: Revisely, SaveMyExams
+     - All subjects: SaveMyExams (covers all GCSE subjects)
+  
+  2. **Exam Questions Session** - Past paper practice:
+     - PMT (Physics & Maths Tutor) - all subjects
+     - Study Mind - all subjects
+     - SaveMyExams - has past papers too
+     - Subject-specific exam board papers
+
+**FIRST TOPIC STRUCTURE (for all subjects EXCEPT Mathematics):**
+- For the FIRST topic of each non-maths subject, use this structure:
+  1. **Revision Notes Session** - Reading and understanding notes
+  2. **Exam Questions Session** - Applying knowledge through questions
+
+**MATHEMATICS FIRST TOPIC:**
+- First maths topic follows the standard 2-session structure (Practice + Exam Questions)
+
+**FLEXIBLE SESSION ALLOCATION:**
+- NOT all topics need exactly 2 sessions
+- HIGH PRIORITY/DIFFICULT topics may need 3-4+ sessions (mix of practice and exam questions)
+- EASIER/LOWER PRIORITY topics might only need 1 session (combined practice + questions)
+- AI should intelligently allocate sessions based on:
+  * Time available in the schedule
+  * Total number of topics to cover
+  * Topic difficulty/priority level
+  * Proximity to test dates
+
+**SESSION NOTES FIELD:**
+- MUST include the recommended resource in the notes field
+- Example: "Practice using Dr Frost Maths exercises"
+- Example: "Exam questions from PMT past papers"
+- Example: "Revision notes - read and summarize key concepts"
+
 TIMETABLE PERIOD: ${startDate} to ${endDate}
 
 **TEST DAY BLOCKING (CRITICAL):**
@@ -251,28 +292,34 @@ ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided spe
 ${events.length > 0 ? "0. **BLOCKED EVENT TIMES**: The times listed in 'SCHEDULED EVENTS - BLOCKED TIME SLOTS' are COMPLETELY UNAVAILABLE. You MUST NOT schedule any study sessions that overlap with these event times. Work around them by scheduling sessions before or after these blocked periods." : ""}
 ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedule ANY sessions on the dates listed in 'TEST DAY BLOCKING'. These entire days are unavailable for studying." : ""}
 1. **INCLUDE ALL TOPICS**: Every single topic listed in "ALL TOPICS TO COVER" MUST appear in the timetable at least once
-2. **DURATION MODE COMPLIANCE**: ${preferences.duration_mode === "fixed" 
+2. **TWO-SESSION STRUCTURE**: Where time allows, most topics should have 2 sessions (Practice + Exam Questions), except:
+   - First topic in non-maths subjects: Revision Notes + Exam Questions
+   - High priority topics: 3-4+ sessions (multiple practice and exam question sessions)
+   - Low priority/time-limited topics: May have just 1 combined session
+3. **RESOURCE RECOMMENDATIONS**: Every session MUST include appropriate resource recommendations in the notes field (e.g., "Practice using Dr Frost Maths", "Exam questions from PMT")
+4. **DURATION MODE COMPLIANCE**: ${preferences.duration_mode === "fixed" 
   ? `FIXED MODE - ALL sessions MUST be EXACTLY ${preferences.session_duration} minutes and ALL breaks MUST be EXACTLY ${preferences.break_duration} minutes. NO EXCEPTIONS.`
   : `FLEXIBLE MODE - Vary durations intelligently: homework (exact specified duration), focus topics (60-90 mins), regular topics (30-45 mins), breaks (10-15 mins)`}
-3. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
+5. **FOCUS TOPICS GET SIGNIFICANTLY MORE TIME**: Topics listed in "FOCUS TOPICS" section need MUCH MORE study time:
    - Schedule the EXACT number of sessions specified for each focus topic (typically 4-6 sessions per focus topic)
+   - Use a MIX of practice sessions and exam question sessions for these topics
    ${preferences.duration_mode === "flexible" 
      ? "- Each focus topic session should be LONGER (60-90 minutes)" 
      : `- Each focus topic session uses the fixed ${preferences.session_duration} minute duration`}
    - Distribute these sessions throughout the study period (not all on the same day)
    - Space out focus topic sessions - don't cluster them all together
-4. **REGULAR TOPICS GET MINIMAL TIME**: Topics NOT in the focus list get scheduled with ONLY 1 session each
+6. **REGULAR TOPICS**: Topics NOT in the focus list get scheduled with fewer sessions (1-2 sessions each depending on time available)
    ${preferences.duration_mode === "flexible" 
      ? "- Each regular topic session: 30-45 minutes" 
      : `- Each regular topic session: ${preferences.session_duration} minutes (fixed)`}
-5. **HOMEWORK DURATION**: ${preferences.duration_mode === "fixed" 
+7. **HOMEWORK DURATION**: ${preferences.duration_mode === "fixed" 
   ? `Each homework session MUST use the fixed ${preferences.session_duration} minute duration. If homework needs more time, split it into multiple ${preferences.session_duration}-minute sessions across different days.`
   : "Each homework session MUST use its exact specified duration (e.g., 150 mins, 60 mins, 30 mins). Large homework (>120 mins) can be split into multiple sessions if needed."}
-6. DO NOT schedule any revision for a topic AFTER its test date has passed
-6. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
-7. Include the test date in the notes field for sessions related to topics with tests
-8. MUST schedule study sessions ONLY within the specified time periods for each day
-9. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
+8. DO NOT schedule any revision for a topic AFTER its test date has passed
+9. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
+10. Include the test date in the notes field for sessions related to topics with tests
+11. MUST schedule study sessions ONLY within the specified time periods for each day
+12. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
 10. **HOMEWORK INTEGRATION (CRITICAL)**: 
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
    - Homework is NOT optional - it has hard deadlines and MUST be scheduled
@@ -299,27 +346,38 @@ Create a detailed, balanced study schedule that:
      ? `- **FIXED DURATION**: Each homework session MUST be ${preferences.session_duration} minutes. Split larger homework into multiple ${preferences.session_duration}-min sessions if needed.`
      : "- **EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins). Split large homework (>120 mins) into 2-3 sessions if needed."}
    - Use type="homework", include homeworkDueDate, use homework title as topic
-2. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
-3. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
+2. **IMPLEMENTS TWO-SESSION STRUCTURE**: For each topic, intelligently create appropriate sessions:
+   - **Most topics**: 2 sessions (Practice with recommended tools + Exam questions)
+   - **First topic in non-maths subjects**: 2 sessions (Revision notes + Exam questions)
+   - **High priority/difficult topics**: 3-4+ sessions (mix of practice and exam question sessions)
+   - **Low priority/time-limited topics**: 1 session (combined approach)
+   - Session type should be indicated in notes field with resource recommendations
+3. **INCLUDES EVERY SINGLE TOPIC**: Every topic from "ALL TOPICS TO COVER" must appear at least once
+4. **MULTIPLE SESSIONS FOR FOCUS TOPICS**: Topics in the "FOCUS TOPICS" section MUST have:
    - The EXACT number of study sessions specified (typically 4-6 sessions each)
+   - A MIX of "practice" and "exam questions" sessions
    ${preferences.duration_mode === "flexible" 
      ? "- Each session using LONGER duration (60-90 minutes per session)"
      : `- Each session using the FIXED ${preferences.session_duration} minute duration`}
    - Sessions distributed throughout the timetable period (spread across different days/weeks)
-4. **MINIMAL TIME FOR REGULAR TOPICS**: Non-focus topics get ONLY 1 session each
+5. **APPROPRIATE TIME FOR REGULAR TOPICS**: Non-focus topics get 1-2 sessions each (time permitting)
    ${preferences.duration_mode === "flexible" 
      ? "- Each session: 30-45 minutes"
      : `- Each session: ${preferences.session_duration} minutes`}
-5. **SESSION DURATION COMPLIANCE**: ${preferences.duration_mode === "fixed" 
+6. **RESOURCE RECOMMENDATIONS IN NOTES**: Every session must include recommended study resources in the notes field:
+   - Practice sessions: "Practice using [Dr Frost Maths / Revisely / SaveMyExams]"
+   - Exam questions: "Exam questions from [PMT / Study Mind / SaveMyExams]"
+   - Revision notes: "Read and summarize revision notes"
+7. **SESSION DURATION COMPLIANCE**: ${preferences.duration_mode === "fixed" 
   ? `ALL sessions must be EXACTLY ${preferences.session_duration} minutes and ALL breaks must be EXACTLY ${preferences.break_duration} minutes. This is a STRICT requirement in fixed mode.`
   : "Session lengths should vary intelligently based on task type (homework exact duration, focus topics 60-90 mins, regular topics 30-45 mins)."}
-6. Allocates more time to subjects with upcoming tests
-7. Includes regular breaks between study sessions
-8. ALWAYS schedules sessions within the specific time periods for each enabled day
-9. Balances all subjects to avoid burnout
-10. Includes revision of previously covered material
-11. STOPS scheduling revision for each topic after its test date
-12. Ensures consistent daily coverage on all enabled study days
+8. Allocates more time to subjects with upcoming tests
+9. Includes regular breaks between study sessions
+10. ALWAYS schedules sessions within the specific time periods for each enabled day
+11. Balances all subjects to avoid burnout
+12. Includes revision of previously covered material
+13. STOPS scheduling revision for each topic after its test date
+14. Ensures consistent daily coverage on all enabled study days
 
 **HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
 1. You've created a homework session for EACH homework assignment listed above
@@ -328,10 +386,16 @@ ${preferences.duration_mode === "fixed"
   : "2. Each homework session uses the EXACT duration specified for that homework"}
 3. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
 
+**SESSION STRUCTURE CHECK**: Before finalizing, verify:
+1. Most topics have 2 sessions (Practice + Exam Questions) where time permits
+2. First topic in non-maths subjects has 2 sessions (Revision Notes + Exam Questions)
+3. High priority topics have 3-4+ sessions with mix of practice and exam questions
+4. Every session includes resource recommendations in notes field
+
 **FOCUS vs REGULAR TOPICS CHECK**: Before finalizing, verify:
 ${preferences.duration_mode === "fixed"
-  ? `1. Focus topics have 4-6 sessions EACH, all using FIXED ${preferences.session_duration} minute duration\n2. Regular (non-focus) topics have ONLY 1 session EACH using FIXED ${preferences.session_duration} minute duration\n3. ALL breaks are EXACTLY ${preferences.break_duration} minutes`
-  : "1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session)\n2. Regular (non-focus) topics have ONLY 1 session EACH with SHORTER duration (30-45 mins)\n3. Session durations are VARIED and appropriate for each task type\n4. Breaks are 10-15 minutes"}
+  ? `1. Focus topics have 4-6 sessions EACH, all using FIXED ${preferences.session_duration} minute duration, with mix of practice and exam question sessions\n2. Regular (non-focus) topics have 1-2 sessions EACH using FIXED ${preferences.session_duration} minute duration\n3. ALL breaks are EXACTLY ${preferences.break_duration} minutes`
+  : "1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session), with mix of practice and exam question sessions\n2. Regular (non-focus) topics have 1-2 sessions EACH with appropriate duration (30-45 mins)\n3. Session durations are VARIED and appropriate for each task type\n4. Breaks are 10-15 minutes"}
 
 Return a JSON object with the following structure:
 {
@@ -342,13 +406,43 @@ Return a JSON object with the following structure:
         "duration": minutes,
         "subject": "subject name",
         "topic": "topic name or homework title",
-        "type": "study|break|revision|homework",
-        "notes": "any specific instructions (MUST include due date for homework, test date for topics with tests)",
+        "type": "study|break|revision|homework|practice|exam_questions",
+        "notes": "MUST include resource recommendations (e.g., 'Practice using Dr Frost Maths', 'Exam questions from PMT') and any specific instructions (MUST include due date for homework, test date for topics with tests)",
         "testDate": "YYYY-MM-DD" (optional, only if this topic has an associated test),
         "homeworkDueDate": "YYYY-MM-DD" (required for homework type)
       }
     ]
   }
+}
+
+**PRACTICE SESSION EXAMPLE** (session 1 for a topic):
+{
+  "time": "09:00",
+  "duration": 60,
+  "subject": "Mathematics",
+  "topic": "Quadratic Equations",
+  "type": "practice",
+  "notes": "Practice using Dr Frost Maths - Complete 15-20 questions on solving quadratics"
+}
+
+**EXAM QUESTIONS SESSION EXAMPLE** (session 2 for a topic):
+{
+  "time": "10:15",
+  "duration": 45,
+  "subject": "Mathematics",
+  "topic": "Quadratic Equations",
+  "type": "exam_questions",
+  "notes": "Exam questions from PMT - Past paper questions on quadratic equations"
+}
+
+**REVISION NOTES SESSION EXAMPLE** (first session for non-maths subjects):
+{
+  "time": "11:15",
+  "duration": 45,
+  "subject": "Biology",
+  "topic": "Cell Structure",
+  "type": "revision",
+  "notes": "Read and summarize revision notes on cell structure - Use SaveMyExams notes"
 }
 
 **HOMEWORK SESSION EXAMPLE** (use this format):
@@ -368,6 +462,9 @@ NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11
 1. DO NOT forget to schedule homework! Every homework assignment in the list MUST appear in the timetable as a dedicated session BEFORE its due date
 2. Count them: if there are 3 homework assignments, there must be 3 homework sessions in your schedule
 3. VERIFY: NO homework session should be scheduled ON its due date - all must be scheduled at least 1 day before
+4. IMPLEMENT TWO-SESSION STRUCTURE: Most topics should have 2 sessions (Practice + Exam Questions), except first topic in non-maths subjects (Revision Notes + Exam Questions)
+5. RESOURCE RECOMMENDATIONS: Every session MUST include specific resource recommendations in the notes field (Dr Frost Maths, Revisely, SaveMyExams, PMT, Study Mind, etc.)
+6. HIGH PRIORITY TOPICS: These need 3-4+ sessions with mix of practice and exam questions
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
