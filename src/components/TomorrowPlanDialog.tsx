@@ -5,7 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Calendar, Clock, GripVertical } from "lucide-react";
+import { Loader2, Calendar, Clock, GripVertical, Search } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -101,6 +102,7 @@ export const TomorrowPlanDialog = ({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [difficultTopics, setDifficultTopics] = useState<Array<{ subject: string; topic: string }>>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Calculate tomorrow's date
   const tomorrow = new Date(currentDate);
@@ -289,39 +291,102 @@ export const TomorrowPlanDialog = ({
               <Label className="text-base font-semibold">Select Topics for Tomorrow</Label>
               <Badge variant="secondary">{selectedTopics.length} selected</Badge>
             </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
+            
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search topics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="max-h-64 overflow-y-auto border rounded-lg">
               {availableTopics.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No topics available. Topics from your timetable will appear here.
                 </p>
-              ) : (
-                availableTopics.map((topic, idx) => {
-                  const topicKey = `${topic.subject}|||${topic.topic}`;
-                  const isSelected = selectedTopics.includes(topicKey);
-                  
+              ) : (() => {
+                // Filter topics based on search query
+                const filteredTopics = availableTopics.filter(topic => 
+                  topic.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  topic.topic.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+
+                // Group topics by subject
+                const topicsBySubject = filteredTopics.reduce((acc, topic) => {
+                  if (!acc[topic.subject]) {
+                    acc[topic.subject] = [];
+                  }
+                  acc[topic.subject].push(topic);
+                  return acc;
+                }, {} as Record<string, typeof availableTopics>);
+
+                const subjects = Object.keys(topicsBySubject).sort();
+
+                if (filteredTopics.length === 0) {
                   return (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => handleTopicToggle(topicKey)}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium">{topic.subject}</p>
-                          {topic.isDifficult && (
-                            <Badge variant="secondary" className="text-xs">Focus Point</Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{topic.topic}</p>
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No topics match your search.
+                    </p>
                   );
-                })
-              )}
+                }
+
+                return (
+                  <Accordion type="multiple" className="w-full">
+                    {subjects.map((subject) => {
+                      const subjectTopics = topicsBySubject[subject];
+                      const selectedCount = subjectTopics.filter(t => 
+                        selectedTopics.includes(`${t.subject}|||${t.topic}`)
+                      ).length;
+
+                      return (
+                        <AccordionItem key={subject} value={subject}>
+                          <AccordionTrigger className="px-3 hover:no-underline">
+                            <div className="flex items-center justify-between w-full pr-2">
+                              <span className="font-medium">{subject}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {selectedCount}/{subjectTopics.length}
+                              </Badge>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-1 px-3 pb-2">
+                              {subjectTopics.map((topic, idx) => {
+                                const topicKey = `${topic.subject}|||${topic.topic}`;
+                                const isSelected = selectedTopics.includes(topicKey);
+                                
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                  >
+                                    <Checkbox
+                                      checked={isSelected}
+                                      onCheckedChange={() => handleTopicToggle(topicKey)}
+                                      className="mt-1"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-sm">{topic.topic}</p>
+                                        {topic.isDifficult && (
+                                          <Badge variant="secondary" className="text-xs shrink-0">Focus Point</Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                );
+              })()}
             </div>
           </div>
 
