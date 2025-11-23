@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, Camera } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
 interface ProfileSettingsProps {
@@ -21,8 +22,10 @@ interface ProfileSettingsProps {
 
 const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSettingsProps) => {
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -37,11 +40,63 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
       
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, avatar_url")
         .eq("id", user.id)
         .single();
       
       setFullName(data?.full_name || "");
+      setAvatarUrl(data?.avatar_url || null);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success("Profile picture updated!");
+      onProfileUpdate?.();
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.message || "Failed to upload avatar");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -84,6 +139,35 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-24 w-24 ring-4 ring-primary/20">
+                <AvatarImage src={avatarUrl || undefined} />
+                <AvatarFallback className="bg-gradient-primary text-white text-2xl">
+                  {fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <label
+                htmlFor="avatar-upload"
+                className={`absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full cursor-pointer hover:bg-primary/90 transition-all shadow-lg ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Camera className="h-4 w-4" />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium">Profile Picture</p>
+              <p className="text-xs text-muted-foreground">Click camera to upload</p>
+            </div>
+          </div>
+
           <div className="space-y-3">
             <Label htmlFor="full-name" className="text-sm font-semibold">Full Name</Label>
             <Input

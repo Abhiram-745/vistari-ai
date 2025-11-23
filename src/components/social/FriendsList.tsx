@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,6 +12,7 @@ interface Friend {
   friend_id: string;
   status: string;
   friend_name: string;
+  avatar_url?: string;
   is_incoming: boolean;
 }
 
@@ -43,14 +44,18 @@ const FriendsList = ({ userId }: FriendsListProps) => {
 
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, avatar_url")
         .in("id", friendIds);
 
-      const friendsWithNames = friendships?.map(f => ({
-        ...f,
-        friend_name: profiles?.find(p => p.id === (f.user_id === userId ? f.friend_id : f.user_id))?.full_name || "Unknown",
-        is_incoming: f.friend_id === userId && f.status === "pending"
-      })) || [];
+      const friendsWithNames = friendships?.map(f => {
+        const friendProfile = profiles?.find(p => p.id === (f.user_id === userId ? f.friend_id : f.user_id));
+        return {
+          ...f,
+          friend_name: friendProfile?.full_name || "Unknown",
+          avatar_url: friendProfile?.avatar_url || undefined,
+          is_incoming: f.friend_id === userId && f.status === "pending"
+        };
+      }) || [];
 
       setFriends(friendsWithNames);
     } catch (error: any) {
@@ -131,6 +136,7 @@ const FriendsList = ({ userId }: FriendsListProps) => {
                 <div key={friend.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage src={friend.avatar_url} />
                       <AvatarFallback className="bg-gradient-primary text-white">
                         {getInitials(friend.friend_name)}
                       </AvatarFallback>
@@ -175,6 +181,7 @@ const FriendsList = ({ userId }: FriendsListProps) => {
               {acceptedFriends.map(friend => (
                 <div key={friend.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
                   <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                    <AvatarImage src={friend.avatar_url} />
                     <AvatarFallback className="bg-gradient-primary text-white">
                       {getInitials(friend.friend_name)}
                     </AvatarFallback>
@@ -202,6 +209,7 @@ const FriendsList = ({ userId }: FriendsListProps) => {
               {sentRequests.map(friend => (
                 <div key={friend.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={friend.avatar_url} />
                     <AvatarFallback>{getInitials(friend.friend_name)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
