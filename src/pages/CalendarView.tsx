@@ -9,6 +9,7 @@ import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO }
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 
 interface TimetableSession {
@@ -129,12 +130,53 @@ const CalendarView = () => {
   const [activeDragItem, setActiveDragItem] = useState<CalendarItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [timetableId, setTimetableId] = useState<string | null>(null);
+  const [availableTimetables, setAvailableTimetables] = useState<any[]>([]);
+  const [selectedTimetable, setSelectedTimetable] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCalendarData();
-  }, [currentWeek]);
+    fetchTimetables();
+  }, []);
+
+  useEffect(() => {
+    if (selectedTimetable) {
+      fetchCalendarData();
+    }
+  }, [currentWeek, selectedTimetable]);
+
+  const fetchTimetables = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data: timetables, error } = await supabase
+        .from("timetables")
+        .select("id, name, start_date, end_date")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setAvailableTimetables(timetables || []);
+      
+      // Auto-select first timetable if available
+      if (timetables && timetables.length > 0) {
+        setSelectedTimetable(timetables[0].id);
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching timetables:", error);
+      toast.error("Failed to load timetables");
+      setLoading(false);
+    }
+  };
 
   const fetchCalendarData = async () => {
+    if (!selectedTimetable) return;
+    
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -146,16 +188,21 @@ const CalendarView = () => {
       const weekStart = format(currentWeek, "yyyy-MM-dd");
       const weekEnd = format(addDays(currentWeek, 6), "yyyy-MM-dd");
 
-      // Fetch timetables for the current week
-      const { data: timetables, error: timetableError } = await supabase
+      console.log("Fetching calendar data for:", { selectedTimetable, weekStart, weekEnd });
+
+      // Fetch the selected timetable
+      const { data: timetable, error: timetableError } = await supabase
         .from("timetables")
         .select("*")
-        .eq("user_id", user.id)
-        .lte("start_date", weekEnd)
-        .gte("end_date", weekStart)
-        .order("created_at", { ascending: false });
+        .eq("id", selectedTimetable)
+        .single();
 
-      if (timetableError) throw timetableError;
+      if (timetableError) {
+        console.error("Timetable error:", timetableError);
+        throw timetableError;
+      }
+
+      console.log("Timetable data:", timetable);
 
       // Fetch events for the current week
       const { data: events, error: eventsError } = await supabase
@@ -165,63 +212,88 @@ const CalendarView = () => {
         .lte("start_time", weekEnd + "T23:59:59")
         .order("start_time", { ascending: true });
 
-      if (eventsError) throw eventsError;
+      if (eventsError) {
+        console.error("Events error:", eventsError);
+        throw eventsError;
+      }
+
+      console.log("Events data:", events);
 
       const items: CalendarItem[] = [];
 
       // Process timetable sessions
-      if (timetables && timetables.length > 0) {
-        const timetable = timetables[0];
+      if (timetable) {
         setTimetableId(timetable.id);
         
         const schedule = timetable.schedule;
-        console.log("Raw schedule data:", schedule, typeof schedule);
+        console.log("Schedule data:", schedule, "Type:", typeof schedule, "Is array:", Array.isArray(schedule));
         
         // Handle schedule data properly
         if (Array.isArray(schedule)) {
-          schedule.forEach((daySchedule: any) => {
+          schedule.forEach((daySchedule: any, dayIndex: number) => {
+            console.log(`Processing day ${dayIndex}:`, daySchedule);
+            
+            if (!daySchedule || !daySchedule.date) {
+              console.warn("Invalid day schedule:", daySchedule);
+              return;
+            }
+            
             const scheduleDate = parseISO(daySchedule.date);
+            console.log("Schedule date:", scheduleDate, "Current week range:", currentWeek, "to", addDays(currentWeek, 6));
+            
             if (scheduleDate >= currentWeek && scheduleDate <= addDays(currentWeek, 6)) {
               if (Array.isArray(daySchedule.sessions)) {
+                console.log(`Day ${daySchedule.date} has ${daySchedule.sessions.length} sessions`);
+                
                 daySchedule.sessions.forEach((session: any, index: number) => {
-                  items.push({
+                  const item = {
                     id: `session-${daySchedule.date}-${index}`,
-                    type: "session",
+                    type: "session" as const,
                     title: `${session.subject}: ${session.topic}`,
                     date: daySchedule.date,
-                    startTime: session.startTime,
-                    endTime: session.endTime,
+                    startTime: session.startTime || "09:00",
+                    endTime: session.endTime || "10:00",
                     color: "primary",
                     data: { ...session, date: daySchedule.date, sessionIndex: index },
-                  });
+                  };
+                  console.log("Adding session item:", item);
+                  items.push(item);
                 });
+              } else {
+                console.warn("Sessions is not an array for day:", daySchedule.date, daySchedule.sessions);
               }
             }
           });
+        } else {
+          console.error("Schedule is not an array:", schedule);
         }
       }
 
       // Process events
-      if (events) {
+      if (events && events.length > 0) {
+        console.log(`Processing ${events.length} events`);
+        
         events.forEach((event) => {
           const eventDate = format(parseISO(event.start_time), "yyyy-MM-dd");
           const startTime = format(parseISO(event.start_time), "HH:mm");
           const endTime = format(parseISO(event.end_time), "HH:mm");
 
-          items.push({
+          const item = {
             id: `event-${event.id}`,
-            type: "event",
+            type: "event" as const,
             title: event.title,
             date: eventDate,
             startTime,
             endTime,
             color: "accent",
             data: event,
-          });
+          };
+          console.log("Adding event item:", item);
+          items.push(item);
         });
       }
 
-      console.log("Calendar items created:", items);
+      console.log("Total calendar items created:", items.length);
       console.log("Items by date:", items.reduce((acc, item) => {
         acc[item.date] = (acc[item.date] || 0) + 1;
         return acc;
@@ -348,11 +420,29 @@ const CalendarView = () => {
       <Header />
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6 animate-fade-in">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <Button variant="ghost" onClick={() => navigate("/")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
+            
+            <div className="flex items-center gap-4">
+              {availableTimetables.length > 0 && (
+                <Select value={selectedTimetable || ""} onValueChange={setSelectedTimetable}>
+                  <SelectTrigger className="w-[250px]">
+                    <SelectValue placeholder="Select a timetable" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTimetables.map((tt) => (
+                      <SelectItem key={tt.id} value={tt.id}>
+                        {tt.name} ({format(parseISO(tt.start_date), "MMM d")} - {format(parseISO(tt.end_date), "MMM d, yyyy")})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm" onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}>
                 <ChevronLeft className="h-4 w-4" />
@@ -381,9 +471,20 @@ const CalendarView = () => {
               <p className="text-sm text-muted-foreground">Drag and drop to reschedule sessions and events</p>
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {!selectedTimetable ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <CalendarIcon className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">Please select a timetable to view the calendar</p>
+                </div>
+              ) : loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-pulse text-muted-foreground">Loading calendar...</div>
+                </div>
+              ) : calendarItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <CalendarIcon className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">No sessions or events found for this week</p>
+                  <p className="text-sm text-muted-foreground">Try selecting a different week or timetable</p>
                 </div>
               ) : (
                 <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
