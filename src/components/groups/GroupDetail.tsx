@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Users, Settings, LogOut } from "lucide-react";
+import { ArrowLeft, Users, Settings, LogOut, Copy, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
@@ -25,6 +25,7 @@ const GroupDetail = () => {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -94,6 +95,15 @@ const GroupDetail = () => {
     } catch (error) {
       console.error('Error leaving group:', error);
       toast.error('Failed to leave group');
+    }
+  };
+
+  const handleCopyJoinCode = async () => {
+    if (group?.join_code) {
+      await navigator.clipboard.writeText(group.join_code);
+      setCopiedCode(true);
+      toast.success("Join code copied!");
+      setTimeout(() => setCopiedCode(false), 2000);
     }
   };
 
@@ -167,6 +177,38 @@ const GroupDetail = () => {
             <Users className="w-4 h-4" />
             <span>{members.length} members</span>
           </div>
+
+          {group.is_private && group.join_code && currentUserRole === 'admin' && (
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground mb-2">Private Group Join Code:</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 px-3 py-2 bg-background rounded text-lg font-bold tracking-wider">
+                  {group.join_code}
+                </code>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyJoinCode}
+                  className="gap-2"
+                >
+                  {copiedCode ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Share this code with people you want to invite to the group
+              </p>
+            </div>
+          )}
         </Card>
 
         <Tabs defaultValue="timetables" className="space-y-6">

@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Copy, CheckCircle2 } from "lucide-react";
 
 interface CreateGroupModalProps {
   open: boolean;
@@ -21,6 +23,8 @@ export const CreateGroupModal = ({ open, onOpenChange, onSuccess }: CreateGroupM
   const [isPrivate, setIsPrivate] = useState(false);
   const [maxMembers, setMaxMembers] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [createdJoinCode, setCreatedJoinCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const generateJoinCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -66,22 +70,15 @@ export const CreateGroupModal = ({ open, onOpenChange, onSuccess }: CreateGroupM
 
       if (memberError) throw memberError;
 
-      toast.success(
-        isPrivate
-          ? `Group created! Join code: ${joinCode}`
-          : "Group created successfully!",
-        { duration: 5000 }
-      );
-
-      onSuccess();
-      onOpenChange(false);
-      
-      // Reset form
-      setName("");
-      setDescription("");
-      setSubject("");
-      setIsPrivate(false);
-      setMaxMembers(10);
+      if (isPrivate && joinCode) {
+        setCreatedJoinCode(joinCode);
+        toast.success("Group created successfully!");
+      } else {
+        toast.success("Group created successfully!");
+        onSuccess();
+        onOpenChange(false);
+        resetForm();
+      }
     } catch (error) {
       console.error('Error creating group:', error);
       toast.error("Failed to create group");
@@ -90,14 +87,80 @@ export const CreateGroupModal = ({ open, onOpenChange, onSuccess }: CreateGroupM
     }
   };
 
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setSubject("");
+    setIsPrivate(false);
+    setMaxMembers(10);
+    setCreatedJoinCode(null);
+    setCopied(false);
+  };
+
+  const handleCopyCode = async () => {
+    if (createdJoinCode) {
+      await navigator.clipboard.writeText(createdJoinCode);
+      setCopied(true);
+      toast.success("Join code copied!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleClose = () => {
+    if (createdJoinCode) {
+      onSuccess();
+      resetForm();
+      onOpenChange(false);
+    } else {
+      resetForm();
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Study Group</DialogTitle>
+          <DialogTitle>
+            {createdJoinCode ? "Group Created!" : "Create Study Group"}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        {createdJoinCode ? (
+          <div className="space-y-4">
+            <Alert className="bg-primary/10 border-primary">
+              <AlertDescription className="space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  Your private group has been created! Share this join code with members:
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 px-4 py-3 bg-background rounded-lg text-2xl font-bold text-center tracking-wider">
+                    {createdJoinCode}
+                  </code>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={handleCopyCode}
+                    className="h-12 w-12"
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <Copy className="w-5 h-5" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Save this code! Members will need it to join your private group.
+                </p>
+              </AlertDescription>
+            </Alert>
+            <Button onClick={handleClose} className="w-full">
+              Done
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
           <div>
             <Label htmlFor="name">Group Name *</Label>
             <Input
@@ -164,13 +227,14 @@ export const CreateGroupModal = ({ open, onOpenChange, onSuccess }: CreateGroupM
               {loading ? "Creating..." : "Create Group"}
             </Button>
             <Button
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
               variant="outline"
             >
               Cancel
             </Button>
           </div>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
