@@ -232,9 +232,11 @@ const ImportTimetable = () => {
                   preferences={preferences}
                   setPreferences={setPreferences}
                 />
-                <Button onClick={handleNext} className="w-full mt-4">
-                  Next
-                </Button>
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -244,7 +246,7 @@ const ImportTimetable = () => {
                   Topic Confidence Levels
                 </h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Rate your confidence for each topic (1-10). Lower scores get more study time.
+                  Select topics you want to focus on and rate your confidence (the AI will allocate more time to lower-confidence topics).
                 </p>
                 <DifficultTopicsStep
                   subjects={subjects.map((s: any, idx: number) => ({
@@ -254,9 +256,20 @@ const ImportTimetable = () => {
                   topics={parsedTopics}
                   onAnalysisComplete={(analysis) => {
                     setTopicConfidences(analysis);
-                    handleNext();
                   }}
                 />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button 
+                    onClick={handleNext} 
+                    className="flex-1 gap-2"
+                    disabled={!topicConfidences || Object.keys(topicConfidences).length === 0}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -266,76 +279,87 @@ const ImportTimetable = () => {
                   Confirm & Generate
                 </h2>
                 <div className="space-y-4 mb-6">
-                  <Card className="p-4 bg-muted">
-                    <h3 className="font-semibold text-foreground mb-2">Summary</h3>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-muted-foreground">
-                        <strong>Subjects:</strong> {subjects.length}
-                      </p>
-                      <p className="text-muted-foreground">
-                        <strong>Study Period:</strong>{' '}
-                        {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
-                      </p>
-                      <p className="text-muted-foreground">
-                        <strong>Daily Study Hours:</strong> {preferences?.daily_study_hours || 2}
-                      </p>
-                      <p className="text-muted-foreground">
-                        <strong>Session Duration:</strong> {preferences?.session_duration || 45} minutes
-                      </p>
-                      <p className="text-muted-foreground">
-                        <strong>Events to Avoid:</strong> {events.length}
-                      </p>
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      Your Personalized Timetable Summary
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                      <div className="space-y-2">
+                        <p className="text-muted-foreground">
+                          <strong>Subjects:</strong> {subjects.length} subjects
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Study Period:</strong>{' '}
+                          {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Daily Study Hours:</strong> {preferences?.daily_study_hours || 2} hours
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-muted-foreground">
+                          <strong>Session Mode:</strong> {preferences?.duration_mode === 'flexible' ? 'Flexible (AI-optimized)' : 'Fixed'} 
+                        </p>
+                        {preferences?.duration_mode === 'fixed' && (
+                          <p className="text-muted-foreground">
+                            <strong>Session/Break:</strong> {preferences?.session_duration}min / {preferences?.break_duration}min
+                          </p>
+                        )}
+                        <p className="text-muted-foreground">
+                          <strong>Your Events:</strong> {events.length} events will be avoided
+                        </p>
+                        <p className="text-muted-foreground">
+                          <strong>Focus Topics:</strong> {topicConfidences?.difficult_topics?.length || 0} selected
+                        </p>
+                      </div>
                     </div>
                   </Card>
 
-                  <TestDatesStep
-                    subjects={subjects.map((s: any, idx: number) => ({
-                      name: typeof s === 'string' ? s : s.name,
-                      exam_board: typeof s === 'object' ? s.exam_board : undefined
-                    }))}
-                    testDates={testDates}
-                    setTestDates={setTestDates}
-                  />
+                  <Card className="p-4">
+                    <h3 className="font-semibold text-foreground mb-3">Review Test Dates</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Adjust or add test dates to help the AI prioritize your study schedule
+                    </p>
+                    <TestDatesStep
+                      subjects={subjects.map((s: any, idx: number) => ({
+                        name: typeof s === 'string' ? s : s.name,
+                        exam_board: typeof s === 'object' ? s.exam_board : undefined
+                      }))}
+                      testDates={testDates}
+                      setTestDates={setTestDates}
+                    />
+                  </Card>
                 </div>
 
-                <Button
-                  onClick={handleGenerate}
-                  disabled={loading}
-                  className="w-full gap-2"
-                  size="lg"
-                >
-                  {loading ? (
-                    <>Generating Your Personalized Timetable...</>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5" />
-                      Generate My Timetable
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1 gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="flex-1 gap-2 bg-gradient-primary"
+                    size="lg"
+                  >
+                    {loading ? (
+                      <>Generating Your Timetable...</>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        Generate Personalized Timetable
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
           </div>
-
-          {currentStep < totalSteps && currentStep !== 1 && (
-            <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                className="gap-2"
-              >
-                Next
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
         </Card>
       </div>
     </div>
