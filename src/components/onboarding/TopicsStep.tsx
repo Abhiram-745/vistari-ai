@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Plus, ChevronLeft, ChevronRight, Sparkles, Loader2, Image as ImageIcon, Search, GripVertical } from "lucide-react";
+import { X, Plus, ChevronLeft, ChevronRight, Sparkles, Loader2, Image as ImageIcon, Search, GripVertical, Edit2 } from "lucide-react";
 import { Subject, Topic } from "../OnboardingWizard";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 interface TopicsStepProps {
   subjects: Subject[];
@@ -26,10 +28,11 @@ interface SortableTopicItemProps {
   topic: Topic;
   index: number;
   onRemove: () => void;
+  onClick: () => void;
   subjectName: string;
 }
 
-const SortableTopicItem = ({ id, topic, index, onRemove, subjectName }: SortableTopicItemProps) => {
+const SortableTopicItem = ({ id, topic, index, onRemove, onClick, subjectName }: SortableTopicItemProps) => {
   const {
     attributes,
     listeners,
@@ -49,12 +52,14 @@ const SortableTopicItem = ({ id, topic, index, onRemove, subjectName }: Sortable
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 bg-background border rounded-lg hover:border-primary/50 transition-colors"
+      className="flex items-center gap-3 p-3 bg-background border rounded-lg hover:border-primary/50 transition-colors cursor-pointer group"
+      onClick={onClick}
     >
       <div
         {...attributes}
         {...listeners}
         className="cursor-grab active:cursor-grabbing"
+        onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
@@ -65,13 +70,39 @@ const SortableTopicItem = ({ id, topic, index, onRemove, subjectName }: Sortable
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium truncate">{topic.name}</p>
           <p className="text-xs text-muted-foreground truncate">{subjectName}</p>
+          {topic.confidence !== undefined && (
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline" className="text-xs shrink-0">
+                Confidence: {topic.confidence}/10
+              </Badge>
+            </div>
+          )}
+          {topic.difficulties && (
+            <p className="text-xs text-muted-foreground italic truncate mt-1">
+              "{topic.difficulties}"
+            </p>
+          )}
         </div>
       </div>
       <Button
         variant="ghost"
+        size="icon"
+        className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+      >
+        <Edit2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
         size="sm"
-        onClick={onRemove}
-        className="text-destructive hover:text-destructive shrink-0"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        className="text-destructive hover:text-destructive shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <X className="h-4 w-4" />
       </Button>
@@ -88,6 +119,9 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showPriorityOrder, setShowPriorityOrder] = useState(false);
+  const [editingTopicIndex, setEditingTopicIndex] = useState<number | null>(null);
+  const [tempConfidence, setTempConfidence] = useState(5);
+  const [tempDifficulties, setTempDifficulties] = useState("");
 
   const currentSubject = subjects[currentSubjectIndex];
   const currentSubjectId = currentSubjectIndex.toString();
@@ -207,6 +241,26 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
 
   const removeTopic = (index: number) => {
     setTopics(topics.filter((_, i) => i !== index));
+  };
+
+  const handleTopicClick = (index: number) => {
+    setEditingTopicIndex(index);
+    const topic = topics[index];
+    setTempConfidence(topic.confidence || 5);
+    setTempDifficulties(topic.difficulties || "");
+  };
+
+  const handleSaveMetadata = () => {
+    if (editingTopicIndex !== null) {
+      const updatedTopics = [...topics];
+      updatedTopics[editingTopicIndex] = {
+        ...updatedTopics[editingTopicIndex],
+        confidence: tempConfidence,
+        difficulties: tempDifficulties
+      };
+      setTopics(updatedTopics);
+    }
+    setEditingTopicIndex(null);
   };
 
   const getSubjectName = (subjectId: string) => {
@@ -515,6 +569,7 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
                             topic={topic}
                             index={topics.indexOf(topic)}
                             onRemove={() => removeTopic(originalIndex)}
+                            onClick={() => handleTopicClick(originalIndex)}
                             subjectName={getSubjectName(topic.subject_id)}
                           />
                         );
@@ -527,6 +582,83 @@ const TopicsStep = ({ subjects, topics, setTopics }: TopicsStepProps) => {
           )}
         </div>
       )}
+
+      {/* Topic Metadata Dialog */}
+      <Dialog open={editingTopicIndex !== null} onOpenChange={(open) => !open && setEditingTopicIndex(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Topic Details</DialogTitle>
+            <DialogDescription>
+              Help us understand your confidence and any difficulties with this topic
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingTopicIndex !== null && (
+            <div className="space-y-6 py-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">
+                    {topics[editingTopicIndex].name}
+                  </Label>
+                  <Badge variant="outline">
+                    {getSubjectName(topics[editingTopicIndex].subject_id)}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="confidence" className="text-sm font-medium">
+                    Confidence Level
+                  </Label>
+                  <Badge variant="secondary" className="text-sm">
+                    {tempConfidence}/10
+                  </Badge>
+                </div>
+                <Slider
+                  id="confidence"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={[tempConfidence]}
+                  onValueChange={(value) => setTempConfidence(value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Not confident</span>
+                  <span>Very confident</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="difficulties" className="text-sm font-medium">
+                  What might you find difficult? (Optional)
+                </Label>
+                <Textarea
+                  id="difficulties"
+                  placeholder="e.g., Complex formulas, specific concepts, timing..."
+                  value={tempDifficulties}
+                  onChange={(e) => setTempDifficulties(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This helps AI allocate appropriate time and suggest resources
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={handleSaveMetadata} className="flex-1">
+                  Save Details
+                </Button>
+                <Button variant="outline" onClick={() => setEditingTopicIndex(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
