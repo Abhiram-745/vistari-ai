@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
+import sessionLegend from "@/assets/session-legend.png";
+import dailySchedule from "@/assets/daily-schedule.png";
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -809,8 +811,125 @@ const Landing = () => {
           </motion.div>
 
           <div className="space-y-32">
-            {/* Feature 1 */}
-            <FeatureRow title="Plans that adapt to your life" description="Got football practice? Family dinner? Friend's birthday? Your study plan automatically works around your schedule. No conflicts. No stress." icon={<Calendar className="w-12 h-12" />} gradient="from-primary to-primary-light" direction="left" />
+            {/* Feature 1: Plans that adapt - Enhanced with floating cards */}
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{
+              opacity: 0,
+              x: -30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="space-y-6">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white shadow-lg">
+                  <Calendar className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl sm:text-4xl font-display font-bold leading-tight">Plans that adapt to your life</h3>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Got football practice? Family dinner? Friend's birthday? Your study plan automatically works around your schedule. No conflicts. No stress.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Flexible scheduling:</span> Set your available time slots and the AI builds sessions around your events and commitments</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Session types:</span> Mix revision, homework, test prep, and blocked times for a balanced study plan</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Smart breaks:</span> Automatically schedules breaks and adjusts session lengths based on your preferences</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Color-coded clarity:</span> Instantly see what's planned with intuitive session type indicators</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Cards showing Session Legend and Daily Schedule */}
+              <div className="relative h-[500px]">
+                {/* Session Legend Card */}
+                <motion.div initial={{
+                opacity: 0,
+                x: -40,
+                rotate: -2
+              }} whileInView={{
+                opacity: 1,
+                x: 0,
+                rotate: -2
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.2
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.02,
+                y: -10
+              }} className="absolute left-0 top-0 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-10 w-full max-w-[500px]">
+                  <img src={sessionLegend} alt="Session Types & Time Slot Legend" className="w-full h-auto" />
+                </motion.div>
+
+                {/* Daily Schedule Card */}
+                <motion.div initial={{
+                opacity: 0,
+                x: 40,
+                rotate: 3
+              }} whileInView={{
+                opacity: 1,
+                x: 0,
+                rotate: 3
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.4
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.05,
+                y: -10
+              }} className="absolute right-0 top-20 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-20 w-[220px]">
+                  <img src={dailySchedule} alt="Daily Schedule with Sessions" className="w-full h-auto" />
+                </motion.div>
+
+                {/* Info Badge */}
+                <motion.div initial={{
+                opacity: 0,
+                y: 20
+              }} whileInView={{
+                opacity: 1,
+                y: 0
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.6
+              }} className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-primary/10 border border-primary/30 text-primary rounded-xl px-4 py-3 shadow-md backdrop-blur-sm max-w-xs">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Sparkles className="w-4 h-4" />
+                    <p className="font-semibold">10 sessions perfectly planned!</p>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
 
             {/* Feature 2 */}
             <FeatureRow title="Focus on what you struggle with" description="Mark topics as difficult and get extra practice time. The smart algorithm ensures you master tough concepts before exam day." icon={<Target className="w-12 h-12" />} gradient="from-secondary to-accent" direction="right" />
