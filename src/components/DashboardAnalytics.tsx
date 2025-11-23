@@ -97,6 +97,8 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
   const [insights, setInsights] = useState<Insight | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
   const [efficiencyScore, setEfficiencyScore] = useState<EfficiencyScore | null>(null);
+  const [allTopics, setAllTopics] = useState<Array<{ id: string; name: string; subject: string }>>([]);
+  const [topicSubjectFilter, setTopicSubjectFilter] = useState<string>("all");
 
   useEffect(() => {
     fetchTimetables();
@@ -107,6 +109,7 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
       fetchReflections();
       fetchExistingInsights();
       calculateEfficiencyScore();
+      fetchAllTopics();
     }
   }, [selectedTimetableId]);
 
@@ -133,6 +136,48 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
       .eq("user_id", userId);
 
     setReflections(data || []);
+  };
+
+  const fetchAllTopics = async () => {
+    if (!selectedTimetableId) return;
+
+    try {
+      // Get the timetable to access topics
+      const { data: timetableData } = await supabase
+        .from("timetables")
+        .select("topics, subjects")
+        .eq("id", selectedTimetableId)
+        .single();
+
+      if (timetableData?.topics && timetableData?.subjects) {
+        // Parse topics and subjects from JSON
+        const topics = timetableData.topics as any;
+        const subjects = timetableData.subjects as any;
+
+        const topicList: Array<{ id: string; name: string; subject: string }> = [];
+
+        // topics is organized by subject
+        Object.keys(topics).forEach((subjectId) => {
+          const subject = subjects[subjectId];
+          const subjectName = subject?.name || subjectId;
+          const subjectTopics = topics[subjectId];
+
+          if (Array.isArray(subjectTopics)) {
+            subjectTopics.forEach((topic: any, index: number) => {
+              topicList.push({
+                id: `${subjectId}-${index}`,
+                name: typeof topic === 'string' ? topic : topic.name,
+                subject: subjectName,
+              });
+            });
+          }
+        });
+
+        setAllTopics(topicList);
+      }
+    } catch (error) {
+      console.error("Error fetching all topics:", error);
+    }
   };
 
   const fetchExistingInsights = async () => {
@@ -361,53 +406,94 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
               <TabsContent value="overview" className="space-y-6">
                 {/* Topic Completion Matrix */}
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <CardTitle className="text-base">Topic Completion Status</CardTitle>
+                    <Select value={topicSubjectFilter} onValueChange={setTopicSubjectFilter}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Subjects</SelectItem>
+                        {Array.from(new Set(allTopics.map(t => t.subject))).map((subject) => (
+                          <SelectItem key={subject} value={subject}>
+                            {subject}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      // Build topic completion data from reflections
-                      const topicMap: { [key: string]: { subject: string; completed: number; notCompleted: number } } = {};
-                      
-                      reflections.forEach((ref) => {
-                        const data = ref.reflection_data as any;
-                        const topicKey = `${ref.subject} - ${ref.topic}`;
-                        
-                        if (!topicMap[topicKey]) {
-                          topicMap[topicKey] = { subject: ref.subject, completed: 0, notCompleted: 0 };
-                        }
-                        
-                        // Count easy aspects as completed, hard aspects as not completed
-                        if (data?.easyAspects && Array.isArray(data.easyAspects)) {
-                          topicMap[topicKey].completed += data.easyAspects.length;
-                        }
-                        if (data?.hardAspects && Array.isArray(data.hardAspects)) {
-                          topicMap[topicKey].notCompleted += data.hardAspects.length;
-                        }
-                      });
-                      
-                      const chartData = Object.entries(topicMap).map(([topic, data]) => ({
-                        topic: topic.length > 30 ? topic.substring(0, 30) + '...' : topic,
-                        fullTopic: topic,
-                        'Already Done': data.completed,
-                        'To Do': data.notCompleted,
-                      }));
-
-                      if (chartData.length === 0) {
+                      if (allTopics.length === 0) {
                         return (
                           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                             <div className="text-center">
                               <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                              <p className="text-sm">No topic reflections yet</p>
-                              <p className="text-xs mt-1">Complete study sessions and add reflections to see your progress</p>
+                              <p className="text-sm">No topics found in timetable</p>
+                              <p className="text-xs mt-1">Create a timetable with topics to see completion status</p>
                             </div>
                           </div>
                         );
                       }
 
+                      // Filter topics by subject if selected
+                      const filteredTopics = topicSubjectFilter === "all" 
+                        ? allTopics 
+                        : allTopics.filter(t => t.subject === topicSubjectFilter);
+
+                      // Build completion data for all topics
+                      const topicCompletionData = filteredTopics.map((topic) => {
+                        const topicKey = `${topic.subject} - ${topic.name}`;
+                        
+                        // Check reflections for this topic
+                        const topicReflections = reflections.filter(
+                          ref => ref.subject === topic.subject && ref.topic === topic.name
+                        );
+
+                        let completed = 0;
+                        let notCompleted = 5; // Default not completed count
+
+                        if (topicReflections.length > 0) {
+                          completed = 0;
+                          notCompleted = 0;
+                          
+                          topicReflections.forEach((ref) => {
+                            const data = ref.reflection_data as any;
+                            
+                            if (data?.easyAspects && Array.isArray(data.easyAspects)) {
+                              completed += data.easyAspects.length;
+                            }
+                            if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                              notCompleted += data.hardAspects.length;
+                            }
+                          });
+
+                          // Ensure at least some visualization
+                          if (completed === 0 && notCompleted === 0) {
+                            notCompleted = 1;
+                          }
+                        }
+
+                        return {
+                          topic: topicKey.length > 30 ? topicKey.substring(0, 30) + '...' : topicKey,
+                          fullTopic: topicKey,
+                          subject: topic.subject,
+                          'Already Done': completed,
+                          'To Do': notCompleted,
+                        };
+                      });
+
+                      // Sort by subject and then by completion
+                      const chartData = topicCompletionData.sort((a, b) => {
+                        if (a.subject !== b.subject) {
+                          return a.subject.localeCompare(b.subject);
+                        }
+                        return b['Already Done'] - a['Already Done'];
+                      });
+
                       return (
                         <div className="h-[500px] w-full overflow-auto">
-                          <ResponsiveContainer width="100%" height="100%">
+                          <ResponsiveContainer width="100%" height={Math.max(500, chartData.length * 50)}>
                             <BarChart
                               data={chartData}
                               layout="vertical"
