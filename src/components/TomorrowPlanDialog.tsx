@@ -5,9 +5,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Calendar, Clock } from "lucide-react";
+import { Loader2, Calendar, Clock, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface TomorrowPlanDialogProps {
   open: boolean;
@@ -23,6 +26,65 @@ interface TomorrowPlanDialogProps {
   }>;
   onScheduleUpdate: () => void;
 }
+
+interface SortableTopicItemProps {
+  id: string;
+  topicKey: string;
+  index: number;
+  availableTopics: Array<{ subject: string; topic: string; isDifficult?: boolean }>;
+}
+
+const SortableTopicItem = ({ id, topicKey, index, availableTopics }: SortableTopicItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const [subject, topic] = topicKey.split('|||');
+  const topicData = availableTopics.find(
+    t => t.subject === subject && t.topic === topic
+  );
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 p-3 bg-background border rounded-lg"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Badge variant="outline" className="text-xs shrink-0">
+          #{index + 1}
+        </Badge>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium truncate">{subject}</p>
+            {topicData?.isDifficult && (
+              <Badge variant="secondary" className="text-xs shrink-0">Focus Point</Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground truncate">{topic}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const TomorrowPlanDialog = ({
   open,
@@ -128,11 +190,33 @@ export const TomorrowPlanDialog = ({
   };
 
   const handleTopicToggle = (topicKey: string) => {
-    setSelectedTopics(prev => 
-      prev.includes(topicKey)
-        ? prev.filter(t => t !== topicKey)
-        : [...prev, topicKey]
-    );
+    setSelectedTopics(prev => {
+      if (prev.includes(topicKey)) {
+        return prev.filter(t => t !== topicKey);
+      } else {
+        // Add to end of list when selecting
+        return [...prev, topicKey];
+      }
+    });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setSelectedTopics((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const handleGenerateTomorrow = async () => {
@@ -213,13 +297,15 @@ export const TomorrowPlanDialog = ({
               ) : (
                 availableTopics.map((topic, idx) => {
                   const topicKey = `${topic.subject}|||${topic.topic}`;
+                  const isSelected = selectedTopics.includes(topicKey);
+                  
                   return (
                     <div
                       key={idx}
                       className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <Checkbox
-                        checked={selectedTopics.includes(topicKey)}
+                        checked={isSelected}
                         onCheckedChange={() => handleTopicToggle(topicKey)}
                         className="mt-1"
                       />
@@ -238,6 +324,43 @@ export const TomorrowPlanDialog = ({
               )}
             </div>
           </div>
+
+          {/* Priority Order - Only show if topics are selected */}
+          {selectedTopics.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Priority Order</Label>
+                <Badge variant="outline" className="text-xs">Drag to reorder</Badge>
+              </div>
+              <div className="space-y-2 border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Higher priority topics will get better time slots in your schedule
+                </p>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={selectedTopics}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {selectedTopics.map((topicKey, index) => (
+                        <SortableTopicItem
+                          key={topicKey}
+                          id={topicKey}
+                          topicKey={topicKey}
+                          index={index}
+                          availableTopics={availableTopics}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
+          )}
 
           {/* Incomplete Sessions Info */}
           {incompleteSessions.length > 0 && (
