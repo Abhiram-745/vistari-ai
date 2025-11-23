@@ -382,6 +382,7 @@ const ImportTimetable = () => {
                   onAnalysisComplete={(analysis) => {
                     setTopicConfidences(analysis);
                   }}
+                  onSkip={handleNext}
                 />
                 <div className="flex gap-2 mt-6">
                   <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
@@ -390,7 +391,6 @@ const ImportTimetable = () => {
                   <Button 
                     onClick={handleNext} 
                     className="flex-1 gap-2"
-                    disabled={!topicConfidences || Object.keys(topicConfidences).length === 0}
                   >
                     Continue <ArrowRight className="w-4 h-4" />
                   </Button>
