@@ -16,7 +16,7 @@ const TimetableModeStep = ({ selectedMode, onModeSelect }: TimetableModeStepProp
       id: "short-term-exam" as TimetableMode,
       icon: Calendar,
       title: "Short-Term Exam Prep",
-      description: "Intensive revision schedule for exams within 4-8 weeks",
+      description: "Intensive revision schedule for exams within 1-4weeks",
       features: [
         "High-intensity study sessions",
         "Focused exam practice",
