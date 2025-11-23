@@ -550,69 +550,87 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="insights" className="space-y-6">
-                {/* Learning Patterns */}
+              <TabsContent value="insights" className="space-y-4">
+                {/* Learning Patterns Heatmap */}
                 {insights.learningPatterns.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Brain className="h-4 w-4" />
-                        Learning Patterns
-                      </CardTitle>
+                      <CardTitle className="text-sm">Learning Patterns</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {insights.learningPatterns.map((pattern, idx) => (
-                          <li key={idx} className="text-sm flex gap-2">
-                            <span className="text-primary">•</span>
-                            <span>{pattern}</span>
-                          </li>
+                          <div 
+                            key={idx} 
+                            className="p-3 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-1 bg-primary rounded-full" />
+                              <span className="text-xs font-medium">{pattern}</span>
+                            </div>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Recommended Focus */}
+                {/* Recommended Focus Areas Heatmap */}
                 {insights.recommendedFocus.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Target className="h-4 w-4" />
-                        Recommended Focus Areas
-                      </CardTitle>
+                      <CardTitle className="text-sm">Recommended Focus Areas</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2">
-                        {insights.recommendedFocus.map((focus, idx) => (
-                          <li key={idx} className="text-sm flex gap-2">
-                            <span className="text-primary">•</span>
-                            <span>{focus}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="grid grid-cols-1 gap-2">
+                        {insights.recommendedFocus.map((area, idx) => {
+                          const intensity = 100 - (idx * (100 / insights.recommendedFocus.length));
+                          return (
+                            <div 
+                              key={idx} 
+                              className="p-3 rounded-lg border transition-all"
+                              style={{
+                                backgroundColor: `hsl(var(--destructive) / ${intensity * 0.003})`,
+                                borderColor: `hsl(var(--destructive) / ${intensity * 0.004})`,
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div 
+                                  className="h-8 w-2 rounded-full"
+                                  style={{
+                                    backgroundColor: `hsl(var(--destructive) / ${intensity * 0.01})`,
+                                  }}
+                                />
+                                <span className="text-xs font-medium">{area}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Personalized Tips */}
+                {/* Personalized Tips Grid */}
                 {insights.personalizedTips.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        Personalized Tips
-                      </CardTitle>
+                      <CardTitle className="text-sm">Personalized Tips</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {insights.personalizedTips.map((tip, idx) => (
-                          <li key={idx} className="text-sm flex gap-2">
-                            <span className="text-primary">•</span>
-                            <span>{tip}</span>
-                          </li>
+                          <div 
+                            key={idx} 
+                            className="p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-emerald-500/5 border border-green-500/20 hover:border-green-500/40 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                              <span className="text-xs font-medium">{tip}</span>
+                            </div>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
