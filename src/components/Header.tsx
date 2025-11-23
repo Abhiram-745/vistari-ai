@@ -114,134 +114,135 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   return (
     <>
       <header className="glass-header sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 h-16">
             {/* Logo */}
             <div 
-              className="flex items-center space-x-3 cursor-pointer group transition-all duration-300 hover:scale-110" 
+              className="flex-shrink-0 flex items-center space-x-2 cursor-pointer group transition-all duration-300 hover:scale-105" 
               onClick={() => navigate("/dashboard")}
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-hero rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-all duration-300 animate-pulse"></div>
-                <div className="relative bg-gradient-hero p-2.5 rounded-xl shadow-lg">
-                  <Calendar className="h-6 w-6 text-white" />
+                <div className="relative bg-gradient-hero p-2 rounded-xl shadow-lg">
+                  <Calendar className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl font-display font-bold gradient-text">
+              <div className="hidden sm:flex flex-col">
+                <h1 className="text-lg font-display font-bold gradient-text">
                   Study Planner
                 </h1>
-                <p className="text-[10px] text-muted-foreground -mt-1 font-medium">Your revision companion</p>
+                <p className="text-[9px] text-muted-foreground -mt-1 font-medium">Your revision companion</p>
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Dashboard</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/social")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Social</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/groups")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Groups</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/timetables")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Timetables</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/calendar")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Calendar</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/events")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <CalendarClock className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Events</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/homework")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <ClipboardList className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Homework</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/test-scores")}
-                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
-              >
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Test Scores</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                className="gap-2 hover:bg-primary/10 transition-all duration-200"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-4 w-4" />
-                ) : (
-                  <Sun className="h-4 w-4" />
-                )}
-              </Button>
-              
-              {onNewTimetable && (
+            {/* Scrollable Navigation */}
+            <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center gap-1 px-2 min-w-max">
                 <Button
-                  variant="default"
+                  variant="ghost"
                   size="sm"
-                  onClick={onNewTimetable}
-                  className="gap-2"
+                  onClick={() => navigate("/dashboard")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
                 >
-                  <Sparkles className="h-4 w-4" />
-                  <span className="hidden sm:inline font-semibold">New Timetable</span>
-                  <span className="sm:hidden font-semibold">New</span>
+                  <Home className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Dashboard</span>
                 </Button>
-              )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/social")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Social</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/groups")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Groups</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/timetables")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Timetables</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/calendar")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Calendar</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/events")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <CalendarClock className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Events</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/homework")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Homework</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/test-scores")}
+                  className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary hover-lift flex-shrink-0"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm font-medium">Test Scores</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="gap-1.5 hover:bg-primary/10 transition-all duration-200 flex-shrink-0"
+                >
+                  {theme === "light" ? (
+                    <Moon className="h-4 w-4" />
+                  ) : (
+                    <Sun className="h-4 w-4" />
+                  )}
+                </Button>
+                
+                {onNewTimetable && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={onNewTimetable}
+                    className="gap-1.5 flex-shrink-0"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-xs sm:text-sm font-semibold">New</span>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Profile Dropdown */}
