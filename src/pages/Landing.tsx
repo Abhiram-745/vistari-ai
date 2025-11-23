@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
@@ -104,11 +105,11 @@ const Landing = () => {
             duration: 0.8,
             delay: 0.6
           }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full">
-                Start your plan now
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <p className="text-sm text-muted-foreground">Free forever · No credit card · 2 min setup</p>
+            <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full">
+              Start free today
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <p className="text-sm text-muted-foreground">Free plan • £5/month Premium • 2 min setup</p>
             </motion.div>
 
             {/* Floating cards with animations - Dashboard Preview with Flow */}
@@ -1356,6 +1357,192 @@ const Landing = () => {
           }].map((testimonial, index) => <TestimonialCard key={index} testimonial={testimonial} index={index} />)}
           </div>
         </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-32 px-6 bg-card/50 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 pointer-events-none"></div>
+        
+        <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.8
+        }} className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center space-y-4 mb-16">
+            <motion.div initial={{
+              opacity: 0,
+              y: 20
+            }} whileInView={{
+              opacity: 1,
+              y: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8,
+              delay: 0.1
+            }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/20 border border-primary/30">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Simple & Transparent Pricing</span>
+            </motion.div>
+            
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight">
+              Choose your
+              <br />
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                study plan
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Start free, upgrade when you're ready to unlock unlimited features
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <motion.div initial={{
+              opacity: 0,
+              y: 30
+            }} whileInView={{
+              opacity: 1,
+              y: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8,
+              delay: 0.2
+            }} className="relative">
+              <Card className="border-2 hover:shadow-xl transition-all duration-300 h-full">
+                <CardHeader className="space-y-4 pb-8">
+                  <div className="space-y-2">
+                    <CardTitle className="text-2xl font-display">Free Plan</CardTitle>
+                    <CardDescription className="text-base">
+                      Perfect for trying out our platform
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold">£0</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">1 timetable creation</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">1 timetable regeneration</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">1 daily insights update per day</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">1 AI insights analysis</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">Basic study tracking</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">Social features</span>
+                    </li>
+                  </ul>
+                  <Button onClick={() => navigate("/auth")} variant="outline" className="w-full text-base py-6 hover:bg-muted">
+                    Get started free
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Premium Plan */}
+            <motion.div initial={{
+              opacity: 0,
+              y: 30
+            }} whileInView={{
+              opacity: 1,
+              y: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8,
+              delay: 0.3
+            }} className="relative">
+              {/* Popular badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                <div className="bg-gradient-to-r from-accent to-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🔥 Most Popular
+                </div>
+              </div>
+              
+              <Card className="border-2 border-primary hover:shadow-2xl transition-all duration-300 h-full relative overflow-hidden">
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none"></div>
+                
+                <CardHeader className="space-y-4 pb-8 relative">
+                  <div className="space-y-2">
+                    <CardTitle className="text-2xl font-display text-primary">Premium Plan</CardTitle>
+                    <CardDescription className="text-base">
+                      Unlimited everything for serious students
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">£5</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6 relative">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Unlimited timetable creation</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Unlimited regenerations</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Unlimited daily insights</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Unlimited AI analysis</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Advanced analytics</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Priority support</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Early access to new features</span>
+                    </li>
+                  </ul>
+                  <Button onClick={() => navigate("/auth")} className="w-full text-base py-6 bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 hover:scale-105 transition-all shadow-lg">
+                    Upgrade to Premium
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Cancel anytime • No hidden fees
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Final CTA */}

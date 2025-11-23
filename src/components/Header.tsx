@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock } from "lucide-react";
+import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
 
@@ -65,9 +65,15 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         .from("profiles")
         .select("full_name, avatar_url")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       
-      setProfile({ full_name: data?.full_name || "", avatar_url: data?.avatar_url || undefined, id: user.id });
+      if (data) {
+        setProfile({ full_name: data?.full_name || "", avatar_url: data?.avatar_url || undefined, id: user.id });
+      } else {
+        // Create profile if doesn't exist
+        await supabase.from("profiles").insert({ id: user.id, full_name: user.user_metadata?.full_name || "User" });
+        setProfile({ full_name: user.user_metadata?.full_name || "User", id: user.id });
+      }
     }
   };
 
@@ -87,12 +93,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
 
   const getInitials = (name?: string) => {
     if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
   return (
@@ -189,6 +190,16 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               >
                 <ClipboardList className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Homework</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/test-scores")}
+                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
+              >
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Test Scores</span>
               </Button>
 
               <Button

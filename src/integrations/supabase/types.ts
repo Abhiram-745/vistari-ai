@@ -735,6 +735,74 @@ export type Database = {
           },
         ]
       }
+      test_scores: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string
+          id: string
+          marks_obtained: number
+          percentage: number
+          questions_correct: Json
+          questions_incorrect: Json
+          recommendations: string[] | null
+          strengths: string[] | null
+          subject: string
+          test_date: string
+          test_date_id: string
+          test_type: string
+          total_marks: number
+          updated_at: string
+          user_id: string
+          weaknesses: string[] | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string
+          id?: string
+          marks_obtained: number
+          percentage: number
+          questions_correct?: Json
+          questions_incorrect?: Json
+          recommendations?: string[] | null
+          strengths?: string[] | null
+          subject: string
+          test_date: string
+          test_date_id: string
+          test_type: string
+          total_marks: number
+          updated_at?: string
+          user_id: string
+          weaknesses?: string[] | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string
+          id?: string
+          marks_obtained?: number
+          percentage?: number
+          questions_correct?: Json
+          questions_incorrect?: Json
+          recommendations?: string[] | null
+          strengths?: string[] | null
+          subject?: string
+          test_date?: string
+          test_date_id?: string
+          test_type?: string
+          total_marks?: number
+          updated_at?: string
+          user_id?: string
+          weaknesses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_scores_test_date_id_fkey"
+            columns: ["test_date_id"]
+            isOneToOne: false
+            referencedRelation: "test_dates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timetable_history: {
         Row: {
           change_description: string | null
