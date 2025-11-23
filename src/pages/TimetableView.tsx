@@ -345,6 +345,8 @@ const TimetableView = () => {
                               ? "bg-primary/10 border-primary opacity-60"
                               : session.type === "break"
                               ? "bg-muted/30 border-muted-foreground"
+                              : session.type === "event"
+                              ? "bg-red-50 dark:bg-red-950/20 border-red-500"
                               : session.type === "homework"
                               ? "bg-purple-50 dark:bg-purple-950/20 border-purple-500"
                               : session.type === "revision"
@@ -371,6 +373,8 @@ const TimetableView = () => {
                                   className={`text-xs px-2 py-1 rounded ${
                                     session.type === "break"
                                       ? "bg-muted text-muted-foreground"
+                                      : session.type === "event"
+                                      ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
                                       : session.type === "homework"
                                       ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
                                       : session.type === "revision"
