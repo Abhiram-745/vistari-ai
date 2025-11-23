@@ -112,6 +112,16 @@ export const TimetableEditDialog = ({
 
       if (homeworkError) throw homeworkError;
 
+      // Fetch user's events within the timetable date range
+      const { data: events, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .gte("start_time", startDate)
+        .lte("start_time", endDate)
+        .order("start_time", { ascending: true });
+
+      if (eventsError) throw eventsError;
+
       const { data: scheduleData, error: functionError } = await supabase.functions.invoke(
         "generate-timetable",
         {
@@ -128,6 +138,7 @@ export const TimetableEditDialog = ({
               duration,
               description
             })) || [],
+            events: events || [],
             aiNotes: preferences.aiNotes || "",
             startDate,
             endDate,

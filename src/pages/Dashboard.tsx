@@ -12,6 +12,7 @@ import { HomeworkList } from "@/components/HomeworkList";
 import { StudyStreakTracker } from "@/components/StudyStreakTracker";
 import { WeeklyGoalsWidget } from "@/components/WeeklyGoalsWidget";
 import { UpcomingDeadlines } from "@/components/UpcomingDeadlines";
+import { EventsWidget } from "@/components/EventsWidget";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -173,6 +174,11 @@ const Dashboard = () => {
                 <WeeklyGoalsWidget userId={user?.id || ""} />
                 <UpcomingDeadlines userId={user?.id || ""} />
               </div>
+            </div>
+
+            {/* Events Section */}
+            <div>
+              <EventsWidget />
             </div>
 
             {/* Timetables Section */}
