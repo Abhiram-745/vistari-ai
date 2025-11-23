@@ -79,14 +79,21 @@ const ImportTimetable = () => {
     
     // Parse topics for difficulty step
     // Topics from database are array of {name, subject_id} where subject_id is the UUID
-    // We need to map them to work with DifficultTopicsStep
+    // DifficultTopicsStep expects subject_id to be the index in the subjects array
     let topicsArray: any[] = [];
     
     if (Array.isArray(topicsData) && topicsData.length > 0) {
-      // Topics are already in the correct format from the database
+      // Create a map of subject UUID to index
+      const subjectIdToIndex = new Map();
+      subjectsArray.forEach((subject: any, index: number) => {
+        const subjectId = typeof subject === 'object' ? subject.id : subject;
+        subjectIdToIndex.set(subjectId, index);
+      });
+      
+      // Map topics to use subject index instead of UUID
       topicsArray = topicsData.map((topic: any) => ({
         name: topic.name,
-        subject_id: topic.subject_id
+        subject_id: subjectIdToIndex.get(topic.subject_id)?.toString() || "0"
       }));
     } else if (typeof topicsData === 'object' && !Array.isArray(topicsData)) {
       // Fallback for old format where topics might be object with subject indices
@@ -94,7 +101,7 @@ const ImportTimetable = () => {
         if (Array.isArray(topicList)) {
           return topicList.map((topicName: string) => ({
             name: topicName,
-            subject_id: subjectsArray[parseInt(subjectIdx)]?.id || subjectIdx
+            subject_id: subjectIdx
           }));
         }
         return [];
