@@ -258,36 +258,61 @@ Return ONLY valid JSON in this exact format:
         if (!updatedSchedule[date]) {
           updatedSchedule[date] = [];
         }
-        
-        // Add each session with the AI-specified time
+
+        // Add or merge each session with the AI-specified time
         (sessions as any[]).forEach((session: any) => {
           // Validate time format
           const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
           let sessionTime = session.time || '09:00';
-          
+
           if (!timeRegex.test(sessionTime)) {
             console.warn(`Invalid time format: ${sessionTime}, defaulting to 09:00`);
             sessionTime = '09:00';
           }
-          
+
           // Check if time is within valid range
           const [hours, minutes] = sessionTime.split(':').map(Number);
           if (hours >= 24 || minutes >= 60) {
             console.warn(`Time out of range: ${sessionTime}, defaulting to 09:00`);
             sessionTime = '09:00';
           }
-          
-          updatedSchedule[date].push({
+
+          const normalizedType = session.type || 'study';
+
+          // If a session with the same subject/topic/type already exists on this day,
+          // treat this as a MOVE/UPDATE instead of creating a duplicate.
+          const existingIndex = updatedSchedule[date].findIndex((s: any) =>
+            s.subject === session.subject &&
+            s.topic === session.topic &&
+            (s.type || 'study') === normalizedType
+          );
+
+          const newSession = {
             time: sessionTime,
             subject: session.subject,
             topic: session.topic,
             duration: session.duration,
-            type: session.type || 'study',
+            type: normalizedType,
             notes: session.notes || `Rescheduled from ${currentDate}`,
-            completed: false
-          });
+            completed: false,
+          };
+
+          if (existingIndex !== -1) {
+            console.log('Merging rescheduled session with existing one', {
+              date,
+              subject: session.subject,
+              topic: session.topic,
+              type: normalizedType,
+            });
+            updatedSchedule[date][existingIndex] = {
+              ...updatedSchedule[date][existingIndex],
+              ...newSession,
+            };
+          } else {
+            updatedSchedule[date].push(newSession);
+          }
         });
-        
+
         // Sort sessions by time
         updatedSchedule[date].sort((a: any, b: any) => {
           const timeA = a.time || '00:00';
