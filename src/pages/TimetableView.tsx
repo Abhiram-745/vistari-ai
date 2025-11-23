@@ -90,18 +90,20 @@ const TimetableView = () => {
       .from("timetables")
       .select("*")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (error) {
+    if (error || !data) {
       toast.error("Failed to load timetable");
       navigate("/");
-    } else {
-      setTimetable(data as unknown as Timetable);
-      setNewName(data.name);
-      
-      // Fetch events that overlap with timetable date range
-      await fetchEvents(data.start_date, data.end_date);
+      setLoading(false);
+      return;
     }
+    
+    setTimetable(data as unknown as Timetable);
+    setNewName(data.name);
+    
+    // Fetch events that overlap with timetable date range
+    await fetchEvents(data.start_date, data.end_date);
     setLoading(false);
   };
 
