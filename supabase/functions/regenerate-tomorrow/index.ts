@@ -118,6 +118,7 @@ serve(async (req) => {
 **TIMING CONSTRAINTS**
 - Start Time: ${effectiveStartTime}
 - End Time: ${effectiveEndTime}
+- **CRITICAL**: You MUST fill the ENTIRE time window from start to end time. Do not stop early!
 - Target Session Duration: 60 minutes per topic (can vary 45-90 minutes based on difficulty/confidence)
 - Break Duration: ${breakDuration} minutes (use strategically, NOT after every session)
 
@@ -150,17 +151,22 @@ ${JSON.stringify(tomorrowEvents?.map(e => ({
 })) || [], null, 2)}
 
 **CRITICAL SCHEDULING RULES**
-1. **FEWER TOPICS, MORE DEPTH**: Schedule 3-5 topics maximum for a productive day. Each topic needs 60+ minutes of focused work.
-2. **Prioritize ruthlessly**: First topics in the list get prime time slots and best focus hours.
-3. **Realistic breaks**: Add breaks after 2-3 hours of work, or between very different subjects. NOT after every single session.
-4. **Difficulty-based timing**: 
+1. **FILL ENTIRE TIME WINDOW**: You MUST schedule sessions all the way until the end time (${effectiveEndTime}). If selected topics don't fill the time, add:
+   - Additional homework sessions from the homework list
+   - Revision sessions for already-covered topics (mark as type: "revision")
+   - Additional study topics from the selected list
+2. **FEWER TOPICS, MORE DEPTH**: Prefer 3-6 topics with 60+ minutes each over many short sessions.
+3. **Prioritize ruthlessly**: First topics in the list get prime time slots and best focus hours.
+4. **Realistic breaks**: Add breaks after 2-3 hours of work, or between very different subjects. NOT after every single session.
+5. **Difficulty-based timing**: 
    - Low confidence (1-4): 75-90 minutes
    - Medium confidence (5-7): 60-75 minutes  
    - High confidence (8-10): 45-60 minutes
-5. **Homework precision**: Use EXACT duration from homework list (already includes time needed)
-6. **Event avoidance**: Never schedule during events - work around them completely
-7. **Time format**: All times in HH:MM format (00:00-23:59)
-8. **Sequential scheduling**: Calculate each start time from previous end time + break (if break added)
+6. **Homework precision**: Use EXACT duration from homework list (already includes time needed)
+7. **Event avoidance**: Never schedule during events - work around them completely
+8. **Time format**: All times in HH:MM format (00:00-23:59)
+9. **Sequential scheduling**: Calculate each start time from previous end time + break (if break added)
+10. **Fill remaining time**: If you reach the last selected topic but still have time before ${effectiveEndTime}, continue adding sessions (homework, revision, or lower-priority topics) until you reach the end time
 
 **RESPONSE FORMAT**
 Return ONLY valid JSON:
@@ -179,13 +185,20 @@ Return ONLY valid JSON:
   "reasoning": "Why you chose this number of topics and how you allocated time"
 }
 
-**EXAMPLE GOOD SCHEDULE** (4 hour window, 3 topics):
+**EXAMPLE GOOD SCHEDULE** (4 hour window 09:00-13:00, must fill until 13:00):
 09:00 - Topic 1 (high priority, low confidence) - 75 min
 10:15 - Topic 2 (high priority, medium confidence) - 60 min  
-11:30 - Break - 15 min
-11:45 - Homework (from list) - 45 min
-12:30 - Topic 3 (medium priority) - 60 min
-= 3 topics + 1 homework + 1 strategic break`;
+11:15 - Break - 15 min
+11:30 - Homework (from list) - 45 min
+12:15 - Topic 3 (medium priority) - 45 min
+= 3 topics + 1 homework + 1 break = ends at 13:00 ✓ (fills entire window)
+
+**EXAMPLE BAD SCHEDULE** (stops at 12:30 when end time is 13:00):
+09:00 - Topic 1 - 75 min
+10:15 - Topic 2 - 60 min
+11:15 - Break - 15 min
+11:30 - Homework - 60 min
+12:30 - STOPS HERE ✗ (should continue until 13:00)`;
 
     console.log('Calling AI to generate tomorrow\'s schedule...');
 
