@@ -113,7 +113,7 @@ const Landing = () => {
             </motion.div>
 
             {/* Floating cards with animations - Dashboard Preview with Flow */}
-            <div className="relative h-[600px] mt-20">
+            <div className="relative h-auto md:h-[600px] mt-12 md:mt-20 space-y-8 md:space-y-0">
               {/* Step 1: Dashboard Header Card */}
               <motion.div initial={{
               opacity: 0,
@@ -127,7 +127,7 @@ const Landing = () => {
             }} whileHover={{
               scale: 1.02,
               y: -5
-            }} className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10">
+            }} className="relative md:absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-4 md:p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Dhrishiv! 👋</h3>
@@ -171,7 +171,7 @@ const Landing = () => {
             }} transition={{
               duration: 0.8,
               delay: 1.6
-            }} className="absolute left-1/4 top-32 z-5">
+            }} className="hidden md:block absolute left-1/4 top-32 z-5">
                 <svg width="120" height="120" viewBox="0 0 120 120" className="text-primary/40">
                   <motion.path d="M 60 10 Q 30 60 40 110" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
                   pathLength: 0
@@ -206,7 +206,7 @@ const Landing = () => {
             }} whileHover={{
               scale: 1.05,
               y: -10
-            }} className="absolute left-8 top-44 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm z-10">
+            }} className="relative md:absolute left-0 md:left-8 top-0 md:top-44 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-4 md:p-5 shadow-lg max-w-sm backdrop-blur-sm z-10">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ const Landing = () => {
             }} transition={{
               duration: 0.8,
               delay: 2.6
-            }} className="absolute left-1/2 top-[280px] -translate-x-1/2 z-5">
+            }} className="hidden md:block absolute left-1/2 top-[280px] -translate-x-1/2 z-5">
                 <svg width="200" height="100" viewBox="0 0 200 100" className="text-secondary/40">
                   <motion.path d="M 10 20 Q 100 10 190 40" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
                   pathLength: 0
@@ -281,7 +281,7 @@ const Landing = () => {
             }} whileHover={{
               scale: 1.05,
               y: -10
-            }} className="absolute right-8 top-56 bg-card border border-border/50 rounded-2xl p-5 shadow-lg max-w-xs backdrop-blur-sm z-10">
+            }} className="relative md:absolute left-0 md:left-auto right-0 md:right-8 top-0 md:top-56 bg-card border border-border/50 rounded-2xl p-4 md:p-5 shadow-lg max-w-xs backdrop-blur-sm z-10">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <Brain className="w-5 h-5 text-secondary" />
@@ -329,7 +329,7 @@ const Landing = () => {
             }} transition={{
               duration: 0.8,
               delay: 3.6
-            }} className="absolute right-1/4 top-[420px] z-5">
+            }} className="hidden md:block absolute right-1/4 top-[420px] z-5">
                 <svg width="120" height="100" viewBox="0 0 120 100" className="text-accent/40">
                   <motion.path d="M 80 10 Q 60 50 70 90" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" initial={{
                   pathLength: 0
@@ -361,7 +361,7 @@ const Landing = () => {
               delay: 3.8
             }} whileHover={{
               scale: 1.05
-            }} className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10">
+            }} className="relative md:absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 md:bottom-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-4 md:p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-5 h-5 text-primary" />
