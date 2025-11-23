@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TomorrowPlanDialog } from "./TomorrowPlanDialog";
 import { checkCanUseDailyInsights, incrementUsage } from "@/hooks/useUserRole";
 import PaywallDialog from "@/components/PaywallDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DailyInsightsPanelProps {
   date: string;
@@ -31,6 +32,7 @@ export const DailyInsightsPanel = ({
   timetableId,
   onScheduleUpdate,
 }: DailyInsightsPanelProps) => {
+  const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
   const [reflection, setReflection] = useState("");
   const [completedSessions, setCompletedSessions] = useState<number[]>([]);
@@ -210,7 +212,7 @@ export const DailyInsightsPanel = ({
       }
 
       // Increment usage after successful generation
-      await incrementUsage("daily_insights");
+      await incrementUsage("daily_insights", queryClient);
 
       // Show AI summary to user
       if (data.summary) {

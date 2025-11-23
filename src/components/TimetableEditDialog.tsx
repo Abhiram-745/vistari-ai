@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Subject, Topic, TestDate, StudyPreferences } from "./OnboardingWizard";
 import { checkCanRegenerateTimetable, incrementUsage } from "@/hooks/useUserRole";
 import PaywallDialog from "@/components/PaywallDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TimetableEditDialogProps {
   timetableId: string;
@@ -78,6 +79,7 @@ export const TimetableEditDialog = ({
   endDate,
   onUpdate,
 }: TimetableEditDialogProps) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>(currentSubjects);
   const [topics, setTopics] = useState<Topic[]>(currentTopics);
@@ -183,7 +185,7 @@ export const TimetableEditDialog = ({
       if (updateError) throw updateError;
 
       // Increment usage counter
-      await incrementUsage("timetable_regeneration");
+      await incrementUsage("timetable_regeneration", queryClient);
 
       toast.success("Timetable regenerated successfully!");
       setOpen(false);

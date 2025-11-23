@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Brain, Sparkles, TrendingUp, TrendingDown, Lightbulb, Target, Loader2, Clock, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import PaywallDialog from "@/components/PaywallDialog";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -67,6 +68,7 @@ interface Insight {
 }
 
 export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<Insight | null>(null);
   const [reflections, setReflections] = useState<any[]>([]);
@@ -134,7 +136,7 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
       setInsights(data.insights);
       
       // Increment usage after successful generation
-      await incrementUsage("ai_insights");
+      await incrementUsage("ai_insights", queryClient);
       
       toast.success("AI Insights generated!");
     } catch (error) {
