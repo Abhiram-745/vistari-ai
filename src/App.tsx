@@ -9,7 +9,10 @@ import Dashboard from "./pages/Dashboard";
 import TimetableView from "./pages/TimetableView";
 import CalendarView from "./pages/CalendarView";
 import Social from "./pages/Social";
+import Groups from "./pages/Groups";
+import GroupDetail from "./components/groups/GroupDetail";
 import NotFound from "./pages/NotFound";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -18,12 +21,15 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWAInstallPrompt />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/social" element={<Social />} />
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/groups/:id" element={<GroupDetail />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
