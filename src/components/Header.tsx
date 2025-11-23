@@ -134,6 +134,16 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => navigate("/")}
+                className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Timetables</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => navigate("/calendar")}
                 className="gap-2 hover:bg-gradient-primary/10 hover:text-primary hover-lift"
               >
