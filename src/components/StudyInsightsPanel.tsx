@@ -3,15 +3,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Brain, Sparkles, TrendingUp, TrendingDown, Lightbulb, Target, Loader2 } from "lucide-react";
+import { Brain, Sparkles, TrendingUp, TrendingDown, Lightbulb, Target, Loader2, Clock, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 interface StudyInsightsPanelProps {
   timetableId: string;
@@ -125,8 +146,8 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
-            Your Study Mindprint
+            <BarChart3 className="h-5 w-5 text-primary" />
+            AI Overall Analysis
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -151,7 +172,7 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Do Mindprint
+                  Generate AI Analysis
                 </>
               )}
             </Button>
@@ -167,132 +188,261 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                     <p className="text-sm">{insights.overallSummary}</p>
                   </div>
 
-                  {/* Subject Breakdown */}
-                  <div className="space-y-3">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      Subject Confidence
-                    </h3>
-                    {Object.entries(insights.subjectBreakdown).map(([subject, data]) => (
-                      <div key={subject} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{subject}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {data.confidenceScore}/10
-                          </span>
-                        </div>
-                        <Progress value={data.confidenceScore * 10} />
-                        <p className="text-xs text-muted-foreground">{data.summary}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="overview">Overview</TabsTrigger>
+                      <TabsTrigger value="performance">Performance</TabsTrigger>
+                      <TabsTrigger value="insights">Insights</TabsTrigger>
+                    </TabsList>
 
-                  {/* Struggling Topics */}
-                  <div className="space-y-3">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-destructive" />
-                      Topics Needing Focus
-                    </h3>
-                    <div className="space-y-2">
-                      {insights.strugglingTopics.map((topic, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => setSelectedTopic(topic.topic)}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium text-sm">{topic.topic}</span>
-                                <Badge variant={getSeverityColor(topic.severity) as any} className="text-xs">
-                                  {topic.severity}
-                                </Badge>
+                    <TabsContent value="overview" className="space-y-6">
+                      {/* Subject Confidence Radar Chart */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            Subject Confidence Map
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ChartContainer
+                            config={Object.entries(insights.subjectBreakdown).reduce((acc, [subject], idx) => ({
+                              ...acc,
+                              [subject]: {
+                                label: subject,
+                                color: `hsl(var(--chart-${(idx % 5) + 1}))`,
+                              }
+                            }), {})}
+                            className="h-[300px]"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadarChart data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
+                                subject,
+                                confidence: data.confidenceScore,
+                              }))}>
+                                <PolarGrid />
+                                <PolarAngleAxis dataKey="subject" />
+                                <PolarRadiusAxis angle={90} domain={[0, 10]} />
+                                <Radar
+                                  name="Confidence"
+                                  dataKey="confidence"
+                                  stroke="hsl(var(--primary))"
+                                  fill="hsl(var(--primary))"
+                                  fillOpacity={0.6}
+                                />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                              </RadarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+
+                      {/* Topics Distribution */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <BarChart3 className="h-4 w-4" />
+                            Topics Performance
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ChartContainer
+                            config={{
+                              struggling: { label: "Needs Focus", color: "hsl(var(--destructive))" },
+                              strong: { label: "Strengths", color: "hsl(var(--chart-2))" },
+                            }}
+                            className="h-[300px]"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={[
+                                    { name: "Needs Focus", value: insights.strugglingTopics.length, fill: "hsl(var(--destructive))" },
+                                    { name: "Strengths", value: insights.strongAreas.length, fill: "hsl(var(--chart-2))" },
+                                  ]}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                  outerRadius={80}
+                                  dataKey="value"
+                                >
+                                  <Cell fill="hsl(var(--destructive))" />
+                                  <Cell fill="hsl(var(--chart-2))" />
+                                </Pie>
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="performance" className="space-y-6">
+                      {/* Subject Performance Bar Chart */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">Subject Performance Breakdown</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ChartContainer
+                            config={Object.entries(insights.subjectBreakdown).reduce((acc, [subject], idx) => ({
+                              ...acc,
+                              [subject]: {
+                                label: subject,
+                                color: `hsl(var(--chart-${(idx % 5) + 1}))`,
+                              }
+                            }), {})}
+                            className="h-[300px]"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
+                                subject,
+                                score: data.confidenceScore,
+                                topics: data.topicsCount,
+                              }))}>
+                                <XAxis dataKey="subject" />
+                                <YAxis domain={[0, 10]} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                <Bar dataKey="score" name="Confidence Score" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                          
+                          <div className="mt-4 space-y-2">
+                            {Object.entries(insights.subjectBreakdown).map(([subject, data]) => (
+                              <div key={subject} className="text-sm">
+                                <div className="flex justify-between mb-1">
+                                  <span className="font-medium">{subject}</span>
+                                  <span className="text-muted-foreground">{data.confidenceScore}/10</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{data.summary}</p>
                               </div>
-                              <p className="text-xs text-muted-foreground">{topic.subject}</p>
-                              <p className="text-sm mt-2">{topic.reason}</p>
-                            </div>
+                            ))}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                        </CardContent>
+                      </Card>
 
-                  {/* Strong Areas */}
-                  <div className="space-y-3">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      Your Strengths
-                    </h3>
-                    <div className="space-y-2">
-                      {insights.strongAreas.map((area, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors bg-green-50 dark:bg-green-950/20"
-                          onClick={() => setSelectedTopic(area.topic)}
-                        >
-                          <div className="font-medium text-sm">{area.topic}</div>
-                          <p className="text-xs text-muted-foreground">{area.subject}</p>
-                          <p className="text-sm mt-2">{area.reason}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                      {/* Struggling vs Strong Topics */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <TrendingDown className="h-4 w-4 text-destructive" />
+                              Topics Needing Focus
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              {insights.strugglingTopics.map((topic, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                                  onClick={() => setSelectedTopic(topic.topic)}
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium text-sm">{topic.topic}</span>
+                                    <Badge variant={getSeverityColor(topic.severity) as any} className="text-xs">
+                                      {topic.severity}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">{topic.subject}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                  {/* Personalized Tips */}
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value="tips">
-                      <AccordionTrigger className="text-sm font-semibold">
-                        <span className="flex items-center gap-2">
-                          <Lightbulb className="h-4 w-4 text-yellow-600" />
-                          Personalized Study Tips
-                        </span>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="space-y-2 text-sm">
-                          {insights.personalizedTips.map((tip, idx) => (
-                            <li key={idx} className="flex gap-2">
-                              <span className="text-primary">•</span>
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              Your Strengths
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              {insights.strongAreas.map((area, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors bg-green-50 dark:bg-green-950/20"
+                                  onClick={() => setSelectedTopic(area.topic)}
+                                >
+                                  <div className="font-medium text-sm">{area.topic}</div>
+                                  <p className="text-xs text-muted-foreground">{area.subject}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </TabsContent>
 
-                    <AccordionItem value="patterns">
-                      <AccordionTrigger className="text-sm font-semibold">
-                        Learning Patterns Detected
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="space-y-2 text-sm">
-                          {insights.learningPatterns.map((pattern, idx) => (
-                            <li key={idx} className="flex gap-2">
-                              <span className="text-primary">•</span>
-                              <span>{pattern}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
+                    <TabsContent value="insights" className="space-y-4">
+                      {/* Personalized Tips */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Lightbulb className="h-4 w-4 text-yellow-600" />
+                            Personalized Study Tips
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            {insights.personalizedTips.map((tip, idx) => (
+                              <li key={idx} className="flex gap-2 p-2 rounded bg-muted/50">
+                                <span className="text-primary mt-1">•</span>
+                                <span>{tip}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
 
-                    <AccordionItem value="focus">
-                      <AccordionTrigger className="text-sm font-semibold">
-                        Recommended Focus Areas
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="space-y-2 text-sm">
-                          {insights.recommendedFocus.map((focus, idx) => (
-                            <li key={idx} className="flex gap-2">
-                              <span className="text-primary">•</span>
-                              <span>{focus}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-            )}
+                      {/* Learning Patterns */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Brain className="h-4 w-4" />
+                            Learning Patterns Detected
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            {insights.learningPatterns.map((pattern, idx) => (
+                              <li key={idx} className="flex gap-2 p-2 rounded bg-muted/50">
+                                <span className="text-primary mt-1">•</span>
+                                <span>{pattern}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      {/* Recommended Focus */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            Recommended Focus Areas
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            {insights.recommendedFocus.map((focus, idx) => (
+                              <li key={idx} className="flex gap-2 p-2 rounded bg-muted/50">
+                                <span className="text-primary mt-1">•</span>
+                                <span>{focus}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              )}
             </>
           )}
         </CardContent>
