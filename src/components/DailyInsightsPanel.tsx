@@ -197,7 +197,13 @@ export const DailyInsightsPanel = ({
         return;
       }
 
-      toast.success("Schedule updated! Missed topics added to next available days");
+      // Show AI summary to user
+      if (data.summary) {
+        toast.success(data.summary, { duration: 8000 });
+      } else {
+        toast.success("Schedule updated! Missed topics added to next available days");
+      }
+      
       onScheduleUpdate();
       
       // Don't clear the reflection and completed sessions

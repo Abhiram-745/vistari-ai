@@ -116,15 +116,16 @@ serve(async (req) => {
     });
 
     // Use AI to intelligently reschedule
-    const prompt = `You are a study scheduling AI assistant. A student has completed some sessions but not others and needs their schedule reorganized.
+    const prompt = `You are an expert study scheduling AI that reorganizes entire schedules based on student needs, progress, and preferences.
 
-**Current Date**: ${currentDate}
-**Student's Reflection**: ${reflection || 'No reflection provided'}
+**CONTEXT**
+Current Date: ${currentDate}
+Student's Reflection: "${reflection || 'No reflection provided'}"
 
-**Incomplete Sessions from Today**:
+**INCOMPLETE SESSIONS FROM TODAY**
 ${JSON.stringify(incompleteSessions, null, 2)}
 
-**Available Homework Tasks** (match these if student mentions them):
+**AVAILABLE HOMEWORK** (Match these EXACTLY if student mentions them - use the correct subject!)
 ${JSON.stringify(homeworkList?.map(h => ({
   subject: h.subject,
   title: h.title,
@@ -133,7 +134,7 @@ ${JSON.stringify(homeworkList?.map(h => ({
   duration: h.duration
 })) || [], null, 2)}
 
-**Upcoming Events** (reference these if relevant):
+**UPCOMING EVENTS** (Consider these when scheduling)
 ${JSON.stringify(eventsList?.map(e => ({
   title: e.title,
   description: e.description,
@@ -141,42 +142,57 @@ ${JSON.stringify(eventsList?.map(e => ({
   endTime: e.end_time
 }))?.slice(0, 10) || [], null, 2)}
 
-**Next 7 Days Schedule**:
+**CURRENT SCHEDULE (Next 7 Days)**
 ${JSON.stringify(futureScheduleDetails, null, 2)}
 
-**Your Task**:
-1. **Match Tasks**: If the student mentions homework/tasks by name (e.g., "metals theory"), find the matching homework from the list and use the CORRECT subject
-2. **Smart Rescheduling**: Reorganize the schedule intelligently - don't just append to the end
-3. **Time Validation**: All times MUST be between 00:00 and 23:59. Calculate proper times by finding gaps in the schedule
-4. **Respect User Intent**: If the student asks to remove or skip certain tasks, do so
-5. **Insert Strategically**: Insert tasks into appropriate time slots throughout the day, not just at the end
+**YOUR MISSION**
+Analyze the student's reflection and reorganize their entire upcoming schedule to:
+1. **Prioritize** what the student needs most based on their feedback
+2. **Reschedule** incomplete tasks from today to optimal future slots
+3. **Add** any new tasks/homework the student mentioned (match EXACTLY from homework list)
+4. **Remove** tasks the student wants to skip or postpone
+5. **Rebalance** the workload across days to prevent overload
+6. **Optimize** timing based on task difficulty and available energy
 
-Return ONLY valid JSON in this exact format:
+**CRITICAL RULES**
+✓ When student mentions a task (e.g. "metals theory"), find it in homework list and use CORRECT subject
+✓ All times MUST be HH:MM format between 00:00-23:59 (NEVER use 24:00 or 25:00)
+✓ Calculate times by analyzing gaps in existing schedule - don't blindly append
+✓ Move/update existing sessions instead of duplicating (same subject+topic+type = same task)
+✓ Distribute incomplete tasks across multiple days (max 3 new per day)
+✓ Respect student's explicit requests (e.g., "don't do X tomorrow", "focus on Y")
+✓ Consider homework due dates when scheduling
+✓ Balance difficult and easy tasks throughout each day
+
+**RESPONSE FORMAT**
+Return ONLY valid JSON:
 {
   "rescheduledSessions": {
     "YYYY-MM-DD": [
       {
         "time": "HH:MM",
         "subject": "string",
-        "topic": "string",
+        "topic": "string", 
         "duration": number,
         "type": "study|homework|revision",
-        "notes": "Rescheduled from ${currentDate} - [reason]"
+        "notes": "Why this was scheduled here"
       }
     ]
   },
   "sessionsToRemove": {
-    "YYYY-MM-DD": [0, 2, 5]  // Indices of sessions to remove if user requested it
+    "YYYY-MM-DD": [0, 2, 5]
   },
-  "reasoning": "Brief explanation of your scheduling decisions and any task matching you did"
+  "summary": "Plain English summary of ALL changes made, e.g.: 'I moved Chemistry homework to tomorrow morning, removed the Maths session you wanted to skip, and added the Design & Technology metals theory homework on Sunday. I also rescheduled 2 incomplete topics from today across the next 3 days to balance your workload.'",
+  "reasoning": "Detailed technical explanation of scheduling decisions and task matching"
 }
 
-**Critical Rules**:
-- Match mentioned tasks to existing homework/events data
-- Times must be HH:MM format between 00:00-23:59
-- Find gaps in the schedule, don't just append
-- Distribute across multiple days (max 3 new sessions per day)
-- Respect the student's preferences from the reflection`;
+**EXAMPLE THOUGHT PROCESS**
+1. Student mentions "metals theory" → Search homework list → Found "Metals Theory; Group Presentation Tasks" under Design & Technology → Use that subject
+2. Student says "don't do algebraic fractions tomorrow" → Find and remove that session from tomorrow
+3. Two incomplete sessions from today → Distribute to next 2-3 days based on available gaps and subject priority
+4. Check all times are valid (00:00-23:59) and realistic
+5. Write clear summary explaining what changed and why`;
+
 
     console.log('Calling AI for schedule adjustment...');
 
@@ -338,6 +354,7 @@ Return ONLY valid JSON in this exact format:
     return new Response(JSON.stringify({
       success: true,
       rescheduledSessions: aiResult.rescheduledSessions,
+      summary: aiResult.summary || 'Schedule updated successfully',
       reasoning: aiResult.reasoning,
       updatedSchedule
     }), {
