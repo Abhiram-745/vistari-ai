@@ -27,6 +27,7 @@ import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
 import { DailyInsightsPanel } from "@/components/DailyInsightsPanel";
+import { TimetableHistoryDialog } from "@/components/TimetableHistoryDialog";
 
 interface TimetableSession {
   time: string;
@@ -280,15 +281,21 @@ const TimetableView = () => {
                 />
               )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowShareDialog(true)}
-              className="gap-2"
-            >
-              <Share2 className="w-4 h-4" />
-              Share to Group
-            </Button>
+            <div className="flex items-center gap-2">
+              <TimetableHistoryDialog
+                timetableId={timetable.id}
+                onRestore={fetchTimetable}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowShareDialog(true)}
+                className="gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                Share to Group
+              </Button>
+            </div>
           </div>
         </div>
       </div>
