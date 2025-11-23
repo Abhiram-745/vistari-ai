@@ -4,6 +4,8 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
 import sessionLegend from "@/assets/session-legend.png";
+import aiTopicParse from "@/assets/ai-topic-parse.png";
+import topicPriorityOrder from "@/assets/topic-priority-order.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -811,6 +813,126 @@ const Landing = () => {
           </motion.div>
 
           <div className="space-y-32">
+            {/* Feature 0: AI Topic Analysis and Prioritization */}
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} whileInView={{
+            opacity: 1,
+            y: 0
+          }} viewport={{
+            once: true
+          }} transition={{
+            duration: 0.8
+          }} className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{
+              opacity: 0,
+              x: -30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.8
+            }} className="space-y-6 order-2 md:order-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center text-white shadow-lg">
+                  <Brain className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl sm:text-4xl font-display font-bold leading-tight">AI analyzes your topics & tailors your plan</h3>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Just upload your notes or paste a checklist. Our AI instantly extracts topics, analyzes difficulty based on your current progress, and helps you prioritize what matters most.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Smart extraction:</span> Upload images of your notes or paste text—AI automatically identifies all topics</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Difficulty ranking:</span> Topics arranged from easiest to hardest based on your timetable history and performance data</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Priority ordering:</span> Drag and drop to set your own priority—higher priority topics get more study time</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Personalized notes:</span> Add difficulty notes for each topic so AI can tailor session durations and timing</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Cards showing AI Parse and Priority Order */}
+              <div className="relative h-[600px] order-1 md:order-2">
+                {/* AI Parse Card */}
+                <motion.div initial={{
+                opacity: 0,
+                x: -40,
+                rotate: -3
+              }} whileInView={{
+                opacity: 1,
+                x: 0,
+                rotate: -3
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.2
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.03,
+                y: -10
+              }} className="absolute left-0 top-0 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-10 w-full max-w-[400px]">
+                  <img src={aiTopicParse} alt="AI Topic Parsing - Upload notes and AI extracts topics" className="w-full h-auto" />
+                </motion.div>
+
+                {/* Priority Order Card */}
+                <motion.div initial={{
+                opacity: 0,
+                x: 40,
+                rotate: 3
+              }} whileInView={{
+                opacity: 1,
+                x: 0,
+                rotate: 3
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.4
+              }} whileHover={{
+                rotate: 0,
+                scale: 1.05,
+                y: -10
+              }} className="absolute right-0 top-32 bg-background/95 backdrop-blur-sm rounded-xl shadow-2xl border border-border overflow-hidden z-20 w-full max-w-[420px]">
+                  <img src={topicPriorityOrder} alt="Priority Ordering - Drag topics to set priority for AI scheduling" className="w-full h-auto" />
+                </motion.div>
+
+                {/* Info Badge */}
+                <motion.div initial={{
+                opacity: 0,
+                y: 20
+              }} whileInView={{
+                opacity: 1,
+                y: 0
+              }} viewport={{
+                once: true
+              }} transition={{
+                duration: 0.8,
+                delay: 0.6
+              }} className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-accent text-white px-6 py-3 rounded-full shadow-xl z-30">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="font-semibold text-sm">AI-Powered Analysis</span>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+
             {/* Feature 1: Plans that adapt - Enhanced with floating cards */}
             <motion.div initial={{
             opacity: 0,
