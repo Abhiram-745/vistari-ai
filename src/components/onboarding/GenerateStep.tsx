@@ -44,6 +44,16 @@ const GenerateStep = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Fetch user events
+      const { data: events, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .gte("start_time", startDate)
+        .lte("start_time", endDate)
+        .order("start_time", { ascending: true });
+
+      if (eventsError) throw eventsError;
+
       // Save homeworks to database
       if (homeworks.length > 0) {
         const { error: homeworkError } = await supabase
@@ -139,6 +149,7 @@ const GenerateStep = ({
             homeworks: homeworks.map(({ id, ...hw }) => hw) || [],
             topicAnalysis,
             aiNotes: preferences.aiNotes || "",
+            events: events || [],
             startDate,
             endDate,
           },

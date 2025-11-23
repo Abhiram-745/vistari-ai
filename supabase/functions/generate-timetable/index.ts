@@ -59,6 +59,13 @@ const inputSchema = z.object({
     })).optional()
   }).optional(),
   aiNotes: z.string().optional(),
+  events: z.array(z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    description: z.string().optional().nullable(),
+    start_time: z.string(),
+    end_time: z.string()
+  })).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 });
@@ -108,13 +115,14 @@ serve(async (req) => {
       );
     }
 
-    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes } = parsed.data;
+    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes, events = [] } = parsed.data;
 
     console.log("Generating timetable with:", {
       subjectsCount: subjects.length,
       topicsCount: topics.length,
       testDatesCount: testDates.length,
       homeworksCount: homeworks.length,
+      eventsCount: events.length,
       hasAnalysis: !!topicAnalysis,
       dateRange: `${startDate} to ${endDate}`,
     });
@@ -182,6 +190,16 @@ serve(async (req) => {
       ? `\n\n**USER'S CUSTOM INSTRUCTIONS** (MUST FOLLOW THESE REQUIREMENTS):\n${aiNotes}\n`
       : "";
 
+    const eventsContext = events.length > 0
+      ? "\n\n**SCHEDULED EVENTS** (DO NOT schedule study sessions during these times):\n" + events
+          .map((evt: any) => {
+            const startDate = new Date(evt.start_time);
+            const endDate = new Date(evt.end_time);
+            return `- ${evt.title}: ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}${evt.description ? ` (${evt.description})` : ''}`;
+          })
+          .join("\n")
+      : "";
+
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
 
 SUBJECTS: ${subjectsContext}
@@ -194,6 +212,7 @@ HOMEWORK ASSIGNMENTS: ${homeworksContext}
 ${priorityContext}
 ${difficultTopicsContext}
 ${userNotesContext}
+${eventsContext}
 
 STUDY PREFERENCES:
 - Daily study hours target: ${preferences.daily_study_hours}
