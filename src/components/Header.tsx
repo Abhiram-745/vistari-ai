@@ -43,7 +43,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       
       setProfile({ full_name: data?.full_name || "", id: user.id });
     }
