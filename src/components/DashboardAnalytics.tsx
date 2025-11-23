@@ -156,22 +156,25 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
 
         const topicList: Array<{ id: string; name: string; subject: string }> = [];
 
-        // topics is organized by subject
-        Object.keys(topics).forEach((subjectId) => {
-          const subject = subjects[subjectId];
-          const subjectName = subject?.name || subjectId;
-          const subjectTopics = topics[subjectId];
+        // Create a subject map for quick lookup
+        const subjectMap = new Map();
+        if (Array.isArray(subjects)) {
+          subjects.forEach((subject: any) => {
+            subjectMap.set(subject.id, subject.name);
+          });
+        }
 
-          if (Array.isArray(subjectTopics)) {
-            subjectTopics.forEach((topic: any, index: number) => {
-              topicList.push({
-                id: `${subjectId}-${index}`,
-                name: typeof topic === 'string' ? topic : topic.name,
-                subject: subjectName,
-              });
+        // Topics are stored as a flat array with subject_id
+        if (Array.isArray(topics)) {
+          topics.forEach((topic: any, index: number) => {
+            const subjectName = subjectMap.get(topic.subject_id) || 'Unknown Subject';
+            topicList.push({
+              id: `${topic.subject_id}-${index}`,
+              name: topic.name,
+              subject: subjectName,
             });
-          }
-        });
+          });
+        }
 
         setAllTopics(topicList);
       }
