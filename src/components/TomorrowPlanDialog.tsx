@@ -34,12 +34,11 @@ export const TomorrowPlanDialog = ({
   onScheduleUpdate,
 }: TomorrowPlanDialogProps) => {
   const [loading, setLoading] = useState(false);
-  const [availableTopics, setAvailableTopics] = useState<Array<{ subject: string; topic: string }>>([]);
+  const [availableTopics, setAvailableTopics] = useState<Array<{ subject: string; topic: string; isDifficult?: boolean }>>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [useFlexibleTiming, setUseFlexibleTiming] = useState(false);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
-  const [hasFlexiblePreference, setHasFlexiblePreference] = useState(false);
+  const [difficultTopics, setDifficultTopics] = useState<Array<{ subject: string; topic: string }>>([]);
 
   // Calculate tomorrow's date
   const tomorrow = new Date(currentDate);
@@ -50,11 +49,11 @@ export const TomorrowPlanDialog = ({
   useEffect(() => {
     if (open) {
       loadAvailableTopics();
-      checkTimingPreferences();
+      loadTimingPreferences();
     }
   }, [open, timetableId]);
 
-  const checkTimingPreferences = async () => {
+  const loadTimingPreferences = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -67,20 +66,19 @@ export const TomorrowPlanDialog = ({
 
       if (preferences) {
         const dayTimeSlots = preferences.day_time_slots as any[] || [];
-        const hasFlexible = dayTimeSlots.some(slot => !slot.enabled || slot.startTime !== slot.endTime);
-        setHasFlexiblePreference(hasFlexible);
-        
-        // Set default times from preferences
         const tomorrowDayOfWeek = tomorrow.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const tomorrowSlot = dayTimeSlots.find(slot => slot.day === tomorrowDayOfWeek);
         
         if (tomorrowSlot) {
           setStartTime(tomorrowSlot.startTime || '09:00');
           setEndTime(tomorrowSlot.endTime || '17:00');
+        } else {
+          setStartTime(preferences.preferred_start_time || '09:00');
+          setEndTime(preferences.preferred_end_time || '17:00');
         }
       }
     } catch (error) {
-      console.error('Error checking timing preferences:', error);
+      console.error('Error loading timing preferences:', error);
     }
   };
 
@@ -99,11 +97,25 @@ export const TomorrowPlanDialog = ({
         const topics = (timetable.topics as any[]) || [];
         const subjects = (timetable.subjects as any[]) || [];
         
+        // Extract difficult topics (focus points)
+        const difficultTopicsList = topics
+          .filter(t => t.difficulty === 'hard' || t.focus === true)
+          .map(topic => {
+            const subject = subjects.find(s => s.id === topic.subject_id);
+            return {
+              subject: subject?.name || 'Unknown',
+              topic: topic.name
+            };
+          });
+        
+        setDifficultTopics(difficultTopicsList);
+        
         const topicsWithSubjects = topics.map(topic => {
           const subject = subjects.find(s => s.id === topic.subject_id);
           return {
             subject: subject?.name || 'Unknown',
-            topic: topic.name
+            topic: topic.name,
+            isDifficult: topic.difficulty === 'hard' || topic.focus === true
           };
         });
 
@@ -144,7 +156,9 @@ export const TomorrowPlanDialog = ({
           reflection,
           selectedTopics: selectedTopicObjects,
           incompleteSessions,
-          ...(useFlexibleTiming && { startTime, endTime })
+          difficultTopics,
+          startTime,
+          endTime
         }
       });
 
@@ -210,7 +224,12 @@ export const TomorrowPlanDialog = ({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{topic.subject}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">{topic.subject}</p>
+                          {topic.isDifficult && (
+                            <Badge variant="secondary" className="text-xs">Focus Point</Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">{topic.topic}</p>
                       </div>
                     </div>
@@ -229,49 +248,39 @@ export const TomorrowPlanDialog = ({
             </div>
           )}
 
-          {/* Flexible Timing */}
-          {hasFlexiblePreference && (
-            <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={useFlexibleTiming}
-                  onCheckedChange={(checked) => setUseFlexibleTiming(checked as boolean)}
-                />
-                <Label className="text-sm font-medium cursor-pointer">
-                  Customize tomorrow's timing
+          {/* Time Selection - Always Visible */}
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+            <Label className="text-sm font-medium">Tomorrow's Study Hours</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start-time" className="text-xs flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Start Time
                 </Label>
+                <Input
+                  id="start-time"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
               </div>
-
-              {useFlexibleTiming && (
-                <div className="grid grid-cols-2 gap-4 pl-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="start-time" className="text-xs flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Start Time
-                    </Label>
-                    <Input
-                      id="start-time"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end-time" className="text-xs flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      End Time
-                    </Label>
-                    <Input
-                      id="end-time"
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="end-time" className="text-xs flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  End Time
+                </Label>
+                <Input
+                  id="end-time"
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
             </div>
-          )}
+            <p className="text-xs text-muted-foreground">
+              Schedule will be generated between these hours
+            </p>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
