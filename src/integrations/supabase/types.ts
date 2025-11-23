@@ -136,27 +136,143 @@ export type Database = {
         }
         Relationships: []
       }
+      group_achievement_unlocks: {
+        Row: {
+          achievement_id: string
+          group_id: string
+          id: string
+          unlocked_at: string | null
+        }
+        Insert: {
+          achievement_id: string
+          group_id: string
+          id?: string
+          unlocked_at?: string | null
+        }
+        Update: {
+          achievement_id?: string
+          group_id?: string
+          id?: string
+          unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_achievement_unlocks_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "group_achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_achievement_unlocks_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_achievements: {
+        Row: {
+          achievement_key: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          tier: string
+        }
+        Insert: {
+          achievement_key: string
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          tier: string
+        }
+        Update: {
+          achievement_key?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+          tier?: string
+        }
+        Relationships: []
+      }
+      group_challenge_completions: {
+        Row: {
+          challenge_type: string
+          completed_date: string
+          created_at: string | null
+          goal_hours: number
+          group_id: string
+          hours_achieved: number
+          id: string
+        }
+        Insert: {
+          challenge_type: string
+          completed_date: string
+          created_at?: string | null
+          goal_hours: number
+          group_id: string
+          hours_achieved: number
+          id?: string
+        }
+        Update: {
+          challenge_type?: string
+          completed_date?: string
+          created_at?: string | null
+          goal_hours?: number
+          group_id?: string
+          hours_achieved?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenge_completions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_challenges: {
         Row: {
           created_at: string | null
           daily_hours_goal: number
           group_id: string
           id: string
+          monthly_hours_goal: number | null
           updated_at: string | null
+          weekly_hours_goal: number | null
         }
         Insert: {
           created_at?: string | null
           daily_hours_goal?: number
           group_id: string
           id?: string
+          monthly_hours_goal?: number | null
           updated_at?: string | null
+          weekly_hours_goal?: number | null
         }
         Update: {
           created_at?: string | null
           daily_hours_goal?: number
           group_id?: string
           id?: string
+          monthly_hours_goal?: number | null
           updated_at?: string | null
+          weekly_hours_goal?: number | null
         }
         Relationships: [
           {

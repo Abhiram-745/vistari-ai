@@ -11,6 +11,7 @@ import { GroupTimetables } from "./GroupTimetables";
 import { GroupResources } from "./GroupResources";
 import { InviteFriendsDialog } from "./InviteFriendsDialog";
 import { GroupChallenge } from "./GroupChallenge";
+import { GroupAchievements } from "./GroupAchievements";
 import {
   Dialog,
   DialogContent,
@@ -282,6 +283,7 @@ const GroupDetail = () => {
         </Card>
 
         <GroupChallenge groupId={id!} isAdmin={currentUserRole === 'admin'} />
+        <GroupAchievements groupId={id!} />
 
         <Tabs defaultValue="timetables" className="space-y-6">
           <TabsList>
