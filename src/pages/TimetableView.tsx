@@ -26,6 +26,7 @@ import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
+import { DailyInsightsPanel } from "@/components/DailyInsightsPanel";
 
 interface TimetableSession {
   time: string;
@@ -420,12 +421,20 @@ const TimetableView = () => {
                       <p className="text-muted-foreground text-sm">
                         No sessions scheduled for this day
                       </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                     )}
+                   </div>
+
+                   {/* Daily Insights Panel */}
+                   <DailyInsightsPanel
+                     date={date}
+                     sessions={sessions || []}
+                     timetableId={timetable.id}
+                     onScheduleUpdate={fetchTimetable}
+                   />
+                 </CardContent>
+               </Card>
+             );
+           })}
           </div>
 
           {/* Right side - Calendar and Topics */}
