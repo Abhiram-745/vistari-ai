@@ -74,8 +74,8 @@ const Landing = () => {
             {/* Problem statement */}
             <div className="space-y-6">
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30"
               >
@@ -433,11 +433,11 @@ const Landing = () => {
               </blockquote>
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
-                  S
+                  A
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">Sarah Mitchell</p>
-                  <p className="text-muted-foreground">Year 12 Student · Got an A* in Biology</p>
+                  <p className="font-semibold text-lg">Abhiram Patel</p>
+                  <p className="text-muted-foreground">Year 10 Student · Got an A* in Maths</p>
                 </div>
               </div>
             </div>
@@ -459,7 +459,7 @@ const Landing = () => {
               How real learners use it
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Meet Sarah — she had 6 exams in 3 weeks. Here's how she used it.
+              Meet Abhiram — a Year 10 student who had 6 exams in 3 weeks. Here's how he used it.
             </p>
           </motion.div>
 
@@ -475,14 +475,14 @@ const Landing = () => {
               {
                 step: "2",
                 title: "Get a smart plan",
-                description: "The app created a personalized schedule — extra time on tricky topics, breaks between sessions, and no cramming the day before exams.",
+                description: "The app created a personalized schedule for Abhiram — extra time on tricky topics, breaks between sessions, and no cramming the day before exams.",
                 icon: <Brain className="w-6 h-6" />,
                 color: "from-secondary to-accent"
               },
               {
                 step: "3",
                 title: "Actually stick to it",
-                description: "Push notifications, progress tracking, and visual rewards kept Sarah motivated. She completed 95% of sessions and aced her exams.",
+                description: "Push notifications, progress tracking, and visual rewards kept Abhiram motivated. He completed 95% of sessions and aced his exams.",
                 icon: <Target className="w-6 h-6" />,
                 color: "from-accent to-primary"
               }
@@ -745,14 +745,170 @@ const Landing = () => {
               direction="right"
             />
 
-            {/* Feature 3 */}
-            <FeatureRow
-              title="Study with friends"
-              description="Create study groups, share plans, compete on leaderboards, and motivate each other. Learning is better together."
-              icon={<Users className="w-12 h-12" />}
-              gradient="from-accent to-primary"
-              direction="left"
-            />
+            {/* Feature 3: Study with Friends - Enhanced with floating cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="grid md:grid-cols-2 gap-12 items-center"
+            >
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="space-y-6"
+              >
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-white shadow-lg">
+                  <Users className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl sm:text-4xl font-display font-bold leading-tight">Study with friends</h3>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Learning doesn't have to be lonely. Create private or public study groups, share your perfectly crafted timetables with friends, and keep each other motivated.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Share timetables:</span> Share your plan with friends who can customize it for their own schedule while keeping your topics and resources</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Study groups:</span> Create private groups with join codes or discover public groups studying the same subjects</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Leaderboards:</span> Compete with friends on study time, streak days, and completed sessions</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p><span className="font-semibold text-foreground">Group chat & resources:</span> Share notes, links, and tips in your group's dedicated space</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Cards showing Study Groups UI */}
+              <div className="relative h-[500px]">
+                {/* Study Group Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40, rotate: -2 }}
+                  whileInView={{ opacity: 1, y: 0, rotate: -2 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  whileHover={{ rotate: 0, scale: 1.03, y: -10 }}
+                  className="absolute left-0 top-0 bg-card border border-border rounded-3xl p-6 shadow-xl max-w-md w-full backdrop-blur-sm z-10"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="text-xl font-bold text-foreground mb-2">Dhrishiv and Abhiram</h4>
+                        <p className="text-sm text-muted-foreground mb-3">December maths test revision week</p>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                          Maths
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="text-xs">
+                          Settings
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-xs">
+                          Leave Group
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>2 members</span>
+                    </div>
+
+                    <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Private Group Join Code:</p>
+                      <div className="flex items-center justify-between">
+                        <code className="text-lg font-bold text-foreground tracking-wider">2KUMPS</code>
+                        <Button size="sm" variant="ghost" className="text-xs">
+                          Copy
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Share this code with people you want to invite to the group</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Shared Timetable Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40, rotate: 3 }}
+                  whileInView={{ opacity: 1, y: 0, rotate: 3 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  whileHover={{ rotate: 0, scale: 1.03, y: -10 }}
+                  className="absolute right-0 top-48 bg-card border border-border rounded-2xl p-5 shadow-xl max-w-sm backdrop-blur-sm z-10"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-foreground mb-1">December maths test</h4>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Users className="w-4 h-4" />
+                      <span>Shared by Abhiram (Year 10)</span>
+                    </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                          <Calendar className="w-4 h-4" />
+                          <span>22/11/2025 - 27/11/2025</span>
+                        </div>
+                        <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-destructive/10 text-destructive text-xs font-medium">
+                          Mathematics
+                        </div>
+                      </div>
+                      <div className="shrink-0 bg-primary/10 text-primary rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold">
+                        2
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">about 2 hours ago</div>
+
+                    <Button className="w-full bg-primary hover:bg-primary/90">
+                      <span className="mr-2">⬇</span>
+                      Implement
+                    </Button>
+                  </div>
+                </motion.div>
+
+                {/* Leaderboard Badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="absolute bottom-8 left-1/4 bg-gradient-to-r from-accent to-primary text-white rounded-2xl px-6 py-4 shadow-xl backdrop-blur-sm z-20"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">🏆</div>
+                    <div>
+                      <p className="text-xs opacity-90">Week's Top Studier</p>
+                      <p className="text-lg font-bold">Abhiram (Year 10) - 18.5 hrs</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Customize Badge */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.8 }}
+                  className="absolute bottom-0 right-0 bg-secondary/10 border border-secondary/30 text-secondary rounded-xl px-4 py-3 shadow-md backdrop-blur-sm max-w-xs"
+                >
+                  <div className="flex items-center gap-2 text-sm">
+                    <Sparkles className="w-4 h-4" />
+                    <p className="font-semibold">Auto-customizes to your schedule!</p>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
