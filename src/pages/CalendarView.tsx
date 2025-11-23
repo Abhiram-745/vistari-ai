@@ -61,23 +61,23 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
   // Determine colors based on session type
   const getItemStyles = () => {
     if (item.type === "event") {
-      return "bg-accent/20 border-accent";
+      return "bg-accent/30 dark:bg-accent/20 border-accent hover:bg-accent/40";
     }
     
     // For sessions, check the session type
     const sessionType = item.data?.type;
     
     if (sessionType === "homework") {
-      return "bg-purple-50 dark:bg-purple-950/30 border-purple-500";
+      return "bg-purple-100 dark:bg-purple-950/40 border-purple-500 hover:bg-purple-200 dark:hover:bg-purple-950/60";
     } else if (sessionType === "revision") {
-      return "bg-blue-50 dark:bg-blue-950/30 border-blue-500";
+      return "bg-blue-100 dark:bg-blue-950/40 border-blue-500 hover:bg-blue-200 dark:hover:bg-blue-950/60";
     } else if (sessionType === "break") {
-      return "bg-muted/30 border-muted-foreground";
+      return "bg-muted/50 border-muted-foreground/50 hover:bg-muted/70";
     } else if (item.data?.testDate) {
-      return "bg-orange-50 dark:bg-orange-950/30 border-orange-500";
+      return "bg-orange-100 dark:bg-orange-950/40 border-orange-500 hover:bg-orange-200 dark:hover:bg-orange-950/60";
     }
     
-    return "bg-primary/10 border-primary";
+    return "bg-primary/20 dark:bg-primary/15 border-primary hover:bg-primary/30";
   };
 
   const getBadgeVariant = () => {
@@ -107,22 +107,23 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
       style={style}
       {...listeners}
       {...attributes}
-      className={`p-2 mb-2 rounded-lg border-l-4 cursor-move transition-all hover:shadow-md ${getItemStyles()}`}
+      className={`p-3 mb-3 rounded-lg border-l-4 cursor-move transition-all hover:shadow-lg ${getItemStyles()}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold truncate">{item.title}</p>
-          <p className="text-xs text-muted-foreground">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0 space-y-1">
+          <p className="text-sm font-semibold leading-tight line-clamp-2">{item.title}</p>
+          <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+            <span className="text-xs">🕐</span>
             {item.startTime} - {item.endTime}
           </p>
         </div>
         <Badge 
           variant={getBadgeVariant()} 
-          className={`text-xs shrink-0 ${
+          className={`shrink-0 font-medium ${
             item.data?.type === "homework" 
-              ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300" 
+              ? "bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border-purple-300" 
               : item.data?.type === "revision" 
-              ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+              ? "bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300"
               : ""
           }`}
         >
@@ -139,30 +140,50 @@ const DroppableDay = ({ date, items, children }: { date: Date; items: CalendarIt
     data: { date },
   });
 
+  const isToday = isSameDay(date, new Date());
+  const dayItems = items.filter((item) => item.date === format(date, "yyyy-MM-dd"));
+
   return (
     <div
       ref={setNodeRef}
-      className={`border rounded-lg p-3 min-h-[200px] transition-colors ${
-        isOver ? "bg-primary/5 border-primary" : "bg-card"
+      className={`border-2 rounded-xl p-4 min-h-[250px] transition-all ${
+        isOver 
+          ? "bg-primary/10 border-primary shadow-lg scale-[1.02]" 
+          : isToday
+          ? "bg-primary/5 border-primary/40"
+          : "bg-card border-border hover:border-primary/20"
       }`}
     >
-      <div className="font-semibold text-sm mb-3 pb-2 border-b">
+      <div className="mb-4 pb-3 border-b-2">
         <div className="flex items-center justify-between">
-          <span>{format(date, "EEE")}</span>
-          <span className={`text-xs ${isSameDay(date, new Date()) ? "text-primary" : "text-muted-foreground"}`}>
-            {format(date, "d")}
+          <span className="text-sm font-bold uppercase tracking-wide text-foreground">
+            {format(date, "EEE")}
           </span>
+          <div className={`flex items-center justify-center w-9 h-9 rounded-full font-bold text-base ${
+            isToday 
+              ? "bg-primary text-primary-foreground shadow-md" 
+              : "bg-muted text-muted-foreground"
+          }`}>
+            {format(date, "d")}
+          </div>
         </div>
+        {dayItems.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-2 font-medium">
+            {dayItems.length} session{dayItems.length !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
-      <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-300px)]">
-        {items
-          .filter((item) => item.date === format(date, "yyyy-MM-dd"))
+      <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-350px)]">
+        {dayItems
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .map((item) => (
             <DraggableItem key={item.id} item={item} />
           ))}
-        {items.filter((item) => item.date === format(date, "yyyy-MM-dd")).length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-4">No sessions</p>
+        {dayItems.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="text-3xl mb-2 opacity-50">📅</div>
+            <p className="text-sm text-muted-foreground font-medium">No sessions</p>
+          </div>
         )}
         {children}
       </div>
@@ -500,13 +521,56 @@ const CalendarView = () => {
             </div>
           </div>
 
-          <Card>
+          {/* Legend */}
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Session Types Legend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500">
+                  <div className="w-1 h-12 rounded bg-blue-500"></div>
+                  <div>
+                    <p className="font-semibold text-sm">Revision</p>
+                    <p className="text-xs text-muted-foreground">Study sessions</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-500">
+                  <div className="w-1 h-12 rounded bg-purple-500"></div>
+                  <div>
+                    <p className="font-semibold text-sm">Homework</p>
+                    <p className="text-xs text-muted-foreground">Assignments</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/30 dark:bg-accent/20 border-2 border-accent">
+                  <div className="w-1 h-12 rounded bg-accent"></div>
+                  <div>
+                    <p className="font-semibold text-sm">Events</p>
+                    <p className="text-xs text-muted-foreground">Commitments</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-500">
+                  <div className="w-1 h-12 rounded bg-orange-500"></div>
+                  <div>
+                    <p className="font-semibold text-sm">Test Prep</p>
+                    <p className="text-xs text-muted-foreground">Exam related</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
-                Weekly Calendar
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">Drag and drop to reschedule sessions and events</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <CalendarIcon className="h-6 w-6" />
+                    Weekly Calendar
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">Drag and drop sessions to reschedule them to different days</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {!selectedTimetable ? (
@@ -526,7 +590,7 @@ const CalendarView = () => {
                 </div>
               ) : (
                 <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                  <div className="grid grid-cols-7 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                     {weekDays.map((day) => (
                       <DroppableDay key={day.toISOString()} date={day} items={calendarItems} />
                     ))}
@@ -534,18 +598,19 @@ const CalendarView = () => {
                   <DragOverlay>
                     {activeDragItem && (
                       <div
-                        className={`p-2 rounded-lg border-l-4 shadow-lg ${
+                        className={`p-3 rounded-lg border-l-4 shadow-2xl scale-105 ${
                           activeDragItem.type === "event"
-                            ? "bg-accent/20 border-accent"
+                            ? "bg-accent/30 dark:bg-accent/20 border-accent"
                             : activeDragItem.data?.type === "homework"
-                            ? "bg-purple-50 dark:bg-purple-950/30 border-purple-500"
+                            ? "bg-purple-100 dark:bg-purple-950/40 border-purple-500"
                             : activeDragItem.data?.type === "revision"
-                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-500"
-                            : "bg-primary/10 border-primary"
+                            ? "bg-blue-100 dark:bg-blue-950/40 border-blue-500"
+                            : "bg-primary/20 dark:bg-primary/15 border-primary"
                         }`}
                       >
-                        <p className="text-xs font-semibold">{activeDragItem.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm font-semibold">{activeDragItem.title}</p>
+                        <p className="text-sm font-medium text-muted-foreground flex items-center gap-1 mt-1">
+                          <span className="text-xs">🕐</span>
                           {activeDragItem.startTime} - {activeDragItem.endTime}
                         </p>
                       </div>
@@ -555,25 +620,6 @@ const CalendarView = () => {
               )}
             </CardContent>
           </Card>
-
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30"></div>
-              <span>Revision</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-950/30"></div>
-              <span>Homework</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-accent bg-accent/20"></div>
-              <span>Events</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-950/30"></div>
-              <span>Test-related</span>
-            </div>
-          </div>
 
           {selectedTimetable && (
             <div className="flex justify-center pt-6">
