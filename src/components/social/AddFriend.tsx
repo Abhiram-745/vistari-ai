@@ -64,15 +64,25 @@ const AddFriend = ({ userId }: AddFriendProps) => {
   };
 
   const handleAddFriend = async (friendId: string, friendName: string) => {
-
     setLoading(true);
     try {
-      // Check if friendship already exists
-      const { data: existing } = await supabase
+      // Ensure we use the authenticated user's id for RLS
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
+        throw new Error("You need to be logged in to send friend requests.");
+      }
+
+      const currentUserId = user.id;
+
+      // Check if friendship already exists (in either direction)
+      const { data: existing, error: existingError } = await supabase
         .from("friendships")
         .select("*")
-        .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`)
+        .or(`and(user_id.eq.${currentUserId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${currentUserId})`)
         .maybeSingle();
+
+      if (existingError) throw existingError;
 
       if (existing) {
         toast.error("Friend request already exists");
@@ -80,13 +90,13 @@ const AddFriend = ({ userId }: AddFriendProps) => {
         return;
       }
 
-      // Create friend request
+      // Create friend request - must satisfy RLS: auth.uid() = user_id AND status = 'pending'
       const { error: insertError } = await supabase
         .from("friendships")
         .insert({
-          user_id: userId,
+          user_id: currentUserId,
           friend_id: friendId,
-          status: "pending"
+          status: "pending",
         });
 
       if (insertError) throw insertError;
