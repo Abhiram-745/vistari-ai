@@ -116,70 +116,81 @@ const Landing = () => {
               <p className="text-sm text-muted-foreground">Free forever · No credit card · 2 min setup</p>
             </motion.div>
 
-            {/* Floating cards with animations */}
-            <div className="relative h-64 mt-20">
+            {/* Floating cards with animations - Dashboard Preview */}
+            <div className="relative h-72 mt-20">
+              {/* Dashboard Header Card */}
               <motion.div
-                initial={{ opacity: 0, y: 40, rotate: -5 }}
-                animate={{ opacity: 1, y: 0, rotate: -5 }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                whileHover={{ rotate: 0, scale: 1.05, y: -10 }}
-                className="absolute left-0 top-0 bg-card border border-border/50 rounded-2xl p-5 shadow-md max-w-xs backdrop-blur-sm"
+                whileHover={{ scale: 1.02, y: -5 }}
+                className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Calendar className="w-6 h-6 text-primary" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Sarah! 👋</h3>
+                    <p className="text-muted-foreground">Ready to crush your study goals today?</p>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-foreground mb-0.5">Monday, 9:00 AM</p>
-                    <p className="text-sm text-muted-foreground">Biology: Cell Division</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground">60 mins</span>
-                      <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary">Moderate</span>
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <Target className="w-6 h-6 text-primary mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">Goals</p>
+                    </div>
+                    <div className="text-center">
+                      <Zap className="w-6 h-6 text-accent mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">Streak</p>
+                    </div>
+                    <div className="text-center">
+                      <Calendar className="w-6 h-6 text-secondary mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">Schedule</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
+              {/* Study Session Card */}
               <motion.div
-                initial={{ opacity: 0, y: 40, rotate: 5 }}
-                animate={{ opacity: 1, y: 0, rotate: 5 }}
+                initial={{ opacity: 0, x: -40, rotate: -3 }}
+                animate={{ opacity: 1, x: 0, rotate: -3 }}
                 transition={{ duration: 1, delay: 1 }}
                 whileHover={{ rotate: 0, scale: 1.05, y: -10 }}
-                className="absolute right-0 top-10 bg-card border border-border/50 rounded-2xl p-5 shadow-md max-w-xs backdrop-blur-sm"
+                className="absolute left-8 bottom-0 bg-card border-l-4 border-l-primary border-y border-r border-border/50 rounded-2xl p-5 shadow-lg max-w-sm backdrop-blur-sm"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-6 h-6 text-secondary" />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-semibold text-foreground">16:30</span>
+                      <span className="text-sm text-muted-foreground">(90 min)</span>
+                      <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary font-medium">study</span>
+                    </div>
+                    <CheckCircle2 className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">Week Progress</p>
-                  </div>
-                </div>
-                <div className="space-y-2.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Completed</span>
-                    <span className="font-semibold text-foreground">12/15 sessions</span>
-                  </div>
-                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: "80%" }}
-                      transition={{ duration: 1.5, delay: 1.2 }}
-                      className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full"
-                    />
+                    <h4 className="text-lg font-bold text-foreground mb-1">Mathematics</h4>
+                    <p className="text-sm text-muted-foreground mb-2">Recognise, draw and sketch quadratic functions</p>
+                    <div className="flex items-center gap-2 text-xs text-orange-600">
+                      <span>📝</span>
+                      <span className="font-medium">Test: 28/11/2025</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
 
+              {/* Completion Badge */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, x: 40, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
                 transition={{ duration: 1, delay: 1.2 }}
-                className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-card border border-border/50 rounded-xl px-5 py-3 backdrop-blur-sm shadow-md"
+                className="absolute right-8 bottom-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl px-6 py-4 shadow-xl backdrop-blur-sm"
               >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <p className="text-sm font-semibold text-foreground">Math exam: Ready! 🎉</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium opacity-90">Week's Progress</p>
+                    <p className="text-lg font-bold">12/15 sessions ✨</p>
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -269,8 +280,226 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Features Grid - Less card-heavy */}
+      {/* Adaptive Scheduling Section */}
+      <section className="py-32 px-6 bg-gradient-to-br from-muted/30 to-background">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
+              Missed a session? <span className="text-primary">No problem.</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Life happens. We get it. That's why your plan adapts every single day based on what you actually did.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="space-y-6"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Brain className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">Daily feedback that matters</h3>
+                  <p className="text-muted-foreground">
+                    After each session, tell us how it went. What clicked? What was tough? These insights help the AI understand your learning style.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-6 h-6 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">Automatically reschedules</h3>
+                  <p className="text-muted-foreground">
+                    Missed your Biology session? The AI notices and reschedules it for tomorrow, fitting it perfectly around your existing commitments.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                  <Target className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">Stays on track for exams</h3>
+                  <p className="text-muted-foreground">
+                    The system ensures you still cover everything before test day, even if you miss sessions. It's always optimizing to keep you prepared.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="relative"
+            >
+              <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-4 border-b">
+                    <h4 className="font-bold text-lg">Today's Reflection</h4>
+                    <span className="text-sm text-muted-foreground">5:30 PM</span>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground block mb-2">What did you find easy? 💡</label>
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                        The examples were clear...
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground block mb-2">What was challenging? 🤔</label>
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                        I struggled with the proofs...
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground block mb-2">Overall feeling</label>
+                      <div className="bg-primary/10 rounded-lg p-3 text-sm text-primary font-medium">
+                        Confident, need more practice
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl px-6 py-3 shadow-lg">
+                <p className="text-sm font-semibold">✨ Tomorrow's plan updated!</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Insights & Analytics Section */}
       <section className="py-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
+              Personalized insights that
+              <br />
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                help you improve
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              After each session, our AI analyzes your feedback and generates detailed insights into your progress across all subjects.
+            </p>
+          </motion.div>
+
+          <div className="space-y-16">
+            {/* Feature showcase */}
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="order-2 md:order-1"
+              >
+                <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
+                  <h4 className="font-bold text-lg mb-6">Your Progress Dashboard</h4>
+                  <div className="space-y-6">
+                    {[
+                      { subject: "Mathematics", confidence: 85, color: "primary" },
+                      { subject: "Biology", confidence: 72, color: "secondary" },
+                      { subject: "Chemistry", confidence: 68, color: "accent" },
+                      { subject: "Physics", confidence: 91, color: "primary" }
+                    ].map((item, i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{item.subject}</span>
+                          <span className="text-sm text-muted-foreground">{item.confidence}%</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${item.confidence}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: i * 0.1 }}
+                            className={`h-full bg-${item.color} rounded-full`}
+                            style={{
+                              background: `hsl(var(--${item.color}))`
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="space-y-6 order-1 md:order-2"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shrink-0">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">AI-powered analysis</h3>
+                    <p className="text-muted-foreground">
+                      Every reflection you submit gets analyzed to identify patterns, strengths, and areas needing focus.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Track confidence over time</h3>
+                    <p className="text-muted-foreground">
+                      See how your confidence grows for each topic as you practice. Visual graphs show your improvement journey.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Personalized recommendations</h3>
+                    <p className="text-muted-foreground">
+                      Get specific suggestions on which topics to prioritize, when to take breaks, and how to optimize your study approach.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid - Less card-heavy */}
+      <section className="py-32 px-6 bg-muted/30">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -280,11 +509,7 @@ const Landing = () => {
             className="text-center mb-20 space-y-6"
           >
             <h2 className="text-4xl sm:text-5xl font-display font-bold">
-              Everything you need to
-              <br />
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                ace your exams
-              </span>
+              And there's more...
             </h2>
           </motion.div>
 
