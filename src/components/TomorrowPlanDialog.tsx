@@ -161,12 +161,19 @@ export const TomorrowPlanDialog = ({
   const [tempConfidence, setTempConfidence] = useState(5);
   const [tempDifficulties, setTempDifficulties] = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
+  const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
 
-  // Calculate tomorrow's date
-  const tomorrow = new Date(currentDate);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowDate = tomorrow.toISOString().split('T')[0];
-  const tomorrowDay = tomorrow.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  // Calculate tomorrow's date (or use custom date)
+  const getTargetDate = () => {
+    if (customDate) return customDate;
+    const tomorrow = new Date(currentDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  };
+  
+  const targetDate = getTargetDate();
+  const tomorrowDate = targetDate.toISOString().split('T')[0];
+  const tomorrowDay = targetDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
   useEffect(() => {
     if (open) {
@@ -174,7 +181,7 @@ export const TomorrowPlanDialog = ({
       loadTimingPreferences();
       autoPopulatePriorityTopics();
     }
-  }, [open, timetableId]);
+  }, [open, timetableId, customDate]);
 
   const autoPopulatePriorityTopics = async () => {
     setLoadingSuggestions(true);
@@ -254,13 +261,13 @@ export const TomorrowPlanDialog = ({
 
       if (preferences) {
         const dayTimeSlots = preferences.day_time_slots as any[] || [];
-        const tomorrowDayOfWeek = tomorrow.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const tomorrowSlot = dayTimeSlots.find((slot: any) => slot.day === tomorrowDayOfWeek);
+        const targetDayOfWeek = targetDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const targetSlot = dayTimeSlots.find((slot: any) => slot.day === targetDayOfWeek);
         
         // Use specific day slot times when available, otherwise fall back to general preferences
-        if (tomorrowSlot) {
-          setStartTime(tomorrowSlot.startTime || '09:00');
-          setEndTime(tomorrowSlot.endTime || '17:00');
+        if (targetSlot) {
+          setStartTime(targetSlot.startTime || '09:00');
+          setEndTime(targetSlot.endTime || '17:00');
         } else {
           setStartTime(preferences.preferred_start_time || '09:00');
           setEndTime(preferences.preferred_end_time || '17:00');
@@ -497,8 +504,8 @@ export const TomorrowPlanDialog = ({
       const { data, error } = await supabase.functions.invoke('regenerate-tomorrow', {
         body: {
           timetableId,
-          currentDate,
-          tomorrowDate,
+          currentDate: currentDate || new Date().toISOString().split('T')[0],
+          tomorrowDate: tomorrowDate,
           reflection,
           selectedTopics: selectedTopicObjects,
           incompleteSessions,
@@ -540,7 +547,7 @@ export const TomorrowPlanDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            Plan Tomorrow's Schedule
+            Plan Your Schedule
           </DialogTitle>
           <DialogDescription>
             Customize your schedule for {tomorrowDay}. Select topics to focus on and we'll generate an optimized schedule.
@@ -548,6 +555,63 @@ export const TomorrowPlanDialog = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Date Selection */}
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+            <Label className="text-sm font-semibold">Schedule Date</Label>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCustomDate(undefined)}
+                className={!customDate ? "border-primary" : ""}
+              >
+                Tomorrow ({new Date(currentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })})
+              </Button>
+              <span className="text-muted-foreground text-sm">or</span>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={tomorrowDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    const newDate = new Date(e.target.value);
+                    if (!isNaN(newDate.getTime())) {
+                      setCustomDate(newDate);
+                    }
+                  }}
+                  className="w-auto"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Time Configuration */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startTime" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Start Time
+              </Label>
+              <Input
+                id="startTime"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endTime" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                End Time
+              </Label>
+              <Input
+                id="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
+          </div>
           {/* Time Estimate Summary */}
           {selectedTopics.length > 0 && (
             <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
