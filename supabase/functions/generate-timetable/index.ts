@@ -468,9 +468,23 @@ NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11
 
 Make the schedule practical, achievable, and effective for GCSE exam preparation.`;
 
+    // Validate date range isn't too long (max 4 weeks)
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff > 28) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Date range too long. Maximum timetable length is 4 weeks. Please create a shorter timetable or split it into multiple timetables." 
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Add timeout to prevent hanging - increased for complex generation
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 80000); // 80 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for large timetables
 
     let response;
     try {
@@ -488,11 +502,11 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
               {
                 role: "system",
                 content:
-                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown.",
+                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. If the timetable is very long, prioritize completeness - ensure all days have closing braces.",
               },
               { role: "user", content: prompt },
             ],
-            max_completion_tokens: 16000,
+            max_completion_tokens: 32000, // Increased for large timetables
             temperature: 0.7, // Add some creativity while maintaining structure
           }),
           signal: controller.signal,
@@ -562,15 +576,41 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           .trim();
       }
       
-      // Try to repair truncated JSON by finding the last complete object
+      // Advanced JSON repair for truncated responses
       if (!jsonString.endsWith('}')) {
-        console.log('JSON appears truncated, attempting repair...');
-        // Find the last complete closing brace for the schedule object
-        const lastScheduleBrace = jsonString.lastIndexOf('}');
-        if (lastScheduleBrace > -1) {
-          // Add closing braces to complete the JSON structure
-          jsonString = jsonString.substring(0, lastScheduleBrace + 1) + '\n  }\n}';
+        console.log('JSON appears truncated, attempting comprehensive repair...');
+        
+        // Remove any incomplete array element at the end
+        const lastCompleteObject = jsonString.lastIndexOf('},');
+        const lastArrayClose = jsonString.lastIndexOf(']');
+        
+        if (lastCompleteObject > lastArrayClose) {
+          // We're in the middle of an object, find the last complete one
+          jsonString = jsonString.substring(0, lastCompleteObject + 1);
+        } else if (lastArrayClose > -1) {
+          // We have at least one complete array
+          jsonString = jsonString.substring(0, lastArrayClose + 1);
         }
+        
+        // Count opening and closing braces to balance them
+        let openBraces = (jsonString.match(/{/g) || []).length;
+        let closeBraces = (jsonString.match(/}/g) || []).length;
+        let openBrackets = (jsonString.match(/\[/g) || []).length;
+        let closeBrackets = (jsonString.match(/\]/g) || []).length;
+        
+        // Close any open arrays
+        while (closeBrackets < openBrackets) {
+          jsonString += '\n    ]';
+          closeBrackets++;
+        }
+        
+        // Close any open objects
+        while (closeBraces < openBraces) {
+          jsonString += '\n  }';
+          closeBraces++;
+        }
+        
+        console.log('Repair complete - balanced braces and brackets');
       }
       
       // Additional validation that we have some JSON-like content
