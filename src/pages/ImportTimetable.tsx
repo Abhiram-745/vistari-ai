@@ -72,27 +72,37 @@ const ImportTimetable = () => {
       : Object.values(sharedTimetable.subjects || {});
     
     setSubjects(subjectsArray);
-    setTopics(sharedTimetable.topics || {});
     
-    // Parse topics for difficulty step
-    const topicsArray = Object.entries(sharedTimetable.topics || {}).flatMap(([subjectIdx, topicList]: [string, any]) => {
-      return (topicList || []).map((topicName: string) => ({
-        name: topicName,
-        subject_id: subjectIdx
-      }));
-    });
+    // Handle topics - they come as an array from the database
+    const topicsData = sharedTimetable.topics || [];
+    setTopics(topicsData);
+    
+    // Parse topics for difficulty step - topics is already an array of {name, subject_id}
+    const topicsArray = Array.isArray(topicsData) 
+      ? topicsData 
+      : Object.entries(topicsData).flatMap(([subjectIdx, topicList]: [string, any]) => {
+          if (Array.isArray(topicList)) {
+            return topicList.map((topicName: string) => ({
+              name: topicName,
+              subject_id: subjectIdx
+            }));
+          }
+          return [];
+        });
+    
     setParsedTopics(topicsArray);
     
-    // Convert test dates
-    const testDatesArray = sharedTimetable.test_dates 
-      ? Object.entries(sharedTimetable.test_dates).flatMap(([subjectIdx, dates]: [string, any]) => {
+    // Convert test dates - they come as an array from the database
+    const testDatesData = sharedTimetable.test_dates || [];
+    const testDatesArray = Array.isArray(testDatesData)
+      ? testDatesData
+      : Object.entries(testDatesData).flatMap(([subjectIdx, dates]: [string, any]) => {
           return (dates || []).map((date: any) => ({
             subject_id: subjectIdx,
             test_date: date.date || date.test_date,
             test_type: date.type || date.test_type || 'Exam'
           }));
-        })
-      : [];
+        });
     setTestDates(testDatesArray);
     
     setStartDate(new Date(sharedTimetable.start_date));
