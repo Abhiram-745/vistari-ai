@@ -110,30 +110,29 @@ serve(async (req) => {
     const breakDuration = preferences?.break_duration || 15;
 
     // Build comprehensive prompt for AI
-    const prompt = `You are an expert study schedule generator. Generate a complete study schedule for tomorrow from scratch.
+    const prompt = `You are an expert study schedule generator. Generate a realistic study schedule for tomorrow with QUALITY over quantity.
 
 **DATE**: ${tomorrowDate} (${tomorrowDayOfWeek})
 
 **TIMING CONSTRAINTS**
 - Start Time: ${effectiveStartTime}
 - End Time: ${effectiveEndTime}
-- Preferred Session Duration: ${sessionDuration} minutes
-- Break Duration: ${breakDuration} minutes
+- Target Session Duration: 60 minutes per topic (can vary 45-90 minutes based on difficulty/confidence)
+- Break Duration: ${breakDuration} minutes (use strategically, NOT after every session)
 
 **STUDENT'S REFLECTION FROM TODAY**
 "${reflection || 'No reflection provided'}"
 
-**SELECTED TOPICS FOR TOMORROW** (These are the student's chosen focus areas, ORDERED BY PRIORITY)
-The order below represents the student's priority ranking - first topics are HIGHEST priority:
+**SELECTED TOPICS FOR TOMORROW** (ORDERED BY PRIORITY - first topics are HIGHEST priority)
 ${JSON.stringify(selectedTopics || [], null, 2)}
 
-**DIFFICULT TOPICS / FOCUS POINTS** (Student previously marked these as challenging - prioritize if selected)
+**DIFFICULT TOPICS** (Previously marked as challenging - give extra time if selected)
 ${JSON.stringify(difficultTopics || [], null, 2)}
 
-**INCOMPLETE SESSIONS FROM TODAY** (Include these if student's reflection suggests they need rescheduling)
+**INCOMPLETE SESSIONS FROM TODAY** (Consider including if reflection suggests rescheduling)
 ${JSON.stringify(incompleteSessions || [], null, 2)}
 
-**AVAILABLE HOMEWORK** (Match and schedule if relevant)
+**AVAILABLE HOMEWORK** (Use exact subject/title/duration from this list)
 ${JSON.stringify(homeworkList?.map(h => ({
   subject: h.subject,
   title: h.title,
@@ -142,33 +141,25 @@ ${JSON.stringify(homeworkList?.map(h => ({
   duration: h.duration
 })) || [], null, 2)}
 
-**EVENTS TOMORROW** (Work around these - do NOT schedule study sessions during events)
+**EVENTS TOMORROW** (NEVER overlap with these)
 ${JSON.stringify(tomorrowEvents?.map(e => ({
   title: e.title,
   startTime: e.start_time,
   endTime: e.end_time
 })) || [], null, 2)}
 
-**YOUR TASK**
-Generate a complete, well-balanced study schedule for tomorrow that:
-1. **Prioritizes by order** - the selected topics list is ORDERED BY PRIORITY. Schedule higher priority topics (earlier in list) before lower priority ones, and give them the best time slots
-2. **Highest priority gets best slots** - the first topic should get prime study time (morning or when student is freshest based on timing)
-3. **Extra focus on difficult topics** - if any selected topics match difficult/focus points, give them even more attention and optimal slots
-4. **Includes incomplete sessions** if the reflection suggests they should be rescheduled
-5. **Works around all events** - never overlap with scheduled events
-6. **Respects timing** - all sessions must be between ${effectiveStartTime} and ${effectiveEndTime}
-7. **Includes breaks** - add ${breakDuration} minute breaks between sessions
-8. **Balances workload** - mix difficult and easier topics throughout the day, but always prioritize based on the topic order
-9. **Matches homework** - if selected topics mention homework, use correct subject from homework list
-
-**CRITICAL RULES**
-✓ All times MUST be HH:MM format between 00:00-23:59
-✓ Calculate session start times sequentially (previous end + break)
-✓ DO NOT overlap with events
-✓ Include realistic break times
-✓ Make sessions approximately ${sessionDuration} minutes (can vary slightly for homework)
-✓ If homework is mentioned, use the EXACT subject and title from homework list
-✓ Generate a balanced, realistic schedule that respects energy levels throughout the day
+**CRITICAL SCHEDULING RULES**
+1. **FEWER TOPICS, MORE DEPTH**: Schedule 3-5 topics maximum for a productive day. Each topic needs 60+ minutes of focused work.
+2. **Prioritize ruthlessly**: First topics in the list get prime time slots and best focus hours.
+3. **Realistic breaks**: Add breaks after 2-3 hours of work, or between very different subjects. NOT after every single session.
+4. **Difficulty-based timing**: 
+   - Low confidence (1-4): 75-90 minutes
+   - Medium confidence (5-7): 60-75 minutes  
+   - High confidence (8-10): 45-60 minutes
+5. **Homework precision**: Use EXACT duration from homework list (already includes time needed)
+6. **Event avoidance**: Never schedule during events - work around them completely
+7. **Time format**: All times in HH:MM format (00:00-23:59)
+8. **Sequential scheduling**: Calculate each start time from previous end time + break (if break added)
 
 **RESPONSE FORMAT**
 Return ONLY valid JSON:
@@ -178,14 +169,22 @@ Return ONLY valid JSON:
       "time": "HH:MM",
       "subject": "string",
       "topic": "string",
-      "duration": number,
+      "duration": number (45-90 for topics, exact from list for homework),
       "type": "study|homework|revision|break",
-      "notes": "Brief note about why this was scheduled"
+      "notes": "Brief note about why this was scheduled and why this duration"
     }
   ],
-  "summary": "Plain English summary explaining the schedule created for tomorrow, what topics were prioritized, and how it works around events and preferences.",
-  "reasoning": "Technical explanation of scheduling decisions"
-}`;
+  "summary": "Plain English summary: how many topics scheduled, why these topics were chosen, total study time planned",
+  "reasoning": "Why you chose this number of topics and how you allocated time"
+}
+
+**EXAMPLE GOOD SCHEDULE** (4 hour window, 3 topics):
+09:00 - Topic 1 (high priority, low confidence) - 75 min
+10:15 - Topic 2 (high priority, medium confidence) - 60 min  
+11:30 - Break - 15 min
+11:45 - Homework (from list) - 45 min
+12:30 - Topic 3 (medium priority) - 60 min
+= 3 topics + 1 homework + 1 strategic break`;
 
     console.log('Calling AI to generate tomorrow\'s schedule...');
 
