@@ -88,6 +88,13 @@ serve(async (req) => {
       .gte('start_time', `${tomorrowDate}T00:00:00`)
       .lt('start_time', `${tomorrowDate}T23:59:59`);
 
+    const uniqueTomorrowEvents = Array.from(
+      new Map((tomorrowEvents || []).map((e: any) => [
+        `${e.title}-${e.start_time}-${e.end_time}-${e.id}`,
+        e,
+      ])).values()
+    );
+
     // Fetch homework
     const { data: homeworkList } = await supabase
       .from('homeworks')
@@ -142,9 +149,9 @@ ${JSON.stringify(homeworkList?.map(h => ({
 })) || [], null, 2)}
 
 **🔴 BLOCKED EVENT TIMES TOMORROW 🔴**
-${tomorrowEvents && tomorrowEvents.length > 0 ? 
+${uniqueTomorrowEvents && uniqueTomorrowEvents.length > 0 ? 
   `These times are COMPLETELY BLOCKED - DO NOT schedule anything during these periods:
-${tomorrowEvents.map(e => {
+${uniqueTomorrowEvents.map(e => {
   const start = new Date(e.start_time);
   const end = new Date(e.end_time);
   const durationMins = Math.round((end.getTime() - start.getTime()) / (1000 * 60));

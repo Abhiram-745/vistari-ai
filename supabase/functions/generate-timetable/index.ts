@@ -115,7 +115,14 @@ serve(async (req) => {
       );
     }
 
-    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes, events = [] } = parsed.data;
+    const { subjects, topics, testDates, preferences, startDate, endDate, homeworks = [], topicAnalysis, aiNotes, events: rawEvents = [] } = parsed.data;
+
+    const events = Array.from(
+      new Map(rawEvents.map((evt: any) => [
+        `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+        evt,
+      ])).values()
+    );
 
     console.log("Generating timetable with:", {
       subjectsCount: subjects.length,
@@ -698,6 +705,18 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       // Validate that schedule exists in the response
       if (!scheduleData.schedule || typeof scheduleData.schedule !== 'object') {
         throw new Error("AI response missing valid schedule object");
+      }
+      
+      // Enforce rule: no homework sessions on their due date
+      if (Array.isArray(homeworks) && homeworks.length > 0 && scheduleData.schedule && typeof scheduleData.schedule === 'object') {
+        const homeworkDueDates = new Set(homeworks.map((hw: any) => hw.due_date));
+        for (const [date, sessions] of Object.entries(scheduleData.schedule)) {
+          if (!homeworkDueDates.has(date) || !Array.isArray(sessions)) continue;
+          scheduleData.schedule[date] = (sessions as any[]).filter((session: any) => {
+            if (!session) return false;
+            return session.type !== 'homework';
+          });
+        }
       }
     } catch (parseError) {
       console.error("Failed to parse AI response:", aiResponse.substring(0, 500));

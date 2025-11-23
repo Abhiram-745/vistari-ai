@@ -113,12 +113,20 @@ const TimetableView = () => {
       .from("events")
       .select("*")
       .eq("user_id", user.id)
-      .gte("start_time", startDate)
-      .lte("start_time", endDate)
+      .gte("start_time", `${startDate}T00:00:00`)
+      .lte("start_time", `${endDate}T23:59:59`)
       .order("start_time", { ascending: true });
 
     if (!error && data) {
-      setEvents(data);
+      const uniqueEvents = Array.from(
+        new Map(
+          data.map((evt) => [
+            `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+            evt,
+          ])
+        ).values()
+      );
+      setEvents(uniqueEvents);
     }
   };
 
