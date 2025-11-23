@@ -14,7 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole, useUsageLimits } from "@/hooks/useUserRole";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   onNewTimetable?: () => void;
@@ -27,6 +28,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string; id: string } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const { data: userRole } = useUserRole();
+  const { data: usageLimits } = useUsageLimits();
   const isOnDashboard = location.pathname === "/";
   const isOnSocial = location.pathname === "/social";
 
@@ -282,8 +284,57 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                     </div>
                   </div>
                 </DropdownMenuLabel>
+                
+                {/* Usage Limits for Free Users */}
+                {userRole === "free" && usageLimits && (
+                  <>
+                    <DropdownMenuSeparator className="bg-primary/10" />
+                    <div className="px-3 py-3 space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                        Daily Usage
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Timetable Creations</span>
+                          <Badge variant={usageLimits.timetableCreations >= 1 ? "destructive" : "secondary"} className="text-xs">
+                            {usageLimits.timetableCreations}/1
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Regenerations</span>
+                          <Badge variant={usageLimits.timetableRegenerations >= 1 ? "destructive" : "secondary"} className="text-xs">
+                            {usageLimits.timetableRegenerations}/1
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Daily Insights</span>
+                          <Badge variant={usageLimits.dailyInsightsUsed ? "destructive" : "secondary"} className="text-xs">
+                            {usageLimits.dailyInsightsUsed ? "Used" : "Available"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">AI Insights</span>
+                          <Badge variant={usageLimits.aiInsightsGenerations >= 1 ? "destructive" : "secondary"} className="text-xs">
+                            {usageLimits.aiInsightsGenerations}/1
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="pt-2">
+                        <Button
+                          onClick={() => navigate("/dashboard")}
+                          size="sm"
+                          className="w-full text-xs bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Upgrade to Premium
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
                 <DropdownMenuSeparator className="bg-primary/10" />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => navigate("/dashboard")} 
                   className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
                 >
