@@ -148,12 +148,13 @@ export const EventsWidget = () => {
           .eq("user_id", user.id)
           .single();
 
-        const { data: events } = await supabase
-          .from("events")
-          .select("*")
-          .eq("user_id", user.id)
-          .gte("end_time", timetable.start_date)
-          .lte("start_time", timetable.end_date);
+      // Fetch all event instances (not parent events) for timetable regeneration
+      const { data: events } = await supabase
+        .from("events")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("end_time", timetable.start_date)
+        .lte("start_time", timetable.end_date);
 
         const { data: homeworks } = await supabase
           .from("homeworks")
