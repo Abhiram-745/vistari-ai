@@ -237,57 +237,100 @@ CRITICAL EVENT BLOCKING RULES:
         case "short-term-exam":
           return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📚 TIMETABLE MODE: SHORT-TERM EXAM PREP (INTENSIVE)
+📚 TIMETABLE MODE: SHORT-TERM EXAM PREP (INTENSIVE) 🔥
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SCHEDULING STRATEGY:
-✓ HIGH-INTENSITY revision focus - maximize exam preparation
-✓ Longer study sessions (60-90 minutes each)
-✓ MINIMAL homework time - only urgent homework near due dates
-✓ Daily revision of key exam topics - repeat important topics multiple times
-✓ Focus on exam practice questions and past papers
-✓ Spaced repetition with SHORT intervals (review topics every 2-3 days)
-✓ Prioritize topics that will appear on upcoming exams
-✓ Allocate 70% time to exam revision, 30% to homework
+🎯 INTENSIVE EXAM FOCUS - CRUNCH TIME MODE
 
-IMPORTANT: This is CRUNCH TIME - students need intensive, focused exam practice!
+MANDATORY SCHEDULING RULES:
+✓ Session Duration: 70-90 minutes per topic (LONGER intensive sessions)
+✓ Break Duration: 5-10 minutes only (SHORT breaks to maximize study time)
+✓ Daily Sessions: 4-6 intensive study sessions per day
+✓ Repeat Frequency: Review SAME topics every 2-3 days (aggressive repetition)
+✓ Homework: ONLY schedule urgent homework within 2 days of due date
+✓ Revision Priority: Schedule 75% REVISION sessions, 25% homework max
+✓ Session Types: Heavy focus on EXAM QUESTIONS and PAST PAPERS
+✓ Topic Coverage: Focus on HIGH-PRIORITY exam topics, revisit frequently
+
+TIME ALLOCATION TARGETS:
+- 75% of daily time = Exam revision & practice
+- 25% of daily time = Critical homework only
+- Schedule MULTIPLE sessions per difficult topic each week
+- Prioritize topics appearing on upcoming exams
+
+EXAM PREP INTENSITY:
+- Each difficult topic should appear 3-4+ times before exam
+- Back-to-back study sessions are ACCEPTABLE (minimal breaks)
+- Focus on depth over breadth - master exam topics thoroughly
+- Daily exam question practice is MANDATORY
+
+⚡ THIS IS INTENSIVE EXAM MODE - MAXIMIZE REVISION TIME! ⚡
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
         case "long-term-exam":
           return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 TIMETABLE MODE: LONG-TERM EXAM PREP (BALANCED)
+📅 TIMETABLE MODE: LONG-TERM EXAM PREP (BALANCED) ⚖️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SCHEDULING STRATEGY:
-✓ Balanced approach - mix of revision and homework
-✓ Medium-length sessions (45-60 minutes)
-✓ Adequate homework time - schedule all homework comfortably
-✓ Spaced repetition with LONGER intervals (review topics every 5-7 days)
-✓ Gradual topic coverage - don't rush through topics
-✓ Mix practice sessions with exam questions over multiple weeks
-✓ Build understanding gradually with consistent daily work
-✓ Allocate 50% time to revision, 50% to homework
+🎯 BALANCED APPROACH - STEADY PROGRESS MODE
 
-IMPORTANT: Build solid foundations through consistent, spaced-out study!
+MANDATORY SCHEDULING RULES:
+✓ Session Duration: 45-60 minutes per topic (MODERATE length sessions)
+✓ Break Duration: 10-15 minutes (REGULAR breaks for sustainability)
+✓ Daily Sessions: 3-4 balanced study sessions per day
+✓ Repeat Frequency: Review topics every 5-7 days (spaced repetition)
+✓ Homework: Schedule ALL homework assignments comfortably
+✓ Revision Priority: Schedule 50% REVISION, 50% HOMEWORK (equal split)
+✓ Session Types: Mix of practice, revision notes, and exam questions
+✓ Topic Coverage: Gradual, comprehensive coverage of all topics
+
+TIME ALLOCATION TARGETS:
+- 50% of daily time = Revision & exam practice
+- 50% of daily time = Homework assignments
+- Spread topics evenly across the timetable period
+- Allow adequate time for understanding and practice
+
+STEADY LEARNING APPROACH:
+- Each topic revisited 2-3 times over the study period
+- Regular breaks prevent burnout
+- Mix difficult and easier topics throughout week
+- Build solid foundations with consistent daily work
+
+⚖️ BALANCED MODE - SUSTAINABLE STUDY HABITS! ⚖️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
         case "no-exam":
           return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 TIMETABLE MODE: NO EXAM FOCUS (HOMEWORK-CENTRIC)
+📝 TIMETABLE MODE: NO EXAM FOCUS (HOMEWORK-CENTRIC) 📚
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SCHEDULING STRATEGY:
-✓ HOMEWORK is the PRIMARY focus - schedule all homework with priority
-✓ Shorter, lighter revision sessions (30-45 minutes)
-✓ Very spaced out revision - only for topic maintenance
-✓ Flexible pacing - no pressure for intensive study
-✓ Review topics occasionally (every 10-14 days) just to stay fresh
-✓ Focus on completing assignments well ahead of due dates
-✓ Allocate 70% time to homework, 30% to light revision/maintenance
+🎯 HOMEWORK PRIORITY - COURSEWORK FOCUS MODE
 
-IMPORTANT: This is about staying on top of coursework, not exam cramming!
+MANDATORY SCHEDULING RULES:
+✓ Session Duration: 30-45 minutes per topic (SHORTER, lighter sessions)
+✓ Break Duration: 15-20 minutes (LONGER breaks for relaxed pace)
+✓ Daily Sessions: 2-3 light study sessions per day
+✓ Repeat Frequency: Review topics every 10-14 days (minimal repetition)
+✓ Homework: Schedule ALL homework as TOP PRIORITY with extra buffer time
+✓ Revision Priority: Schedule 25% LIGHT REVISION, 75% HOMEWORK
+✓ Session Types: Primarily practice and notes review (minimal exam focus)
+✓ Topic Coverage: Light maintenance only - just staying current
+
+TIME ALLOCATION TARGETS:
+- 75% of daily time = Homework assignments
+- 25% of daily time = Light topic maintenance
+- Complete homework well ahead of due dates
+- Revision is secondary - just to stay fresh
+
+RELAXED APPROACH:
+- Topics only reviewed 1-2 times total (maintenance only)
+- Generous break times for comfortable pacing
+- Homework completion is PRIMARY goal
+- Study sessions are shorter and less intensive
+
+📝 HOMEWORK MODE - COURSEWORK COMES FIRST! 📝
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
         default:
@@ -334,18 +377,36 @@ ${preferences.duration_mode === "fixed"
   ? `- Fixed session duration: ${preferences.session_duration} minutes (MUST use this exact duration for all study sessions)\n- Fixed break duration: ${preferences.break_duration} minutes (MUST use this exact duration for all breaks)` 
   : `- Default session duration: ${preferences.session_duration} minutes (guideline only - adjust intelligently)\n- Default break duration: ${preferences.break_duration} minutes (guideline only - adjust intelligently)`}
 
-**IMPORTANT: Session duration rules based on mode:**
+**IMPORTANT: Session duration rules based on TIMETABLE MODE:**
+${timetableMode === "short-term-exam" 
+  ? `**SHORT-TERM EXAM MODE DURATIONS (INTENSIVE):**
+- Revision sessions: 70-90 minutes (LONG intensive sessions)
+- Homework: Only if urgent, use exact specified duration
+- Breaks: 5-10 minutes only (SHORT to maximize study)
+- IGNORE user's preferred session duration - use these intensive durations instead`
+  : timetableMode === "long-term-exam"
+  ? `**LONG-TERM EXAM MODE DURATIONS (BALANCED):**
+- Revision sessions: 45-60 minutes (MODERATE sessions)
+- Homework: Use exact specified duration
+- Breaks: 10-15 minutes (REGULAR breaks)
+- Balance between user preferences and mode requirements`
+  : timetableMode === "no-exam"
+  ? `**NO EXAM MODE DURATIONS (HOMEWORK-FOCUSED):**
+- Revision sessions: 30-45 minutes (SHORT light sessions)
+- Homework: Use exact specified duration (PRIORITY)
+- Breaks: 15-20 minutes (LONG relaxed breaks)
+- IGNORE intensive revision - keep it light and homework-focused`
+  : `**DEFAULT MODE DURATIONS:**
+- Use user's preferred session duration: ${preferences.session_duration} minutes
+- Focus topics: 60-90 minutes
+- Regular topics: 45-60 minutes
+- Breaks: ${preferences.break_duration} minutes`}
+
+**Duration Mode Setting (${preferences.duration_mode}):**
 ${preferences.duration_mode === "fixed" 
-  ? `**FIXED MODE:**
-- ALL study sessions (homework, focus topics, regular topics) MUST use EXACTLY ${preferences.session_duration} minutes
-- ALL breaks MUST use EXACTLY ${preferences.break_duration} minutes
-- NO EXCEPTIONS - consistency is key in fixed mode`
-  : `**FLEXIBLE MODE:**
-- Homework: Use the EXACT duration specified for each homework assignment
-- Focus topics: Use LONGER sessions (60-90 minutes) regardless of default setting
-- Regular topics: Use SHORTER sessions (30-45 minutes) regardless of default setting
-- Breaks: Use 10-15 minutes between sessions
-- The ${preferences.session_duration} minute default is just a guideline - adjust durations intelligently`}
+  ? `- User prefers FIXED ${preferences.session_duration}-minute sessions, but TIMETABLE MODE takes priority
+- Apply mode-specific durations above, not the fixed preference`
+  : `- FLEXIBLE mode active - vary durations intelligently based on mode and topic type`}
 
 **CRITICAL SESSION STRUCTURE & RECOMMENDED RESOURCES:**
 
@@ -573,40 +634,55 @@ Return a JSON object with the following structure:
         "type": "study|break|revision|homework|practice|exam_questions",
         "notes": "MUST include resource recommendations (e.g., 'Practice using Dr Frost Maths', 'Exam questions from PMT') and any specific instructions (MUST include due date for homework, test date for topics with tests)",
         "testDate": "YYYY-MM-DD" (optional, only if this topic has an associated test),
-        "homeworkDueDate": "YYYY-MM-DD" (required for homework type)
+        "homeworkDueDate": "YYYY-MM-DD" (required for homework type),
+        "mode": "${timetableMode || 'balanced'}" (include this to indicate the timetable mode - IMPORTANT for UI display)
       }
     ]
   }
 }
 
+**IMPORTANT**: Add "mode": "${timetableMode || 'balanced'}" field to EVERY session in the schedule. This helps the UI display mode-specific styling and indicators.
+
 **PRACTICE SESSION EXAMPLE** (session 1 for a topic):
 {
   "time": "09:00",
-  "duration": 60,
+  "duration": ${timetableMode === "short-term-exam" ? "75" : timetableMode === "long-term-exam" ? "50" : "40"},
   "subject": "Mathematics",
   "topic": "Quadratic Equations",
   "type": "practice",
-  "notes": "Practice using Dr Frost Maths - Complete 15-20 questions on solving quadratics"
+  "notes": "Practice using Dr Frost Maths - Complete 15-20 questions on solving quadratics",
+  "mode": "${timetableMode || 'balanced'}"
 }
 
 **EXAM QUESTIONS SESSION EXAMPLE** (session 2 for a topic):
 {
   "time": "10:15",
-  "duration": 45,
+  "duration": ${timetableMode === "short-term-exam" ? "80" : timetableMode === "long-term-exam" ? "55" : "35"},
   "subject": "Mathematics",
   "topic": "Quadratic Equations",
   "type": "exam_questions",
-  "notes": "Exam questions from PMT - Past paper questions on quadratic equations"
+  "notes": "Exam questions from PMT - Past paper questions on quadratic equations",
+  "mode": "${timetableMode || 'balanced'}"
 }
 
 **REVISION NOTES SESSION EXAMPLE** (first session for non-maths subjects):
 {
   "time": "11:15",
-  "duration": 45,
+  "duration": ${timetableMode === "short-term-exam" ? "70" : timetableMode === "long-term-exam" ? "45" : "35"},
   "subject": "Biology",
   "topic": "Cell Structure",
   "type": "revision",
-  "notes": "Read and summarize revision notes on cell structure - Use SaveMyExams notes"
+  "notes": "Read and summarize revision notes on cell structure - Use SaveMyExams notes",
+  "mode": "${timetableMode || 'balanced'}"
+}
+
+**BREAK SESSION EXAMPLE**:
+{
+  "time": "12:00",
+  "duration": ${timetableMode === "short-term-exam" ? "8" : timetableMode === "long-term-exam" ? "12" : "18"},
+  "type": "break",
+  "notes": "Rest and recharge",
+  "mode": "${timetableMode || 'balanced'}"
 }
 
 **HOMEWORK SESSION EXAMPLE** (use this format):
@@ -618,7 +694,8 @@ If homework is due on 2025-11-25, schedule it on 2025-11-23 or 2025-11-24:
   "topic": "Complete Chapter 5 exercises",
   "type": "homework",
   "notes": "Homework assignment - Complete all questions from Chapter 5 - Due: 2025-11-25",
-  "homeworkDueDate": "2025-11-25"
+  "homeworkDueDate": "2025-11-25",
+  "mode": "${timetableMode || 'balanced'}"
 }
 NOTE: This example shows the session on a date BEFORE 2025-11-25, NOT on 2025-11-25 itself.
 
