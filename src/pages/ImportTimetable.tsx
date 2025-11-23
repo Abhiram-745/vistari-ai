@@ -55,7 +55,7 @@ const ImportTimetable = () => {
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
   const [parsedTopics, setParsedTopics] = useState<any[]>([]);
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
   useEffect(() => {
@@ -322,7 +322,7 @@ const ImportTimetable = () => {
               </div>
             )}
 
-            {currentStep === 5 && (
+            {currentStep === 3 && (
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4">
                   Your Study Preferences
@@ -376,7 +376,34 @@ const ImportTimetable = () => {
               </div>
             )}
 
-            {currentStep === 3 && (
+            {currentStep === 5 && (
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Review Test Dates
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Adjust or add test dates to help the AI prioritize your study schedule.
+                </p>
+                <TestDatesStep
+                  subjects={subjects.map((s: any, idx: number) => ({
+                    name: typeof s === 'string' ? s : s.name,
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                  }))}
+                  testDates={testDates}
+                  setTestDates={setTestDates}
+                />
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleBack} variant="outline" className="flex-1 gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </Button>
+                  <Button onClick={handleNext} className="flex-1 gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 6 && (
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4">
                   Confirm & Generate
@@ -399,6 +426,9 @@ const ImportTimetable = () => {
                         <p className="text-muted-foreground">
                           <strong>Daily Study Hours:</strong> {preferences?.daily_study_hours || 2} hours
                         </p>
+                        <p className="text-muted-foreground">
+                          <strong>Homework:</strong> {homeworks.length} assignments included
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <p className="text-muted-foreground">
@@ -415,23 +445,11 @@ const ImportTimetable = () => {
                         <p className="text-muted-foreground">
                           <strong>Focus Topics:</strong> {topicConfidences?.difficult_topics?.length || 0} selected
                         </p>
+                        <p className="text-muted-foreground">
+                          <strong>Test Dates:</strong> {testDates.length} exams scheduled
+                        </p>
                       </div>
                     </div>
-                  </Card>
-
-                  <Card className="p-4">
-                    <h3 className="font-semibold text-foreground mb-3">Review Test Dates</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Adjust or add test dates to help the AI prioritize your study schedule
-                    </p>
-                    <TestDatesStep
-                      subjects={subjects.map((s: any, idx: number) => ({
-                        name: typeof s === 'string' ? s : s.name,
-                        exam_board: typeof s === 'object' ? s.exam_board : undefined
-                      }))}
-                      testDates={testDates}
-                      setTestDates={setTestDates}
-                    />
                   </Card>
                 </div>
 
