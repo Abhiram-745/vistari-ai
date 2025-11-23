@@ -359,42 +359,52 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6">
-                {/* Subject Confidence Radar Chart */}
+                {/* Topic Completion Matrix */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      Subject Confidence Map
-                    </CardTitle>
+                    <CardTitle className="text-base">Topic Completion Status</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-[350px] w-full flex items-center justify-center">
+                    <div className="h-[500px] w-full overflow-auto">
                       <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart 
-                          data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
-                            subject: subject.length > 15 ? subject.substring(0, 15) + '...' : subject,
-                            fullSubject: subject,
-                            confidence: data.confidenceScore,
-                          }))}
-                          margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                        <BarChart
+                          data={(() => {
+                            // Build topic completion data from reflections
+                            const topicMap: { [key: string]: { subject: string; completed: number; notCompleted: number } } = {};
+                            
+                            reflections.forEach((ref) => {
+                              const data = ref.reflection_data as any;
+                              const topicKey = `${ref.subject} - ${ref.topic}`;
+                              
+                              if (!topicMap[topicKey]) {
+                                topicMap[topicKey] = { subject: ref.subject, completed: 0, notCompleted: 0 };
+                              }
+                              
+                              // Count easy aspects as completed, hard aspects as not completed
+                              if (data?.easyAspects) {
+                                topicMap[topicKey].completed += data.easyAspects.length;
+                              }
+                              if (data?.hardAspects) {
+                                topicMap[topicKey].notCompleted += data.hardAspects.length;
+                              }
+                            });
+                            
+                            return Object.entries(topicMap).map(([topic, data]) => ({
+                              topic: topic.length > 30 ? topic.substring(0, 30) + '...' : topic,
+                              fullTopic: topic,
+                              'Already Done': data.completed,
+                              'To Do': data.notCompleted,
+                            }));
+                          })()}
+                          layout="vertical"
+                          margin={{ top: 20, right: 30, bottom: 20, left: 150 }}
                         >
-                          <PolarGrid strokeDasharray="3 3" />
-                          <PolarAngleAxis 
-                            dataKey="subject" 
-                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                          />
-                          <PolarRadiusAxis 
-                            angle={90} 
-                            domain={[0, 10]}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                          />
-                          <Radar
-                            name="Confidence Level"
-                            dataKey="confidence"
-                            stroke="hsl(var(--primary))"
-                            fill="hsl(var(--primary))"
-                            fillOpacity={0.5}
-                            strokeWidth={2}
+                          <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                          <YAxis 
+                            dataKey="topic" 
+                            type="category" 
+                            width={140}
+                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
                           />
                           <Tooltip 
                             contentStyle={{
@@ -402,96 +412,92 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                               border: '1px solid hsl(var(--border))',
                               borderRadius: '8px',
                             }}
-                            formatter={(value: any, name: any, props: any) => [
-                              `${value}/10`,
-                              props.payload.fullSubject || 'Confidence'
-                            ]}
+                            labelFormatter={(label, payload) => {
+                              if (payload && payload[0]) {
+                                return payload[0].payload.fullTopic;
+                              }
+                              return label;
+                            }}
                           />
-                        </RadarChart>
+                          <Legend />
+                          <Bar dataKey="Already Done" stackId="a" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                          <Bar dataKey="To Do" stackId="a" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Topics Performance Table */}
+                {/* Mistake Genome */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Topics Performance
-                    </CardTitle>
+                    <CardTitle className="text-base">Mistake Genome</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {/* Topics Needing Focus */}
-                      {insights.strugglingTopics.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                            <TrendingDown className="h-4 w-4 text-destructive" />
-                            Needs Focus ({insights.strugglingTopics.length})
-                          </h4>
-                          <div className="border rounded-lg overflow-hidden">
-                            <table className="w-full">
-                              <thead className="bg-muted/50">
-                                <tr>
-                                  <th className="text-left p-3 text-xs font-medium">Topic</th>
-                                  <th className="text-left p-3 text-xs font-medium">Subject</th>
-                                  <th className="text-left p-3 text-xs font-medium">Priority</th>
-                                  <th className="text-left p-3 text-xs font-medium">Issue</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y">
-                                {insights.strugglingTopics.map((topic, idx) => (
-                                  <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                                    <td className="p-3 text-sm font-medium">{topic.topic}</td>
-                                    <td className="p-3 text-sm text-muted-foreground">{topic.subject}</td>
-                                    <td className="p-3">
-                                      <Badge variant={getSeverityColor(topic.severity) as any} className="text-xs">
-                                        {topic.severity}
-                                      </Badge>
-                                    </td>
-                                    <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
-                                      {topic.reason}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Strong Topics */}
-                      {insights.strongAreas.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                            Strengths ({insights.strongAreas.length})
-                          </h4>
-                          <div className="border rounded-lg overflow-hidden">
-                            <table className="w-full">
-                              <thead className="bg-green-50 dark:bg-green-950/20">
-                                <tr>
-                                  <th className="text-left p-3 text-xs font-medium">Topic</th>
-                                  <th className="text-left p-3 text-xs font-medium">Subject</th>
-                                  <th className="text-left p-3 text-xs font-medium">Why You Excel</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y">
-                                {insights.strongAreas.map((area, idx) => (
-                                  <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                                    <td className="p-3 text-sm font-medium">{area.topic}</td>
-                                    <td className="p-3 text-sm text-muted-foreground">{area.subject}</td>
-                                    <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
-                                      {area.reason}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
+                    <div className="h-[400px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={(() => {
+                            // Build mistake patterns from hard aspects
+                            const mistakeMap: { [key: string]: number } = {};
+                            
+                            reflections.forEach((ref) => {
+                              const data = ref.reflection_data as any;
+                              if (data?.hardAspects) {
+                                data.hardAspects.forEach((aspect: string) => {
+                                  // Categorize mistakes by keywords
+                                  let category = 'Other';
+                                  if (aspect.toLowerCase().includes('formula') || aspect.toLowerCase().includes('equation')) {
+                                    category = 'Formulas';
+                                  } else if (aspect.toLowerCase().includes('concept') || aspect.toLowerCase().includes('theory')) {
+                                    category = 'Concepts';
+                                  } else if (aspect.toLowerCase().includes('problem') || aspect.toLowerCase().includes('question')) {
+                                    category = 'Problem Solving';
+                                  } else if (aspect.toLowerCase().includes('memory') || aspect.toLowerCase().includes('remember')) {
+                                    category = 'Memory';
+                                  } else if (aspect.toLowerCase().includes('calculation') || aspect.toLowerCase().includes('math')) {
+                                    category = 'Calculations';
+                                  } else if (aspect.toLowerCase().includes('application') || aspect.toLowerCase().includes('apply')) {
+                                    category = 'Application';
+                                  }
+                                  
+                                  mistakeMap[category] = (mistakeMap[category] || 0) + 1;
+                                });
+                              }
+                            });
+                            
+                            return Object.entries(mistakeMap)
+                              .map(([category, count]) => ({
+                                category,
+                                mistakes: count,
+                              }))
+                              .sort((a, b) => b.mistakes - a.mistakes);
+                          })()}
+                          margin={{ top: 20, right: 30, bottom: 60, left: 40 }}
+                        >
+                          <XAxis 
+                            dataKey="category" 
+                            angle={-45}
+                            textAnchor="end"
+                            height={80}
+                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                          />
+                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px',
+                            }}
+                          />
+                          <Bar 
+                            dataKey="mistakes" 
+                            fill="hsl(var(--destructive))" 
+                            radius={[8, 8, 0, 0]}
+                            name="Difficulty Count"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
