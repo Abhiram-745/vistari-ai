@@ -79,10 +79,10 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
     <>
       <header className="border-b bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 gap-4">
             {/* Logo */}
             <div 
-              className="flex items-center space-x-3 cursor-pointer group transition-all duration-300 hover:scale-105" 
+              className="flex items-center space-x-2 cursor-pointer group transition-all duration-300 hover:scale-105 flex-shrink-0" 
               onClick={() => navigate("/")}
             >
               <div className="relative">
@@ -91,8 +91,8 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <div className="flex flex-col hidden sm:flex">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Study Planner
                 </h1>
                 <p className="text-[10px] text-muted-foreground -mt-1">Your revision companion</p>
@@ -100,28 +100,16 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1 flex-1 justify-end">
               {!isOnDashboard && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                  className="gap-1.5 hover:bg-primary/10 hover:text-primary transition-all duration-200"
                 >
                   <Home className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Button>
-              )}
-
-              {!isOnSocial && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/social")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Social</span>
+                  <span className="hidden md:inline">Dashboard</span>
                 </Button>
               )}
 
@@ -130,10 +118,10 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/groups")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                  className="gap-1.5 hover:bg-primary/10 hover:text-primary transition-all duration-200"
                 >
                   <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Groups</span>
+                  <span className="hidden md:inline">Groups</span>
                 </Button>
               )}
 
@@ -142,34 +130,10 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/calendar")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                  className="gap-1.5 hover:bg-primary/10 hover:text-primary transition-all duration-200"
                 >
                   <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">Calendar</span>
-                </Button>
-              )}
-
-              {location.pathname !== "/events" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/events")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <CalendarClock className="h-4 w-4" />
-                  <span className="hidden sm:inline">Events</span>
-                </Button>
-              )}
-
-              {location.pathname !== "/homework" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/homework")}
-                  className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  <span className="hidden sm:inline">Homework</span>
+                  <span className="hidden lg:inline">Calendar</span>
                 </Button>
               )}
 
@@ -177,7 +141,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className="gap-2 hover:bg-primary/10 transition-all duration-200"
+                className="gap-1.5 hover:bg-primary/10 transition-all duration-200"
               >
                 {theme === "light" ? (
                   <Moon className="h-4 w-4" />
@@ -191,11 +155,10 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   variant="default"
                   size="sm"
                   onClick={onNewTimetable}
-                  className="gap-2 bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="gap-1.5 bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
                 >
                   <Sparkles className="h-4 w-4" />
-                  <span className="hidden sm:inline">New Timetable</span>
-                  <span className="sm:hidden">New</span>
+                  <span className="hidden md:inline">New</span>
                 </Button>
               )}
             </div>
@@ -205,7 +168,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/20 transition-all duration-200 hover:scale-110"
+                  className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/20 transition-all duration-200 hover:scale-110 flex-shrink-0"
                 >
                   <Avatar className="h-10 w-10 ring-2 ring-primary/20">
                     <AvatarFallback className="bg-gradient-primary text-white font-semibold text-sm">
@@ -216,11 +179,11 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
-                className="w-64 bg-card/95 backdrop-blur-md border-primary/20 z-50 animate-scale-in" 
+                className="w-64 bg-card backdrop-blur-md border-primary/20 shadow-lg z-[100]" 
                 align="end" 
                 forceMount
               >
-                <DropdownMenuLabel className="font-normal p-3">
+                <DropdownMenuLabel className="font-normal p-3 bg-muted/50">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12 ring-2 ring-primary/30">
                       <AvatarFallback className="bg-gradient-primary text-white font-semibold">
@@ -228,7 +191,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold leading-none">
+                      <p className="text-sm font-semibold leading-none text-foreground">
                         {profile?.full_name || "User"}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground flex items-center gap-1">
@@ -238,25 +201,47 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                     </div>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-primary/10" />
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem 
                   onClick={() => navigate("/")} 
-                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 focus:bg-primary/10"
                 >
                   <Home className="mr-3 h-4 w-4 text-primary" />
-                  <span className="font-medium">Dashboard</span>
+                  <span className="font-medium text-foreground">Dashboard</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => navigate("/social")} 
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 focus:bg-primary/10"
+                >
+                  <Users className="mr-3 h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">Social</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => navigate("/events")} 
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 focus:bg-primary/10"
+                >
+                  <CalendarClock className="mr-3 h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">Events</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => navigate("/homework")} 
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 focus:bg-primary/10"
+                >
+                  <ClipboardList className="mr-3 h-4 w-4 text-primary" />
+                  <span className="font-medium text-foreground">Homework</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem 
                   onClick={() => setShowSettings(true)} 
-                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5"
+                  className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 focus:bg-primary/10"
                 >
                   <Settings className="mr-3 h-4 w-4 text-primary" />
-                  <span className="font-medium">Settings</span>
+                  <span className="font-medium text-foreground">Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-primary/10" />
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem 
                   onClick={handleSignOut} 
-                  className="cursor-pointer text-destructive hover:bg-destructive/10 transition-colors py-2.5"
+                  className="cursor-pointer text-destructive hover:bg-destructive/10 transition-colors py-2.5 focus:bg-destructive/10"
                 >
                   <LogOut className="mr-3 h-4 w-4" />
                   <span className="font-medium">Sign Out</span>
