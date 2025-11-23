@@ -331,8 +331,8 @@ export const TomorrowPlanDialog = ({
   // Calculate estimated time for topics
   const calculateTopicTime = (confidence: number = 5) => {
     // Lower confidence = more time needed
-    // Scale: 10 confidence = 30min, 1 confidence = 60min
-    return 30 + (10 - confidence) * 3;
+    // Scale: 10 confidence = 45min, 1 confidence = 90min
+    return 45 + (10 - confidence) * 5;
   };
 
   const getTotalEstimatedTime = () => {
