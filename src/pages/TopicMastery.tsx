@@ -37,8 +37,16 @@ const TopicMastery = () => {
       .order("name");
 
     if (data && data.length > 0) {
-      setSubjects(data);
-      setSelectedSubject(data[0].id);
+      // Deduplicate subjects by name, keeping the first occurrence
+      const uniqueSubjects = data.reduce((acc, subject) => {
+        if (!acc.find(s => s.name === subject.name)) {
+          acc.push(subject);
+        }
+        return acc;
+      }, [] as typeof data);
+      
+      setSubjects(uniqueSubjects);
+      setSelectedSubject(uniqueSubjects[0].id);
     }
   };
 
