@@ -84,7 +84,12 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
 
   const handleNext = () => {
     if (step < totalSteps) {
-      setStep(step + 1);
+      // Skip test dates step if no-exam mode
+      if (step === 4 && timetableMode === "no-exam") {
+        setStep(step + 2); // Skip step 5 (test dates)
+      } else {
+        setStep(step + 1);
+      }
     }
   };
 
@@ -92,7 +97,12 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     if (step === 1 && onCancel) {
       onCancel();
     } else if (step > 1) {
-      setStep(step - 1);
+      // Skip test dates step if no-exam mode when going back
+      if (step === 6 && timetableMode === "no-exam") {
+        setStep(step - 2); // Skip step 5 (test dates)
+      } else {
+        setStep(step - 1);
+      }
     }
   };
 
@@ -120,7 +130,9 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
         <CardTitle className="text-2xl">{stepTitles[step - 1]}</CardTitle>
         <CardDescription>
           {step === 1 && "Select the type of timetable that fits your study goals"}
-          {step === 2 && "Add the subjects you're taking for your GCSEs"}
+          {step === 2 && (timetableMode === "no-exam" 
+            ? "GCSE subjects that you need a bit more practice on" 
+            : "Add the subjects you're taking for your GCSEs")}
           {step === 3 && "Tell us which topics you're currently studying"}
           {step === 4 && "AI will analyze your topics to prioritize difficult areas"}
           {step === 5 && "When are your tests scheduled?"}
@@ -150,7 +162,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
             onSkip={handleNext}
           />
         )}
-        {step === 5 && (
+        {step === 5 && timetableMode !== "no-exam" && (
           <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
         )}
         {step === 6 && (
@@ -187,7 +199,7 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
                 (step === 1 && !timetableMode) ||
                 (step === 2 && subjects.length === 0) ||
                 (step === 3 && topics.length === 0) ||
-                (step === 5 && testDates.length === 0)
+                (step === 5 && timetableMode !== "no-exam" && testDates.length === 0)
               }
             >
               Next
