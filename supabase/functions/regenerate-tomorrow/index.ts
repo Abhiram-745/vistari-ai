@@ -97,6 +97,7 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not configured');
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
@@ -200,7 +201,7 @@ Return ONLY valid JSON:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-nano',
+          model: 'google/gemini-2.5-flash',
           messages: [
             { 
               role: 'system', 
@@ -208,7 +209,7 @@ Return ONLY valid JSON:
             },
             { role: 'user', content: prompt }
           ],
-          max_completion_tokens: 4000,
+          max_tokens: 4000,
         }),
         signal: controller.signal,
       });
@@ -248,10 +249,13 @@ Return ONLY valid JSON:
     }
 
     const aiData = await aiResponse.json();
-    let responseText = aiData.choices?.[0]?.message?.content;
+    console.log('AI Response:', JSON.stringify(aiData, null, 2));
+    
+    let responseText = aiData.choices?.[0]?.message?.content || aiData.choices?.[0]?.text;
 
     if (!responseText) {
-      throw new Error('No content in AI response');
+      console.error('No content in AI response. Full response:', aiData);
+      throw new Error('No content in AI response. Please try again.');
     }
 
     // Extract JSON from markdown if present
