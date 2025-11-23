@@ -153,8 +153,17 @@ export const EventsWidget = () => {
         .from("events")
         .select("*")
         .eq("user_id", user.id)
-        .gte("end_time", timetable.start_date)
-        .lte("start_time", timetable.end_date);
+        .gte("end_time", `${timetable.start_date}T00:00:00`)
+        .lte("start_time", `${timetable.end_date}T23:59:59`);
+
+      const uniqueEvents = Array.from(
+        new Map(
+          (events || []).map((evt) => [
+            `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+            evt,
+          ])
+        ).values()
+      );
 
         const { data: homeworks } = await supabase
           .from("homeworks")

@@ -58,11 +58,21 @@ const GenerateStep = ({
       const { data: events, error: eventsError } = await supabase
         .from("events")
         .select("*")
-        .gte("start_time", startDate)
-        .lte("start_time", endDate)
+        .eq("user_id", user.id)
+        .gte("start_time", `${startDate}T00:00:00`)
+        .lte("start_time", `${endDate}T23:59:59`)
         .order("start_time", { ascending: true });
 
       if (eventsError) throw eventsError;
+
+      const uniqueEvents = Array.from(
+        new Map(
+          (events || []).map((evt) => [
+            `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+            evt,
+          ])
+        ).values()
+      );
 
       // Save homeworks to database (use upsert to avoid duplicates)
       if (homeworks.length > 0) {
@@ -163,7 +173,7 @@ const GenerateStep = ({
             homeworks: homeworks.map(({ id, ...hw }) => hw) || [],
             topicAnalysis,
             aiNotes: preferences.aiNotes || "",
-            events: events || [],
+            events: uniqueEvents,
             startDate,
             endDate,
           },
