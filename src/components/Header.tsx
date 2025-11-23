@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
@@ -23,7 +23,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
-  const [profile, setProfile] = useState<{ full_name?: string; id: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string; id: string } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const isOnDashboard = location.pathname === "/";
   const isOnSocial = location.pathname === "/social";
@@ -43,11 +43,15 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
     if (user) {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, avatar_url")
         .eq("id", user.id)
         .single();
       
-      setProfile({ full_name: data?.full_name || "", id: user.id });
+      setProfile({ 
+        full_name: data?.full_name || "", 
+        avatar_url: data?.avatar_url || "",
+        id: user.id 
+      });
     }
   };
 
@@ -171,6 +175,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/20 transition-all duration-200 hover:scale-110 flex-shrink-0"
                 >
                   <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                    <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
                     <AvatarFallback className="bg-gradient-primary text-white font-semibold text-sm">
                       {getInitials(profile?.full_name)}
                     </AvatarFallback>
@@ -186,6 +191,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 <DropdownMenuLabel className="font-normal p-3 bg-muted/50">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12 ring-2 ring-primary/30">
+                      <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
                       <AvatarFallback className="bg-gradient-primary text-white font-semibold">
                         {getInitials(profile?.full_name)}
                       </AvatarFallback>

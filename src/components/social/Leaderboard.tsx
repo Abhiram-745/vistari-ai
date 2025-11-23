@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Flame, Target, Loader2, Medal } from "lucide-react";
 import { toast } from "sonner";
 
 interface LeaderboardEntry {
   user_id: string;
   full_name: string;
+  avatar_url?: string;
   total_minutes: number;
   total_sessions: number;
   current_streak: number;
@@ -46,7 +47,7 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
       // Get profiles for all users
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, avatar_url")
         .in("id", userIds);
 
       if (profilesError) throw profilesError;
@@ -82,7 +83,8 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
 
         userStats.set(uid, {
           user_id: uid,
-          full_name: profile?.full_name || "Unknown",
+          full_name: profile?.full_name || "Unknown User",
+          avatar_url: profile?.avatar_url,
           total_minutes: totalMinutes,
           total_sessions: totalSessions,
           current_streak: currentStreak
@@ -103,6 +105,7 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
   };
 
   const getInitials = (name: string) => {
+    if (!name || name === "Unknown User") return "U";
     return name
       .split(" ")
       .map(n => n[0])
@@ -161,6 +164,7 @@ const Leaderboard = ({ userId }: LeaderboardProps) => {
                 </div>
 
                 <Avatar className={`h-12 w-12 ${index < 3 ? "ring-2 ring-primary/30" : ""}`}>
+                  <AvatarImage src={entry.avatar_url} alt={entry.full_name} />
                   <AvatarFallback className={index === 0 ? "bg-gradient-primary text-white" : ""}>
                     {getInitials(entry.full_name)}
                   </AvatarFallback>
