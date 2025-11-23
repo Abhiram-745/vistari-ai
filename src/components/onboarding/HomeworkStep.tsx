@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Image as ImageIcon, X } from "lucide-react";
 import { Subject } from "../OnboardingWizard";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Homework {
   id?: string;
@@ -35,6 +36,53 @@ const HomeworkStep = ({ subjects, homeworks, setHomeworks }: HomeworkStepProps) 
     duration: 60,
     images: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load existing homework from database
+  useEffect(() => {
+    const loadExistingHomework = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('homeworks')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('completed', false)
+          .order('due_date', { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const existingHomeworks = data.map(hw => ({
+            id: hw.id,
+            subject: hw.subject,
+            title: hw.title,
+            description: hw.description || "",
+            due_date: hw.due_date,
+            duration: hw.duration || 60,
+            images: [],
+          }));
+          setHomeworks(existingHomeworks);
+        }
+      } catch (error) {
+        console.error('Error loading homework:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Only load if homeworks array is empty
+    if (homeworks.length === 0) {
+      loadExistingHomework();
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
 
   const addHomework = () => {
     if (currentHomework.subject && currentHomework.title && currentHomework.due_date) {
@@ -284,10 +332,16 @@ const HomeworkStep = ({ subjects, homeworks, setHomeworks }: HomeworkStepProps) 
         </div>
       )}
 
-      {homeworks.length === 0 && (
+      {homeworks.length === 0 && !isLoading && (
         <div className="text-center py-8 text-muted-foreground">
           <p>No homework added yet. Add your homework assignments to include them in your timetable.</p>
           <p className="text-sm mt-2">You can skip this step if you don't have any homework.</p>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Loading existing homework...</p>
         </div>
       )}
     </div>
