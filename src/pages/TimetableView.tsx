@@ -351,7 +351,7 @@ const TimetableView = () => {
                         <div
                           key={idx}
                           onClick={() =>
-                            session.type !== "break" &&
+                            session.type !== "break" && session.type !== "event" &&
                             setSelectedSession({ date, index: idx, session })
                           }
                           className={`p-4 rounded-xl border-l-4 transition-all duration-300 ${
@@ -360,7 +360,7 @@ const TimetableView = () => {
                               : session.type === "break"
                               ? "bg-muted/30 border-muted-foreground"
                               : session.type === "event"
-                              ? "bg-red-50 dark:bg-red-950/20 border-red-500"
+                              ? "bg-gradient-to-r from-red-100 to-red-50 dark:from-red-950/40 dark:to-red-900/20 border-red-600 shadow-md ring-2 ring-red-500/20"
                               : session.type === "homework"
                               ? "bg-purple-50 dark:bg-purple-950/20 border-purple-500"
                               : session.type === "revision"
@@ -369,7 +369,7 @@ const TimetableView = () => {
                               ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500"
                               : "bg-gradient-to-r from-primary/5 to-secondary/5 border-primary backdrop-blur-sm"
                           } ${
-                            session.type !== "break"
+                            session.type !== "break" && session.type !== "event"
                               ? "cursor-pointer hover:shadow-lg hover:scale-[1.02]"
                               : ""
                           }`}
@@ -384,11 +384,11 @@ const TimetableView = () => {
                                   ({session.duration} min)
                                 </span>
                                 <span
-                                  className={`text-xs px-2 py-1 rounded-md font-medium ${
+                                  className={`text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wide ${
                                     session.type === "break"
                                       ? "bg-muted text-muted-foreground"
                                       : session.type === "event"
-                                      ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+                                      ? "bg-red-600 dark:bg-red-700 text-white shadow-sm"
                                       : session.type === "homework"
                                       ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
                                       : session.type === "revision"
@@ -400,11 +400,13 @@ const TimetableView = () => {
                                 </span>
                               </div>
                               {session.subject && (
-                                <p className="font-medium">{session.subject}</p>
+                                <p className={`font-medium ${session.type === "event" ? "text-red-900 dark:text-red-100 font-bold" : ""}`}>
+                                  {session.subject}
+                                </p>
                               )}
                               {session.topic && (
-                                <p className="text-sm text-muted-foreground">
-                                  {session.topic}
+                                <p className={`text-sm ${session.type === "event" ? "text-red-800 dark:text-red-200 font-semibold" : "text-muted-foreground"}`}>
+                                  {session.type === "event" ? "🚫 BLOCKED TIME - " : ""}{session.topic}
                                 </p>
                               )}
                               {session.testDate && (
@@ -423,13 +425,18 @@ const TimetableView = () => {
                                 </p>
                               )}
                             </div>
-                            {session.type !== "break" && (
+                            {session.type !== "break" && session.type !== "event" && (
                               <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                   checked={session.completed || false}
                                   onCheckedChange={() => toggleSessionComplete(date, idx)}
                                   className="h-5 w-5"
                                 />
+                              </div>
+                            )}
+                            {session.type === "event" && (
+                              <div className="flex items-center justify-center px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded-md text-xs font-bold shadow-sm">
+                                🚫 BLOCKED
                               </div>
                             )}
                           </div>
