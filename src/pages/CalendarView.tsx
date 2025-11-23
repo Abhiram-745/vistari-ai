@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, BookOpen, CheckCircle2, AlertCircle } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, addMinutes } from "date-fns";
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -103,44 +103,139 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`p-3 mb-3 rounded-lg border-l-4 cursor-move transition-all hover:shadow-lg ${getItemStyles()}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0 space-y-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p className="text-sm font-semibold leading-tight line-clamp-2 overflow-hidden">{item.title}</p>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">{item.title}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-            <span className="text-xs">🕐</span>
-            {item.startTime} - {item.endTime}
-          </p>
-        </div>
-        <Badge 
-          variant={getBadgeVariant()} 
-          className={`shrink-0 font-medium ${
-            item.data?.type === "homework" 
-              ? "bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border-purple-300" 
-              : item.data?.type === "revision" 
-              ? "bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300"
-              : ""
-          }`}
+    <HoverCard openDelay={200}>
+      <HoverCardTrigger asChild>
+        <div
+          ref={setNodeRef}
+          style={style}
+          {...listeners}
+          {...attributes}
+          className={`p-3 mb-3 rounded-lg border-l-4 cursor-move transition-all hover:shadow-lg ${getItemStyles()}`}
         >
-          {getBadgeText()}
-        </Badge>
-      </div>
-    </div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className="text-sm font-semibold leading-tight line-clamp-2 overflow-hidden">{item.title}</p>
+              <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs">🕐</span>
+                {item.startTime} - {item.endTime}
+              </p>
+            </div>
+            <Badge 
+              variant={getBadgeVariant()} 
+              className={`shrink-0 font-medium ${
+                item.data?.type === "homework" 
+                  ? "bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border-purple-300" 
+                  : item.data?.type === "revision" 
+                  ? "bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300"
+                  : ""
+              }`}
+            >
+              {getBadgeText()}
+            </Badge>
+          </div>
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 p-4" side="right" align="start">
+        <div className="space-y-3">
+          <div>
+            <h4 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              {item.type === "event" ? "Event Details" : "Session Details"}
+            </h4>
+            <p className="text-sm font-medium text-foreground">{item.title}</p>
+          </div>
+          
+          <div className="space-y-2 pt-2 border-t">
+            <div className="flex items-start gap-2 text-xs">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-foreground">Time</p>
+                <p className="text-muted-foreground">{item.startTime} - {item.endTime}</p>
+              </div>
+            </div>
+            
+            {item.data?.duration && (
+              <div className="flex items-start gap-2 text-xs">
+                <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Duration</p>
+                  <p className="text-muted-foreground">{item.data.duration} minutes</p>
+                </div>
+              </div>
+            )}
+            
+            {item.data?.subject && (
+              <div className="flex items-start gap-2 text-xs">
+                <BookOpen className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Subject</p>
+                  <p className="text-muted-foreground">{item.data.subject}</p>
+                </div>
+              </div>
+            )}
+            
+            {item.data?.topic && (
+              <div className="flex items-start gap-2 text-xs">
+                <BookOpen className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Topic</p>
+                  <p className="text-muted-foreground">{item.data.topic}</p>
+                </div>
+              </div>
+            )}
+            
+            {item.data?.completed !== undefined && (
+              <div className="flex items-start gap-2 text-xs">
+                <CheckCircle2 className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${item.data.completed ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <div>
+                  <p className="font-semibold text-foreground">Status</p>
+                  <p className={item.data.completed ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+                    {item.data.completed ? 'Completed ✓' : 'Not completed'}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {item.data?.notes && (
+              <div className="flex items-start gap-2 text-xs">
+                <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Notes</p>
+                  <p className="text-muted-foreground">{item.data.notes}</p>
+                </div>
+              </div>
+            )}
+            
+            {item.type === "event" && item.data?.description && (
+              <div className="flex items-start gap-2 text-xs">
+                <AlertCircle className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">Description</p>
+                  <p className="text-muted-foreground">{item.data.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="pt-2 border-t">
+            <Badge 
+              variant={getBadgeVariant()} 
+              className={`font-medium ${
+                item.data?.type === "homework" 
+                  ? "bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200" 
+                  : item.data?.type === "revision" 
+                  ? "bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                  : item.type === "event"
+                  ? "bg-red-200 dark:bg-red-900 text-red-800 dark:text-red-200"
+                  : ""
+              }`}
+            >
+              {getBadgeText()}
+            </Badge>
+          </div>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   );
 };
 
