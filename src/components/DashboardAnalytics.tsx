@@ -365,66 +365,82 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                     <CardTitle className="text-base">Topic Completion Status</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-[500px] w-full overflow-auto">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={(() => {
-                            // Build topic completion data from reflections
-                            const topicMap: { [key: string]: { subject: string; completed: number; notCompleted: number } } = {};
-                            
-                            reflections.forEach((ref) => {
-                              const data = ref.reflection_data as any;
-                              const topicKey = `${ref.subject} - ${ref.topic}`;
-                              
-                              if (!topicMap[topicKey]) {
-                                topicMap[topicKey] = { subject: ref.subject, completed: 0, notCompleted: 0 };
-                              }
-                              
-                              // Count easy aspects as completed, hard aspects as not completed
-                              if (data?.easyAspects) {
-                                topicMap[topicKey].completed += data.easyAspects.length;
-                              }
-                              if (data?.hardAspects) {
-                                topicMap[topicKey].notCompleted += data.hardAspects.length;
-                              }
-                            });
-                            
-                            return Object.entries(topicMap).map(([topic, data]) => ({
-                              topic: topic.length > 30 ? topic.substring(0, 30) + '...' : topic,
-                              fullTopic: topic,
-                              'Already Done': data.completed,
-                              'To Do': data.notCompleted,
-                            }));
-                          })()}
-                          layout="vertical"
-                          margin={{ top: 20, right: 30, bottom: 20, left: 150 }}
-                        >
-                          <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                          <YAxis 
-                            dataKey="topic" 
-                            type="category" 
-                            width={140}
-                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
-                          />
-                          <Tooltip 
-                            contentStyle={{
-                              backgroundColor: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
-                            }}
-                            labelFormatter={(label, payload) => {
-                              if (payload && payload[0]) {
-                                return payload[0].payload.fullTopic;
-                              }
-                              return label;
-                            }}
-                          />
-                          <Legend />
-                          <Bar dataKey="Already Done" stackId="a" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                          <Bar dataKey="To Do" stackId="a" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                    {(() => {
+                      // Build topic completion data from reflections
+                      const topicMap: { [key: string]: { subject: string; completed: number; notCompleted: number } } = {};
+                      
+                      reflections.forEach((ref) => {
+                        const data = ref.reflection_data as any;
+                        const topicKey = `${ref.subject} - ${ref.topic}`;
+                        
+                        if (!topicMap[topicKey]) {
+                          topicMap[topicKey] = { subject: ref.subject, completed: 0, notCompleted: 0 };
+                        }
+                        
+                        // Count easy aspects as completed, hard aspects as not completed
+                        if (data?.easyAspects && Array.isArray(data.easyAspects)) {
+                          topicMap[topicKey].completed += data.easyAspects.length;
+                        }
+                        if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                          topicMap[topicKey].notCompleted += data.hardAspects.length;
+                        }
+                      });
+                      
+                      const chartData = Object.entries(topicMap).map(([topic, data]) => ({
+                        topic: topic.length > 30 ? topic.substring(0, 30) + '...' : topic,
+                        fullTopic: topic,
+                        'Already Done': data.completed,
+                        'To Do': data.notCompleted,
+                      }));
+
+                      if (chartData.length === 0) {
+                        return (
+                          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                            <div className="text-center">
+                              <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm">No topic reflections yet</p>
+                              <p className="text-xs mt-1">Complete study sessions and add reflections to see your progress</p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="h-[500px] w-full overflow-auto">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={chartData}
+                              layout="vertical"
+                              margin={{ top: 20, right: 30, bottom: 20, left: 150 }}
+                            >
+                              <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                              <YAxis 
+                                dataKey="topic" 
+                                type="category" 
+                                width={140}
+                                tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px',
+                                }}
+                                labelFormatter={(label, payload) => {
+                                  if (payload && payload[0]) {
+                                    return payload[0].payload.fullTopic;
+                                  }
+                                  return label;
+                                }}
+                              />
+                              <Legend />
+                              <Bar dataKey="Already Done" stackId="a" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                              <Bar dataKey="To Do" stackId="a" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
 
@@ -434,74 +450,90 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                     <CardTitle className="text-base">Mistake Genome</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-[400px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={(() => {
-                            // Build mistake patterns from hard aspects
-                            const mistakeMap: { [key: string]: number } = {};
+                    {(() => {
+                      // Build mistake patterns from hard aspects
+                      const mistakeMap: { [key: string]: number } = {};
+                      
+                      reflections.forEach((ref) => {
+                        const data = ref.reflection_data as any;
+                        if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                          data.hardAspects.forEach((aspect: any) => {
+                            // Ensure aspect is a string before processing
+                            if (typeof aspect !== 'string') return;
                             
-                            reflections.forEach((ref) => {
-                              const data = ref.reflection_data as any;
-                              if (data?.hardAspects) {
-                                data.hardAspects.forEach((aspect: any) => {
-                                  // Ensure aspect is a string before processing
-                                  if (typeof aspect !== 'string') return;
-                                  
-                                  // Categorize mistakes by keywords
-                                  let category = 'Other';
-                                  if (aspect.toLowerCase().includes('formula') || aspect.toLowerCase().includes('equation')) {
-                                    category = 'Formulas';
-                                  } else if (aspect.toLowerCase().includes('concept') || aspect.toLowerCase().includes('theory')) {
-                                    category = 'Concepts';
-                                  } else if (aspect.toLowerCase().includes('problem') || aspect.toLowerCase().includes('question')) {
-                                    category = 'Problem Solving';
-                                  } else if (aspect.toLowerCase().includes('memory') || aspect.toLowerCase().includes('remember')) {
-                                    category = 'Memory';
-                                  } else if (aspect.toLowerCase().includes('calculation') || aspect.toLowerCase().includes('math')) {
-                                    category = 'Calculations';
-                                  } else if (aspect.toLowerCase().includes('application') || aspect.toLowerCase().includes('apply')) {
-                                    category = 'Application';
-                                  }
-                                  
-                                  mistakeMap[category] = (mistakeMap[category] || 0) + 1;
-                                });
-                              }
-                            });
+                            // Categorize mistakes by keywords
+                            let category = 'Other';
+                            if (aspect.toLowerCase().includes('formula') || aspect.toLowerCase().includes('equation')) {
+                              category = 'Formulas';
+                            } else if (aspect.toLowerCase().includes('concept') || aspect.toLowerCase().includes('theory')) {
+                              category = 'Concepts';
+                            } else if (aspect.toLowerCase().includes('problem') || aspect.toLowerCase().includes('question')) {
+                              category = 'Problem Solving';
+                            } else if (aspect.toLowerCase().includes('memory') || aspect.toLowerCase().includes('remember')) {
+                              category = 'Memory';
+                            } else if (aspect.toLowerCase().includes('calculation') || aspect.toLowerCase().includes('math')) {
+                              category = 'Calculations';
+                            } else if (aspect.toLowerCase().includes('application') || aspect.toLowerCase().includes('apply')) {
+                              category = 'Application';
+                            }
                             
-                            return Object.entries(mistakeMap)
-                              .map(([category, count]) => ({
-                                category,
-                                mistakes: count,
-                              }))
-                              .sort((a, b) => b.mistakes - a.mistakes);
-                          })()}
-                          margin={{ top: 20, right: 30, bottom: 60, left: 40 }}
-                        >
-                          <XAxis 
-                            dataKey="category" 
-                            angle={-45}
-                            textAnchor="end"
-                            height={80}
-                            tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                          />
-                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                          <Tooltip 
-                            contentStyle={{
-                              backgroundColor: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
-                            }}
-                          />
-                          <Bar 
-                            dataKey="mistakes" 
-                            fill="hsl(var(--destructive))" 
-                            radius={[8, 8, 0, 0]}
-                            name="Difficulty Count"
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                            mistakeMap[category] = (mistakeMap[category] || 0) + 1;
+                          });
+                        }
+                      });
+                      
+                      const chartData = Object.entries(mistakeMap)
+                        .map(([category, count]) => ({
+                          category,
+                          mistakes: count,
+                        }))
+                        .sort((a, b) => b.mistakes - a.mistakes);
+
+                      if (chartData.length === 0) {
+                        return (
+                          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                            <div className="text-center">
+                              <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm">No mistake patterns identified yet</p>
+                              <p className="text-xs mt-1">Add reflections about challenging aspects to see patterns</p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="h-[400px] w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={chartData}
+                              margin={{ top: 20, right: 30, bottom: 60, left: 40 }}
+                            >
+                              <XAxis 
+                                dataKey="category" 
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                                tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                              />
+                              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px',
+                                }}
+                              />
+                              <Bar 
+                                dataKey="mistakes" 
+                                fill="hsl(var(--destructive))" 
+                                radius={[8, 8, 0, 0]}
+                                name="Difficulty Count"
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
