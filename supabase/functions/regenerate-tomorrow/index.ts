@@ -120,12 +120,13 @@ serve(async (req) => {
       ])).values()
     );
 
-    // Fetch homework
+    // Fetch homework - exclude homework due on or before tomorrow's date
     const { data: homeworkList } = await supabase
       .from('homeworks')
       .select('*')
       .eq('user_id', user.id)
-      .eq('completed', false);
+      .eq('completed', false)
+      .gt('due_date', validTomorrowDate); // Only homework due AFTER tomorrow
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -183,7 +184,12 @@ ${uniqueTomorrowEvents.map(e => {
   return `⛔ ${e.title}: ${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} → ${end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${durationMins} mins BLOCKED)`;
 }).join('\n')}
 
-CRITICAL: The ENTIRE duration of each event is unavailable. Schedule sessions BEFORE events start OR AFTER events end.` 
+CRITICAL BLOCKING RULES:
+1. The ENTIRE duration of each event is unavailable
+2. DO NOT schedule ANY sessions that overlap with event times
+3. If an event is at 18:00-21:00, you CANNOT schedule sessions at 18:00, 18:30, 19:00, 19:30, 20:00, or 20:30
+4. Only schedule BEFORE the event starts OR AFTER the event completely ends
+5. Account for session duration - a 60-min session cannot start at 17:30 if an event starts at 18:00` 
   : 'No events tomorrow - full time window available.'}
 
 **TEST DAY CHECK**
@@ -211,15 +217,19 @@ The user CANNOT study on test days. Return: {"schedule": [], "summary": "Tomorro
    - Medium confidence (5-7): 60-75 minutes  
    - High confidence (8-10): 45-60 minutes
 5. **🔴 HOMEWORK DEADLINE RULE 🔴**: 
-   - ✗ NEVER schedule homework ON its due date
-   - ✓ ALWAYS schedule homework AT LEAST 1 day BEFORE the due date
-   - If homework is due tomorrow, DO NOT include it in tomorrow's schedule
-   - Only schedule homework if its due date is AFTER tomorrow
+   - ✗ NEVER schedule homework ON or BEFORE its due date
+   - ✓ Only schedule homework if due date is AFTER ${validTomorrowDate}
+   - Homework list has already been filtered - only includes homework due AFTER tomorrow
    - Use EXACT duration from homework list (already calculated correctly)
+   - DO NOT DUPLICATE homework - each homework item should appear ONLY ONCE in the schedule
 6. **🔴 EVENT BLOCKING 🔴**: 
    - Events create COMPLETE time blocks that are UNAVAILABLE
-   - If event is 18:00-21:00, you CANNOT schedule at 18:00, 18:30, 19:00, 20:00, or 20:30
-   - Schedule sessions BEFORE event starts OR AFTER event ends
+   - If event is 18:00-21:00 (180 mins), you CANNOT schedule ANY sessions during this time
+   - A 60-min session starting at 17:30 would overlap with 18:00 event - DO NOT SCHEDULE IT
+   - A 90-min session starting at 16:00 would overlap with 18:00 event - DO NOT SCHEDULE IT
+   - Calculate: session start time + session duration MUST be <= event start time
+   - Or: session start time MUST be >= event end time
+   - Schedule sessions BEFORE event starts (with enough buffer for duration) OR AFTER event completely ends
    - Never overlap with any part of an event's duration
 7. **Time format**: All times in HH:MM format (00:00-23:59)
 8. **Sequential scheduling**: Calculate each start time from previous end time + break (if break added)
