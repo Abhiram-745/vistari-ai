@@ -128,7 +128,7 @@ const Landing = () => {
             }} className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 shadow-md backdrop-blur-sm max-w-2xl w-full z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Sarah! 👋</h3>
+                    <h3 className="text-2xl font-bold text-primary mb-1">Good afternoon, Dhr! 👋</h3>
                     <p className="text-muted-foreground">Ready to crush your study goals today?</p>
                   </div>
                   <div className="flex items-center gap-6">
