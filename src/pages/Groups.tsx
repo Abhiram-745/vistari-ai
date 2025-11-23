@@ -138,39 +138,46 @@ const Groups = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Floating background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
+        <div className="floating-blob top-40 right-10 w-[500px] h-[500px] bg-secondary/15 animate-float-delayed"></div>
+        <div className="floating-blob bottom-20 left-1/3 w-80 h-80 bg-accent/10 animate-float-slow"></div>
+      </div>
+
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Study Groups</h1>
-            <p className="text-muted-foreground">Collaborate and learn together</p>
+            <h1 className="text-4xl font-display font-bold gradient-text mb-2">Study Groups</h1>
+            <p className="text-muted-foreground text-lg">Collaborate and learn together</p>
           </div>
           
           <div className="flex gap-2">
-            <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2">
+            <Button onClick={() => setShowJoinModal(true)} variant="outline" className="gap-2 hover-lift">
               <Search className="w-4 h-4" /> Join with Code
             </Button>
             <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="w-4 h-4" /> Create Group
+              <Plus className="h-4 w-4" /> Create Group
             </Button>
           </div>
         </div>
 
         <Tabs defaultValue="my-groups" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="my-groups">My Groups</TabsTrigger>
-            <TabsTrigger value="discover">Discover</TabsTrigger>
+          <TabsList className="glass-card p-1 rounded-xl">
+            <TabsTrigger value="my-groups" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white rounded-lg">My Groups</TabsTrigger>
+            <TabsTrigger value="discover" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white rounded-lg">Discover</TabsTrigger>
           </TabsList>
 
           <TabsContent value="my-groups" className="space-y-4">
             {loading ? (
               <p className="text-center text-muted-foreground py-8">Loading...</p>
             ) : myGroups.length === 0 ? (
-              <Card className="p-12 text-center">
-                <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No groups yet</h3>
+              <Card className="p-12 text-center hover-lift">
+                <Users className="w-16 h-16 mx-auto text-primary mb-4" />
+                <h3 className="text-xl font-display font-bold gradient-text mb-2">No groups yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Create or join a group to start collaborating
                 </p>

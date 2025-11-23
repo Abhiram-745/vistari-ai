@@ -229,15 +229,22 @@ const TimetableView = () => {
     : sortedDates;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Floating background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
+        <div className="floating-blob top-40 right-10 w-[500px] h-[500px] bg-secondary/15 animate-float-delayed"></div>
+        <div className="floating-blob bottom-20 left-1/3 w-80 h-80 bg-accent/10 animate-float-slow"></div>
+      </div>
+
       <Header />
       
-      <div className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
+      <div className="glass-header sticky top-16 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <CalendarIcon className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold">{timetable.name}</h1>
+              <h1 className="text-2xl font-display font-bold gradient-text">{timetable.name}</h1>
               <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -302,15 +309,15 @@ const TimetableView = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 space-y-4">
-          <p className="text-muted-foreground">
+              <p className="text-muted-foreground font-medium">
             {format(new Date(timetable.start_date), "dd/MM/yyyy")} - {format(new Date(timetable.end_date), "dd/MM/yyyy")}
           </p>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Overall Progress</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+              <span className="text-sm font-semibold">Overall Progress</span>
+              <span className="text-sm font-bold text-primary">{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-3" />
           </div>
         </div>
 
@@ -325,12 +332,12 @@ const TimetableView = () => {
               </div>
             )}
             
-            {filteredDates.map((date) => {
+            {sortedDates.map((date) => {
             const sessions = timetable.schedule[date];
             const dateObj = new Date(date);
             
             return (
-              <Card key={date} className="shadow-md">
+              <Card key={date} className="shadow-lg hover-lift">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="h-5 w-5 text-primary" />
@@ -347,7 +354,7 @@ const TimetableView = () => {
                             session.type !== "break" &&
                             setSelectedSession({ date, index: idx, session })
                           }
-                          className={`p-4 rounded-lg border-l-4 ${
+                          className={`p-4 rounded-xl border-l-4 transition-all duration-300 ${
                             session.completed
                               ? "bg-primary/10 border-primary opacity-60"
                               : session.type === "break"
@@ -360,10 +367,10 @@ const TimetableView = () => {
                               ? "bg-blue-50 dark:bg-blue-950/20 border-blue-500"
                               : session.testDate
                               ? "bg-orange-50 dark:bg-orange-950/20 border-orange-500"
-                              : "bg-primary/5 border-primary"
+                              : "bg-gradient-to-r from-primary/5 to-secondary/5 border-primary backdrop-blur-sm"
                           } ${
                             session.type !== "break"
-                              ? "cursor-pointer hover:shadow-md transition-shadow"
+                              ? "cursor-pointer hover:shadow-lg hover:scale-[1.02]"
                               : ""
                           }`}
                         >
@@ -377,7 +384,7 @@ const TimetableView = () => {
                                   ({session.duration} min)
                                 </span>
                                 <span
-                                  className={`text-xs px-2 py-1 rounded ${
+                                  className={`text-xs px-2 py-1 rounded-md font-medium ${
                                     session.type === "break"
                                       ? "bg-muted text-muted-foreground"
                                       : session.type === "event"
@@ -386,7 +393,7 @@ const TimetableView = () => {
                                       ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
                                       : session.type === "revision"
                                       ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                                      : "bg-primary/10 text-primary"
+                                      : "bg-primary/15 text-primary"
                                   }`}
                                 >
                                   {session.type}

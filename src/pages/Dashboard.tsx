@@ -84,11 +84,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Floating background elements - just like landing page */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
+        <div className="floating-blob top-40 right-10 w-[500px] h-[500px] bg-secondary/15 animate-float-delayed"></div>
+        <div className="floating-blob bottom-20 left-1/3 w-80 h-80 bg-accent/10 animate-float-slow"></div>
       </div>
 
       <Header onNewTimetable={() => setShowOnboarding(true)} />
@@ -97,14 +98,14 @@ const Dashboard = () => {
         {!hasData && !showOnboarding ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-8 animate-fade-in">
             <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Welcome to Study Planner</span>
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30 shadow-sm">
+                <Sparkles className="h-4 w-4 text-secondary" />
+                <span className="text-sm font-medium text-secondary-foreground">Welcome to Study Planner</span>
               </div>
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h2 className="text-4xl md:text-5xl font-display font-bold gradient-text">
                 Let's Get Started!
               </h2>
-              <p className="text-muted-foreground max-w-lg text-lg">
+              <p className="text-muted-foreground max-w-lg text-lg leading-relaxed">
                 Create your personalized study timetable. We'll ask about your GCSE subjects,
                 topics, and test dates to generate the perfect revision schedule.
               </p>
@@ -112,7 +113,7 @@ const Dashboard = () => {
             <Button
               size="lg"
               onClick={() => setShowOnboarding(true)}
-              className="bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-200 gap-2 shadow-lg text-base px-8 py-6"
+              className="gap-2 text-lg px-10 py-7 rounded-full"
             >
               <Plus className="h-5 w-5" />
               Get Started
@@ -130,11 +131,11 @@ const Dashboard = () => {
         ) : (
           <div className="space-y-8 animate-fade-in">
             {/* Welcome Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-background border border-primary/20 p-8 shadow-lg">
+            <div className="relative overflow-hidden rounded-3xl glass-card border-primary/30 p-8 shadow-xl">
               <div className="relative z-10">
                 <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <div className="space-y-3">
+                    <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text">
                       {getGreeting()}, {getFirstName()}! 👋
                     </h1>
                     <p className="text-muted-foreground text-lg">
@@ -142,30 +143,30 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="hidden md:flex items-center gap-4">
-                    <div className="flex flex-col items-center p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-primary/10 hover:scale-105 transition-transform">
+                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
                       <Target className="h-6 w-6 text-primary mb-1" />
-                      <span className="text-xs text-muted-foreground">Goals</span>
+                      <span className="text-xs text-muted-foreground font-medium">Goals</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-primary/10 hover:scale-105 transition-transform">
+                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
                       <Trophy className="h-6 w-6 text-primary mb-1" />
-                      <span className="text-xs text-muted-foreground">Streak</span>
+                      <span className="text-xs text-muted-foreground font-medium">Streak</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-primary/10 hover:scale-105 transition-transform">
+                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
                       <Calendar className="h-6 w-6 text-primary mb-1" />
-                      <span className="text-xs text-muted-foreground">Schedule</span>
+                      <span className="text-xs text-muted-foreground font-medium">Schedule</span>
                     </div>
                   </div>
                 </div>
               </div>
               {/* Decorative gradient overlay */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl"></div>
             </div>
 
             {/* Progress Tracking Section */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Your Progress</h2>
+                <h2 className="text-xl font-display font-bold">Your Progress</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StudyStreakTracker userId={user?.id || ""} />
@@ -189,11 +190,11 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Your Timetables</h2>
+                  <h2 className="text-xl font-display font-bold">Your Timetables</h2>
                 </div>
                 <Button
                   onClick={() => setShowOnboarding(true)}
-                  className="bg-gradient-primary hover:opacity-90 hover:scale-105 transition-all duration-200 gap-2 shadow-md"
+                  className="gap-2 rounded-full"
                 >
                   <Plus className="h-4 w-4" />
                   New Timetable

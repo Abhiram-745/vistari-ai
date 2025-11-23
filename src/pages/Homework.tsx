@@ -25,21 +25,28 @@ const Homework = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Floating background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
+        <div className="floating-blob top-40 right-10 w-[500px] h-[500px] bg-secondary/15 animate-float-delayed"></div>
+        <div className="floating-blob bottom-20 left-1/3 w-80 h-80 bg-accent/10 animate-float-slow"></div>
+      </div>
+
       <Header />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 gap-2"
+          className="mb-6 gap-2 hover-lift"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Button>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Homework & Assignments</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-display font-bold gradient-text mb-3">Homework & Assignments</h1>
+          <p className="text-muted-foreground text-lg">
             Track your homework assignments and deadlines. These will be included in your study timetables.
           </p>
         </div>
