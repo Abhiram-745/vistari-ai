@@ -60,6 +60,19 @@ serve(async (req) => {
       });
     }
 
+    // Fetch all homework to match against mentions in reflection
+    const { data: homeworkList, error: homeworkError } = await supabase
+      .from('homeworks')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('completed', false);
+
+    // Fetch all events to match against mentions
+    const { data: eventsList, error: eventsError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('user_id', user.id);
+
     const schedule = timetable.schedule as Record<string, any[]>;
     const currentDateObj = new Date(currentDate);
     
@@ -86,43 +99,84 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Build comprehensive context for AI
+    const futureScheduleDetails = futureDates.slice(0, 7).map(date => {
+      const sessions = schedule[date] || [];
+      return {
+        date,
+        sessionCount: sessions.length,
+        sessions: sessions.map((s: any) => ({
+          time: s.time,
+          subject: s.subject,
+          topic: s.topic,
+          duration: s.duration,
+          type: s.type
+        }))
+      };
+    });
+
     // Use AI to intelligently reschedule
-    const prompt = `You are a study scheduling AI. A student has completed some sessions but not others.
+    const prompt = `You are a study scheduling AI assistant. A student has completed some sessions but not others and needs their schedule reorganized.
 
 **Current Date**: ${currentDate}
-**Reflection**: ${reflection || 'No reflection provided'}
-**Incomplete Sessions**: ${JSON.stringify(incompleteSessions, null, 2)}
+**Student's Reflection**: ${reflection || 'No reflection provided'}
 
-**Available Future Dates**: ${futureDates.join(', ')}
-**Current Schedule for Future Dates**: 
-${futureDates.map(date => `${date}: ${schedule[date]?.length || 0} sessions`).join('\n')}
+**Incomplete Sessions from Today**:
+${JSON.stringify(incompleteSessions, null, 2)}
 
-**Task**: 
-1. Analyze which incomplete sessions should be prioritized
-2. Find the best slots to reschedule them (spread across multiple days if needed)
-3. Return a JSON object mapping dates to sessions to add
+**Available Homework Tasks** (match these if student mentions them):
+${JSON.stringify(homeworkList?.map(h => ({
+  subject: h.subject,
+  title: h.title,
+  description: h.description,
+  dueDate: h.due_date,
+  duration: h.duration
+})) || [], null, 2)}
 
-Return ONLY valid JSON in this format:
+**Upcoming Events** (reference these if relevant):
+${JSON.stringify(eventsList?.map(e => ({
+  title: e.title,
+  description: e.description,
+  startTime: e.start_time,
+  endTime: e.end_time
+}))?.slice(0, 10) || [], null, 2)}
+
+**Next 7 Days Schedule**:
+${JSON.stringify(futureScheduleDetails, null, 2)}
+
+**Your Task**:
+1. **Match Tasks**: If the student mentions homework/tasks by name (e.g., "metals theory"), find the matching homework from the list and use the CORRECT subject
+2. **Smart Rescheduling**: Reorganize the schedule intelligently - don't just append to the end
+3. **Time Validation**: All times MUST be between 00:00 and 23:59. Calculate proper times by finding gaps in the schedule
+4. **Respect User Intent**: If the student asks to remove or skip certain tasks, do so
+5. **Insert Strategically**: Insert tasks into appropriate time slots throughout the day, not just at the end
+
+Return ONLY valid JSON in this exact format:
 {
   "rescheduledSessions": {
     "YYYY-MM-DD": [
       {
+        "time": "HH:MM",
         "subject": "string",
         "topic": "string",
         "duration": number,
-        "type": "string",
+        "type": "study|homework|revision",
         "notes": "Rescheduled from ${currentDate} - [reason]"
       }
     ]
   },
-  "reasoning": "Brief explanation of scheduling decisions"
+  "sessionsToRemove": {
+    "YYYY-MM-DD": [0, 2, 5]  // Indices of sessions to remove if user requested it
+  },
+  "reasoning": "Brief explanation of your scheduling decisions and any task matching you did"
 }
 
-**Guidelines**:
-- Don't overload any single day (max 2-3 rescheduled sessions per day)
-- Prioritize sessions closer to test dates if mentioned
-- Consider the student's reflection when prioritizing
-- Spread sessions across available days for better retention`;
+**Critical Rules**:
+- Match mentioned tasks to existing homework/events data
+- Times must be HH:MM format between 00:00-23:59
+- Find gaps in the schedule, don't just append
+- Distribute across multiple days (max 3 new sessions per day)
+- Respect the student's preferences from the reflection`;
 
     console.log('Calling AI for schedule adjustment...');
 
@@ -182,38 +236,63 @@ Return ONLY valid JSON in this format:
     const aiResult = JSON.parse(responseText);
     console.log('AI scheduling result:', aiResult);
 
-    // Apply the rescheduled sessions
+    // Apply the changes
     const updatedSchedule = { ...schedule };
     
+    // First, remove sessions if requested
+    if (aiResult.sessionsToRemove) {
+      Object.entries(aiResult.sessionsToRemove).forEach(([date, indices]: [string, any]) => {
+        if (updatedSchedule[date]) {
+          // Sort indices in reverse to remove from end first
+          const sortedIndices = (indices as number[]).sort((a, b) => b - a);
+          sortedIndices.forEach(index => {
+            updatedSchedule[date].splice(index, 1);
+          });
+        }
+      });
+    }
+    
+    // Then, add rescheduled sessions at specified times
     if (aiResult.rescheduledSessions) {
       Object.entries(aiResult.rescheduledSessions).forEach(([date, sessions]: [string, any]) => {
         if (!updatedSchedule[date]) {
           updatedSchedule[date] = [];
         }
         
-        // Add rescheduled sessions to the date
+        // Add each session with the AI-specified time
         (sessions as any[]).forEach((session: any) => {
-          // Find a good time slot (after existing sessions)
-          const existingSessions = updatedSchedule[date];
-          let startTime = '09:00';
+          // Validate time format
+          const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+          let sessionTime = session.time || '09:00';
           
-          if (existingSessions.length > 0) {
-            const lastSession = existingSessions[existingSessions.length - 1];
-            const lastEndTime = lastSession.time || '09:00';
-            const [hours, minutes] = lastEndTime.split(':').map(Number);
-            const lastDuration = lastSession.duration || 60;
-            const totalMinutes = hours * 60 + minutes + lastDuration + 15; // Add 15 min break
-            startTime = `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+          if (!timeRegex.test(sessionTime)) {
+            console.warn(`Invalid time format: ${sessionTime}, defaulting to 09:00`);
+            sessionTime = '09:00';
+          }
+          
+          // Check if time is within valid range
+          const [hours, minutes] = sessionTime.split(':').map(Number);
+          if (hours >= 24 || minutes >= 60) {
+            console.warn(`Time out of range: ${sessionTime}, defaulting to 09:00`);
+            sessionTime = '09:00';
           }
           
           updatedSchedule[date].push({
-            time: startTime,
+            time: sessionTime,
             subject: session.subject,
             topic: session.topic,
             duration: session.duration,
             type: session.type || 'study',
             notes: session.notes || `Rescheduled from ${currentDate}`,
+            completed: false
           });
+        });
+        
+        // Sort sessions by time
+        updatedSchedule[date].sort((a: any, b: any) => {
+          const timeA = a.time || '00:00';
+          const timeB = b.time || '00:00';
+          return timeA.localeCompare(timeB);
         });
       });
     }
