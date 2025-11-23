@@ -205,25 +205,25 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="h-[350px] w-full flex items-center justify-center">
+                          <div className="h-[250px] sm:h-[350px] w-full flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
                               <RadarChart 
                                 data={Object.entries(insights.subjectBreakdown).map(([subject, data]) => ({
-                                  subject: subject.length > 15 ? subject.substring(0, 15) + '...' : subject,
+                                  subject: window.innerWidth < 640 ? (subject.length > 10 ? subject.substring(0, 10) + '...' : subject) : (subject.length > 15 ? subject.substring(0, 15) + '...' : subject),
                                   fullSubject: subject,
                                   confidence: data.confidenceScore,
                                 }))}
-                                margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                                margin={{ top: 10, right: 15, bottom: 10, left: 15 }}
                               >
                                 <PolarGrid strokeDasharray="3 3" />
                                 <PolarAngleAxis 
                                   dataKey="subject" 
-                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
                                 />
                                 <PolarRadiusAxis 
                                   angle={90} 
                                   domain={[0, 10]}
-                                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 9 : 11 }}
                                 />
                                 <Radar
                                   name="Confidence Level"
@@ -253,7 +253,7 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                       {/* Topics Performance Table */}
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-base flex items-center gap-2">
+                          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                             <BarChart3 className="h-4 w-4" />
                             Topics Performance
                           </CardTitle>
@@ -263,18 +263,18 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                             {/* Topics Needing Focus */}
                             {insights.strugglingTopics.length > 0 && (
                               <div>
-                                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                                  <TrendingDown className="h-4 w-4 text-destructive" />
+                                <h4 className="text-xs sm:text-sm font-semibold mb-3 flex items-center gap-2">
+                                  <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
                                   Needs Focus ({insights.strugglingTopics.length})
                                 </h4>
-                                <div className="border rounded-lg overflow-hidden">
-                                  <table className="w-full">
+                                <div className="border rounded-lg overflow-x-auto">
+                                  <table className="w-full min-w-[600px]">
                                     <thead className="bg-muted/50">
                                       <tr>
-                                        <th className="text-left p-3 text-xs font-medium">Topic</th>
-                                        <th className="text-left p-3 text-xs font-medium">Subject</th>
-                                        <th className="text-left p-3 text-xs font-medium">Priority</th>
-                                        <th className="text-left p-3 text-xs font-medium">Issue</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium">Topic</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium hidden sm:table-cell">Subject</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium">Priority</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium">Issue</th>
                                       </tr>
                                     </thead>
                                     <tbody className="divide-y">
@@ -284,14 +284,14 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                                           className="hover:bg-muted/30 cursor-pointer transition-colors"
                                           onClick={() => setSelectedTopic(topic.topic)}
                                         >
-                                          <td className="p-3 text-sm font-medium">{topic.topic}</td>
-                                          <td className="p-3 text-sm text-muted-foreground">{topic.subject}</td>
-                                          <td className="p-3">
-                                            <Badge variant={getSeverityColor(topic.severity) as any} className="text-xs">
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm font-medium">{topic.topic}</td>
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">{topic.subject}</td>
+                                          <td className="p-2 sm:p-3">
+                                            <Badge variant={getSeverityColor(topic.severity) as any} className="text-[10px] sm:text-xs">
                                               {topic.severity}
                                             </Badge>
                                           </td>
-                                          <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-md truncate">
                                             {topic.reason}
                                           </td>
                                         </tr>
@@ -305,17 +305,17 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                             {/* Strong Topics */}
                             {insights.strongAreas.length > 0 && (
                               <div>
-                                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                                  <TrendingUp className="h-4 w-4 text-green-600" />
+                                <h4 className="text-xs sm:text-sm font-semibold mb-3 flex items-center gap-2">
+                                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                                   Strengths ({insights.strongAreas.length})
                                 </h4>
-                                <div className="border rounded-lg overflow-hidden">
-                                  <table className="w-full">
+                                <div className="border rounded-lg overflow-x-auto">
+                                  <table className="w-full min-w-[500px]">
                                     <thead className="bg-green-50 dark:bg-green-950/20">
                                       <tr>
-                                        <th className="text-left p-3 text-xs font-medium">Topic</th>
-                                        <th className="text-left p-3 text-xs font-medium">Subject</th>
-                                        <th className="text-left p-3 text-xs font-medium">Why You Excel</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium">Topic</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium hidden sm:table-cell">Subject</th>
+                                        <th className="text-left p-2 sm:p-3 text-xs font-medium">Why You Excel</th>
                                       </tr>
                                     </thead>
                                     <tbody className="divide-y">
@@ -325,9 +325,9 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                                           className="hover:bg-muted/30 cursor-pointer transition-colors"
                                           onClick={() => setSelectedTopic(area.topic)}
                                         >
-                                          <td className="p-3 text-sm font-medium">{area.topic}</td>
-                                          <td className="p-3 text-sm text-muted-foreground">{area.subject}</td>
-                                          <td className="p-3 text-sm text-muted-foreground max-w-md truncate">
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm font-medium">{area.topic}</td>
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">{area.subject}</td>
+                                          <td className="p-2 sm:p-3 text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-md truncate">
                                             {area.reason}
                                           </td>
                                         </tr>

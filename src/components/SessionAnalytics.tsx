@@ -114,29 +114,29 @@ export const SessionAnalytics = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-foreground">Study Analytics</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground">Study Analytics</h2>
 
       <Tabs defaultValue="weekly">
-        <TabsList>
-          <TabsTrigger value="weekly">Last 7 Days</TabsTrigger>
-          <TabsTrigger value="monthly">Last 30 Days</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-2">
+          <TabsTrigger value="weekly" className="text-xs sm:text-sm">Last 7 Days</TabsTrigger>
+          <TabsTrigger value="monthly" className="text-xs sm:text-sm">Last 30 Days</TabsTrigger>
         </TabsList>
 
         {['weekly', 'monthly'].map(period => {
           const data = period === 'weekly' ? weeklyData : monthlyData;
           
           return (
-            <TabsContent key={period} value={period} className="space-y-6">
-              <div className="grid md:grid-cols-4 gap-4">
-                <Card className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <Clock className="w-6 h-6 text-primary" />
+            <TabsContent key={period} value={period} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Card className="p-3 sm:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+                      <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Study Time</p>
-                      <p className="text-2xl font-bold text-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Study Time</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">
                         {Math.floor((data?.total_actual_minutes || 0) / 60)}h{' '}
                         {(data?.total_actual_minutes || 0) % 60}m
                       </p>
@@ -144,42 +144,42 @@ export const SessionAnalytics = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-green-500/10 rounded-lg">
-                      <Target className="w-6 h-6 text-green-500" />
+                <Card className="p-3 sm:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-3 bg-green-500/10 rounded-lg">
+                      <Target className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Completion</p>
-                      <p className="text-2xl font-bold text-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Completion</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">
                         {completionRate(data)}%
                       </p>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-500/10 rounded-lg">
-                      <TrendingUp className="w-6 h-6 text-blue-500" />
+                <Card className="p-3 sm:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-3 bg-blue-500/10 rounded-lg">
+                      <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Sessions</p>
-                      <p className="text-2xl font-bold text-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Sessions</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">
                         {data?.sessions_completed || 0}
                       </p>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-yellow-500/10 rounded-lg">
-                      <Award className="w-6 h-6 text-yellow-500" />
+                <Card className="p-3 sm:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-3 bg-yellow-500/10 rounded-lg">
+                      <Award className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Avg Focus</p>
-                      <p className="text-2xl font-bold text-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Avg Focus</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">
                         {data?.average_focus_score?.toFixed(1) || '0'}/10
                       </p>
                     </div>
@@ -188,11 +188,11 @@ export const SessionAnalytics = () => {
               </div>
 
               {data && data.subjects_studied.length > 0 && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
+                <Card className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">
                     Study Time by Subject
                   </h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                     <PieChart>
                       <Pie
                         data={data.subjects_studied}
@@ -200,8 +200,9 @@ export const SessionAnalytics = () => {
                         nameKey="subject"
                         cx="50%"
                         cy="50%"
-                        outerRadius={100}
-                        label={(entry) => `${entry.subject} (${Math.floor(entry.minutes / 60)}h)`}
+                        outerRadius={window.innerWidth < 640 ? 70 : 100}
+                        label={(entry) => window.innerWidth >= 640 ? `${entry.subject} (${Math.floor(entry.minutes / 60)}h)` : `${Math.floor(entry.minutes / 60)}h`}
+                        labelLine={window.innerWidth >= 640}
                       >
                         {data.subjects_studied.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
