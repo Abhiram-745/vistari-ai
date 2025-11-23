@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserPlus, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface SearchResult {
   id: string;
   full_name: string;
+  avatar_url?: string;
 }
 
 interface AddFriendProps {
@@ -35,7 +36,7 @@ const AddFriend = ({ userId }: AddFriendProps) => {
       // Search profiles by name (only search text fields, not UUIDs)
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, full_name, avatar_url")
         .not("full_name", "is", null)
         .neq("id", userId)
         .limit(10);
@@ -173,6 +174,7 @@ const AddFriend = ({ userId }: AddFriendProps) => {
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage src={result.avatar_url} />
                       <AvatarFallback className="bg-gradient-primary text-white text-sm">
                         {getInitials(result.full_name)}
                       </AvatarFallback>
