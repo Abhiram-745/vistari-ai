@@ -123,16 +123,19 @@ const Landing = () => {
                 animate={{ opacity: 1, y: 0, rotate: -5 }}
                 transition={{ duration: 1, delay: 0.8 }}
                 whileHover={{ rotate: 0, scale: 1.05, y: -10 }}
-                className="absolute left-0 top-0 bg-card border border-border rounded-3xl p-6 shadow-lg max-w-xs"
+                className="absolute left-0 top-0 bg-card border border-border/50 rounded-2xl p-5 shadow-md max-w-xs backdrop-blur-sm"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Calendar className="w-6 h-6 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-semibold mb-1">Monday, 9:00 AM</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-foreground mb-0.5">Monday, 9:00 AM</p>
                     <p className="text-sm text-muted-foreground">Biology: Cell Division</p>
-                    <p className="text-xs text-muted-foreground mt-1">60 mins · Moderate</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground">60 mins</span>
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary">Moderate</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -142,27 +145,27 @@ const Landing = () => {
                 animate={{ opacity: 1, y: 0, rotate: 5 }}
                 transition={{ duration: 1, delay: 1 }}
                 whileHover={{ rotate: 0, scale: 1.05, y: -10 }}
-                className="absolute right-0 top-10 bg-card border border-border rounded-3xl p-6 shadow-lg max-w-xs"
+                className="absolute right-0 top-10 bg-card border border-border/50 rounded-2xl p-5 shadow-md max-w-xs backdrop-blur-sm"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-6 h-6 text-secondary" />
                   </div>
                   <div>
-                    <p className="font-semibold">Week Progress</p>
+                    <p className="font-semibold text-foreground">Week Progress</p>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Completed</span>
-                    <span className="font-semibold">12/15 sessions</span>
+                    <span className="font-semibold text-foreground">12/15 sessions</span>
                   </div>
-                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: "80%" }}
                       transition={{ duration: 1.5, delay: 1.2 }}
-                      className="h-full bg-gradient-to-r from-primary to-secondary"
+                      className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full"
                     />
                   </div>
                 </div>
@@ -172,11 +175,11 @@ const Landing = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, delay: 1.2 }}
-                className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-gradient-to-br from-accent/20 to-primary/20 border border-accent/30 rounded-2xl px-6 py-3 backdrop-blur-sm"
+                className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-card border border-border/50 rounded-xl px-5 py-3 backdrop-blur-sm shadow-md"
               >
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-accent" />
-                  <p className="text-sm font-medium">Math exam: Ready! 🎉</p>
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <p className="text-sm font-semibold text-foreground">Math exam: Ready! 🎉</p>
                 </div>
               </motion.div>
             </div>
