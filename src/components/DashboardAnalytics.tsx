@@ -417,7 +417,7 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Subjects</SelectItem>
-                        {Array.from(new Set(allTopics.map(t => t.subject))).map((subject) => (
+                        {Array.from(new Set(reflections.map(r => r.subject))).map((subject) => (
                           <SelectItem key={subject} value={subject}>
                             {subject}
                           </SelectItem>
@@ -427,106 +427,141 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      if (allTopics.length === 0) {
+                      if (reflections.length === 0) {
                         return (
                           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                             <div className="text-center">
                               <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                              <p className="text-sm">No topics found in timetable</p>
-                              <p className="text-xs mt-1">Create a timetable with topics to see completion status</p>
+                              <p className="text-sm">No study sessions completed yet</p>
+                              <p className="text-xs mt-1">Complete study sessions and add reflections to see your progress</p>
                             </div>
                           </div>
                         );
                       }
 
-                      // Filter topics by subject if selected
-                      const filteredTopics = topicSubjectFilter === "all" 
-                        ? allTopics 
-                        : allTopics.filter(t => t.subject === topicSubjectFilter);
-
-                      // Build completion data for all topics
-                      const topicCompletionData = filteredTopics.map((topic) => {
-                        const topicKey = `${topic.subject} - ${topic.name}`;
-                        
-                        // Check reflections for this topic
-                        const topicReflections = reflections.filter(
-                          ref => ref.subject === topic.subject && ref.topic === topic.name
-                        );
-
-                        let completed = 0;
-                        let notCompleted = 5; // Default not completed count
-
-                        if (topicReflections.length > 0) {
-                          completed = 0;
-                          notCompleted = 0;
-                          
-                          topicReflections.forEach((ref) => {
-                            const data = ref.reflection_data as any;
-                            
-                            if (data?.easyAspects && Array.isArray(data.easyAspects)) {
-                              completed += data.easyAspects.length;
-                            }
-                            if (data?.hardAspects && Array.isArray(data.hardAspects)) {
-                              notCompleted += data.hardAspects.length;
-                            }
-                          });
-
-                          // Ensure at least some visualization
-                          if (completed === 0 && notCompleted === 0) {
-                            notCompleted = 1;
-                          }
+                      // Group reflections by topic and subject
+                      const topicReflectionMap = new Map<string, any[]>();
+                      reflections.forEach((reflection) => {
+                        const key = `${reflection.subject} - ${reflection.topic}`;
+                        if (!topicReflectionMap.has(key)) {
+                          topicReflectionMap.set(key, []);
                         }
+                        topicReflectionMap.get(key)!.push(reflection);
+                      });
+
+                      // Filter by subject if selected
+                      const filteredEntries = Array.from(topicReflectionMap.entries()).filter(([key]) => {
+                        if (topicSubjectFilter === "all") return true;
+                        return key.startsWith(topicSubjectFilter);
+                      });
+
+                      if (filteredEntries.length === 0) {
+                        return (
+                          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                            <div className="text-center">
+                              <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm">No reflections for this subject</p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Build completion data based on reflections
+                      const topicCompletionData = filteredEntries.map(([topicKey, topicReflections]) => {
+                        let totalEasy = 0;
+                        let totalHard = 0;
+                        
+                        topicReflections.forEach((ref) => {
+                          const data = ref.reflection_data as any;
+                          
+                          if (data?.easyAspects && Array.isArray(data.easyAspects)) {
+                            totalEasy += data.easyAspects.length;
+                          }
+                          if (data?.hardAspects && Array.isArray(data.hardAspects)) {
+                            totalHard += data.hardAspects.length;
+                          }
+                        });
+
+                        // Calculate completion percentage
+                        const total = totalEasy + totalHard;
+                        const completionPercentage = total > 0 ? Math.round((totalEasy / total) * 100) : 0;
+                        
+                        // For visualization: show mastered vs still learning
+                        const mastered = Math.round((totalEasy / Math.max(total, 1)) * 100);
+                        const learning = 100 - mastered;
 
                         return {
-                          topic: topicKey.length > 30 ? topicKey.substring(0, 30) + '...' : topicKey,
+                          topic: topicKey.length > 35 ? topicKey.substring(0, 35) + '...' : topicKey,
                           fullTopic: topicKey,
-                          subject: topic.subject,
-                          'Already Done': completed,
-                          'To Do': notCompleted,
+                          subject: topicKey.split(' - ')[0],
+                          'Mastered': mastered,
+                          'Still Learning': learning,
+                          sessions: topicReflections.length,
+                          completionPercentage,
                         };
                       });
 
-                      // Sort by subject and then by completion
+                      // Sort by completion percentage (highest first)
                       const chartData = topicCompletionData.sort((a, b) => {
-                        if (a.subject !== b.subject) {
-                          return a.subject.localeCompare(b.subject);
-                        }
-                        return b['Already Done'] - a['Already Done'];
+                        return b.completionPercentage - a.completionPercentage;
                       });
 
                       return (
-                        <div className="h-[500px] w-full overflow-auto">
-                          <ResponsiveContainer width="100%" height={Math.max(500, chartData.length * 50)}>
-                            <BarChart
-                              data={chartData}
-                              layout="vertical"
-                              margin={{ top: 20, right: 30, bottom: 20, left: 150 }}
-                            >
-                              <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                              <YAxis 
-                                dataKey="topic" 
-                                type="category" 
-                                width={140}
-                                tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
-                              />
-                              <Tooltip 
-                                contentStyle={{
-                                  backgroundColor: 'hsl(var(--card))',
-                                  border: '1px solid hsl(var(--border))',
-                                  borderRadius: '8px',
-                                }}
-                                labelFormatter={(label, payload) => {
-                                  if (payload && payload[0]) {
-                                    return payload[0].payload.fullTopic;
-                                  }
-                                  return label;
-                                }}
-                              />
-                              <Legend />
-                              <Bar dataKey="Already Done" stackId="a" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                              <Bar dataKey="To Do" stackId="a" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
+                        <div className="space-y-4">
+                          <div className="text-sm text-muted-foreground">
+                            Showing {chartData.length} topic{chartData.length !== 1 ? 's' : ''} with completed study sessions
+                          </div>
+                          <div className="h-[500px] w-full overflow-auto">
+                            <ResponsiveContainer width="100%" height={Math.max(500, chartData.length * 50)}>
+                              <BarChart
+                                data={chartData}
+                                layout="vertical"
+                                margin={{ top: 20, right: 30, bottom: 20, left: 160 }}
+                              >
+                                <XAxis 
+                                  type="number" 
+                                  domain={[0, 100]}
+                                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                                  label={{ value: 'Completion %', position: 'insideBottom', offset: -10, fill: 'hsl(var(--muted-foreground))' }}
+                                />
+                                <YAxis 
+                                  dataKey="topic" 
+                                  type="category" 
+                                  width={150}
+                                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
+                                />
+                                <Tooltip 
+                                  contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    border: '1px solid hsl(var(--border))',
+                                    borderRadius: '8px',
+                                  }}
+                                  labelFormatter={(label, payload) => {
+                                    if (payload && payload[0]) {
+                                      const data = payload[0].payload;
+                                      return `${data.fullTopic}\n${data.sessions} session${data.sessions !== 1 ? 's' : ''} completed`;
+                                    }
+                                    return label;
+                                  }}
+                                />
+                                <Legend />
+                                <Bar 
+                                  dataKey="Mastered" 
+                                  stackId="a" 
+                                  fill="hsl(var(--primary))" 
+                                  radius={[0, 4, 4, 0]}
+                                  name="Mastered %"
+                                />
+                                <Bar 
+                                  dataKey="Still Learning" 
+                                  stackId="a" 
+                                  fill="hsl(var(--muted))" 
+                                  radius={[0, 4, 4, 0]}
+                                  name="Still Learning %"
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
                       );
                     })()}
