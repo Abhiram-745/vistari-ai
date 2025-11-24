@@ -53,6 +53,9 @@ export interface StudyPreferences {
   session_duration: number;
   duration_mode: "fixed" | "flexible";
   aiNotes?: string;
+  study_before_school?: boolean;
+  study_during_lunch?: boolean;
+  study_during_free_periods?: boolean;
 }
 
 const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {

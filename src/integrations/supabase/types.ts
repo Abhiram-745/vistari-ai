@@ -743,7 +743,10 @@ export type Database = {
           school_end_time: string | null
           school_start_time: string | null
           session_duration: number | null
+          study_before_school: boolean | null
           study_days: Json | null
+          study_during_free_periods: boolean | null
+          study_during_lunch: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -758,7 +761,10 @@ export type Database = {
           school_end_time?: string | null
           school_start_time?: string | null
           session_duration?: number | null
+          study_before_school?: boolean | null
           study_days?: Json | null
+          study_during_free_periods?: boolean | null
+          study_during_lunch?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -773,7 +779,10 @@ export type Database = {
           school_end_time?: string | null
           school_start_time?: string | null
           session_duration?: number | null
+          study_before_school?: boolean | null
           study_days?: Json | null
+          study_during_free_periods?: boolean | null
+          study_during_lunch?: boolean | null
           updated_at?: string | null
           user_id?: string
         }

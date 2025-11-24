@@ -36,7 +36,10 @@ const inputSchema = z.object({
     session_duration: z.number().min(15).max(180),
     break_duration: z.number().min(5).max(60),
     duration_mode: z.enum(["fixed", "flexible"]),
-    aiNotes: z.string().optional()
+    aiNotes: z.string().optional(),
+    study_before_school: z.boolean().optional(),
+    study_during_lunch: z.boolean().optional(),
+    study_during_free_periods: z.boolean().optional()
   }),
   homeworks: z.array(z.object({
     id: z.string().uuid().optional(),
@@ -191,6 +194,55 @@ ${peak.recommendation}
     const subjectsContext = subjects
       .map((s: any) => `${s.name} (${s.exam_board})`)
       .join(", ");
+    
+    // Fetch school schedule from study preferences
+    let schoolHoursContext = "";
+    try {
+      const { data: schoolPrefs } = await supabaseClient
+        .from('study_preferences')
+        .select('school_start_time, school_end_time, study_before_school, study_during_lunch, study_during_free_periods')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (schoolPrefs) {
+        const hasSchoolHours = schoolPrefs.school_start_time && schoolPrefs.school_end_time;
+        if (hasSchoolHours) {
+          schoolHoursContext = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏫 SCHOOL HOURS BLOCKING - ABSOLUTE PRIORITY 🏫
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ CRITICAL: User attends school during these times EVERY WEEKDAY:
+   Leave for school: ${schoolPrefs.school_start_time}
+   Return from school: ${schoolPrefs.school_end_time}
+
+MANDATORY BLOCKING RULES:
+1. DO NOT schedule ANY study sessions between ${schoolPrefs.school_start_time} and ${schoolPrefs.school_end_time} on weekdays (Mon-Fri)
+2. This time is COMPLETELY UNAVAILABLE - treat like a daily recurring event
+3. Only schedule BEFORE ${schoolPrefs.school_start_time} OR AFTER ${schoolPrefs.school_end_time}
+4. Weekends (Saturday, Sunday) are NOT affected by school hours
+
+${schoolPrefs.study_before_school || schoolPrefs.study_during_lunch || schoolPrefs.study_during_free_periods ? `
+OPTIONAL SCHOOL-TIME STUDY SLOTS:
+${schoolPrefs.study_before_school ? '✓ Before school: SHORT homework sessions (15-25 mins) BEFORE school start time' : ''}
+${schoolPrefs.study_during_lunch ? '✓ Lunch time: SHORT homework sessions (15-20 mins) during lunch period' : ''}
+${schoolPrefs.study_during_free_periods ? '✓ Free periods: SHORT homework sessions during free/study periods at school' : ''}
+
+SCHOOL-TIME STUDY RULES:
+- ONLY schedule HOMEWORK during these times (never revision/exam prep)
+- Keep sessions SHORT (15-25 minutes maximum)
+- Use these slots for quick homework tasks, not intensive study
+- These are OPTIONAL additions - main study time is still after school
+` : ''}
+
+🏫 REMEMBER: School hours are BLOCKED for regular study - schedule around them! 🏫
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        }
+      }
+    } catch (error) {
+      console.log('No school schedule found, proceeding without school hours blocking');
+    }
     
     const topicsContext = topics
       .map((t: any) => {
@@ -436,6 +488,7 @@ SCHEDULING STRATEGY:
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
 
 ${modeContext}
+${schoolHoursContext}
 ${peakHoursContext}
 
 SUBJECTS: ${subjectsContext}

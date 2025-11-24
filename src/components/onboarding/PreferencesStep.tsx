@@ -187,6 +187,75 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
           </div>
         </div>
 
+        <div className="space-y-3">
+          <Label>Study Time During School (Optional)</Label>
+          <p className="text-sm text-muted-foreground">
+            Select if you'd like short study sessions before/during school hours
+          </p>
+          <Card className="p-3 space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="before-school"
+                checked={preferences.study_before_school || false}
+                onCheckedChange={(checked) =>
+                  setPreferences({
+                    ...preferences,
+                    study_before_school: !!checked,
+                  })
+                }
+              />
+              <label
+                htmlFor="before-school"
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                Study before school (short homework sessions)
+              </label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="during-lunch"
+                checked={preferences.study_during_lunch || false}
+                onCheckedChange={(checked) =>
+                  setPreferences({
+                    ...preferences,
+                    study_during_lunch: !!checked,
+                  })
+                }
+              />
+              <label
+                htmlFor="during-lunch"
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                Study during lunch time (15-20 min homework)
+              </label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="free-periods"
+                checked={preferences.study_during_free_periods || false}
+                onCheckedChange={(checked) =>
+                  setPreferences({
+                    ...preferences,
+                    study_during_free_periods: !!checked,
+                  })
+                }
+              />
+              <label
+                htmlFor="free-periods"
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                Study during free periods (short homework)
+              </label>
+            </div>
+            
+            <p className="text-xs text-muted-foreground pt-2 border-t">
+              These will only schedule quick homework assignments, not full revision sessions
+            </p>
+          </Card>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="ai-notes">Notes for AI (Optional)</Label>
           <Textarea
