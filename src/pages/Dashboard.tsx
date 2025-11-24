@@ -133,44 +133,53 @@ const Dashboard = () => {
             onCancel={() => setShowOnboarding(false)}
           />
         ) : (
-          <div className="space-y-8 animate-fade-in">
-            {/* Welcome Section */}
-            <div className="relative overflow-hidden rounded-3xl glass-card border-primary/30 p-8 shadow-xl">
+          <div className="space-y-10 animate-fade-in">
+            {/* Welcome Section - More prominent and personal */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-warm border border-primary/20 p-8 md:p-10 shadow-lg">
               <div className="relative z-10">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-3">
-                    <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text">
-                      {getGreeting()}, {getFirstName()}! 👋
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div className="space-y-4 flex-1">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                      <span className="text-xs font-medium text-primary">🔥 You're crushing it!</span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-display font-bold">
+                      {getGreeting()}, {getFirstName()}!
                     </h1>
-                    <p className="text-muted-foreground text-lg">
-                      Ready to crush your study goals today?
+                    <p className="text-foreground/70 text-lg leading-relaxed max-w-xl">
+                      Ready to make today count? Let's tackle your study goals together 💪
                     </p>
                   </div>
-                  <div className="hidden md:flex items-center gap-4">
-                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
-                      <Target className="h-6 w-6 text-primary mb-1" />
+                  <div className="hidden lg:flex items-center gap-3">
+                    <div className="flex flex-col items-center p-5 bg-card/80 backdrop-blur-sm rounded-xl border border-border/60 shadow-sm hover:-translate-y-1 transition-all duration-300">
+                      <Target className="h-7 w-7 text-primary mb-2" />
                       <span className="text-xs text-muted-foreground font-medium">Goals</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
-                      <Trophy className="h-6 w-6 text-primary mb-1" />
-                      <span className="text-xs text-muted-foreground font-medium">Streak</span>
+                    <div className="flex flex-col items-center p-5 bg-card/80 backdrop-blur-sm rounded-xl border border-border/60 shadow-sm hover:-translate-y-1 transition-all duration-300">
+                      <Trophy className="h-7 w-7 text-accent mb-2" />
+                      <span className="text-xs text-muted-foreground font-medium">Achievements</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 glass-card rounded-2xl border-primary/10 hover-lift">
-                      <Calendar className="h-6 w-6 text-primary mb-1" />
+                    <div className="flex flex-col items-center p-5 bg-card/80 backdrop-blur-sm rounded-xl border border-border/60 shadow-sm hover:-translate-y-1 transition-all duration-300">
+                      <Calendar className="h-7 w-7 text-secondary mb-2" />
                       <span className="text-xs text-muted-foreground font-medium">Schedule</span>
                     </div>
                   </div>
                 </div>
               </div>
-              {/* Decorative gradient overlay */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl"></div>
+              {/* Decorative gradient blobs */}
+              <div className="absolute -top-10 -right-10 w-48 h-48 bg-primary/15 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/15 rounded-full blur-3xl"></div>
             </div>
 
             {/* Progress Tracking Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-display font-bold">Your Progress</h2>
+            <div className="space-y-6">
+              <div className="section-header">
+                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="section-title">📊 Your Progress</h2>
+                  <p className="text-sm text-muted-foreground">Track your study journey</p>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StudyStreakTracker userId={user?.id || ""} />
@@ -180,25 +189,40 @@ const Dashboard = () => {
             </div>
 
             {/* Events Section */}
-            <div>
+            <div className="space-y-6">
+              <div className="section-header">
+                <div className="w-10 h-10 rounded-xl bg-gradient-secondary flex items-center justify-center shadow-md">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="section-title">📅 Events & Commitments</h2>
+                  <p className="text-sm text-muted-foreground">Your schedule at a glance</p>
+                </div>
+              </div>
               <EventsWidget />
             </div>
 
             {/* AI Analytics Section */}
-            <div>
+            <div className="space-y-6">
               <DashboardAnalytics userId={user?.id || ""} />
             </div>
 
             {/* Timetables Section */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-display font-bold">Your Timetables</h2>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="section-header mb-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center shadow-md">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="section-title">📘 Your Timetables</h2>
+                    <p className="text-sm text-muted-foreground">Manage your study plans</p>
+                  </div>
                 </div>
                 <Button
                   onClick={() => setShowOnboarding(true)}
-                  className="gap-2 rounded-full"
+                  className="gap-2 rounded-full shadow-md hover:-translate-y-0.5 transition-all"
+                  size="lg"
                 >
                   <Plus className="h-4 w-4" />
                   New Timetable
