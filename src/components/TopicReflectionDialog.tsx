@@ -34,6 +34,9 @@ interface ReflectionData {
   hardAspects: ReflectionContent[];
   generalNotes: ReflectionContent[];
   overallFeeling: string;
+  difficultyRating: number; // 1-10 scale: 1=very easy, 10=very hard
+  sessionCompleted: boolean; // Did user finish the session?
+  timeOfDay: string; // When the session happened (for peak hours analysis)
 }
 
 export const TopicReflectionDialog = ({
@@ -50,6 +53,8 @@ export const TopicReflectionDialog = ({
   const [hardAspects, setHardAspects] = useState<ReflectionContent[]>([]);
   const [generalNotes, setGeneralNotes] = useState<ReflectionContent[]>([]);
   const [overallFeeling, setOverallFeeling] = useState("");
+  const [difficultyRating, setDifficultyRating] = useState(5);
+  const [sessionCompleted, setSessionCompleted] = useState(true);
   
   const easyFileRef = useRef<HTMLInputElement>(null);
   const hardFileRef = useRef<HTMLInputElement>(null);
@@ -129,11 +134,20 @@ export const TopicReflectionDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const currentTime = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+      });
+
       const reflectionData = {
         easyAspects,
         hardAspects,
         generalNotes,
         overallFeeling,
+        difficultyRating,
+        sessionCompleted,
+        timeOfDay: currentTime,
       };
 
       // Check if reflection already exists
@@ -318,6 +332,50 @@ export const TopicReflectionDialog = ({
               onChange={(e) => setOverallFeeling(e.target.value)}
               className="min-h-[80px]"
             />
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <div className="space-y-2">
+              <Label>How difficult was this topic? 🎯</Label>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground min-w-[80px]">Very Easy</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={difficultyRating}
+                  onChange={(e) => setDifficultyRating(Number(e.target.value))}
+                  className="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+                />
+                <span className="text-sm text-muted-foreground min-w-[80px] text-right">Very Hard</span>
+              </div>
+              <div className="text-center">
+                <span className="text-2xl font-bold text-primary">{difficultyRating}</span>
+                <span className="text-sm text-muted-foreground ml-2">/ 10</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Did you complete the full session? ⏱️</Label>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant={sessionCompleted ? "default" : "outline"}
+                  onClick={() => setSessionCompleted(true)}
+                  className="flex-1"
+                >
+                  ✓ Yes, completed
+                </Button>
+                <Button
+                  type="button"
+                  variant={!sessionCompleted ? "default" : "outline"}
+                  onClick={() => setSessionCompleted(false)}
+                  className="flex-1"
+                >
+                  ✗ Couldn't finish
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 

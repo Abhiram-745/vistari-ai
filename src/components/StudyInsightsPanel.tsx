@@ -47,12 +47,14 @@ interface Insight {
     severity: string;
     reason: string;
     quotes: string[];
+    avgDifficulty?: number;
   }>;
   strongAreas: Array<{
     topic: string;
     subject: string;
     reason: string;
     quotes: string[];
+    avgDifficulty?: number;
   }>;
   learningPatterns: string[];
   recommendedFocus: string[];
@@ -63,6 +65,23 @@ interface Insight {
       summary: string;
       topicsCount: number;
     };
+  };
+  peakStudyHours?: {
+    bestTimeWindow: string;
+    bestTimeRange: string;
+    worstTimeWindow: string;
+    worstTimeRange: string;
+    completionRateByWindow: {
+      morning: number;
+      afternoon: number;
+      evening: number;
+    };
+    avgDifficultyByWindow: {
+      morning: number;
+      afternoon: number;
+      evening: number;
+    };
+    recommendation: string;
   };
   overallSummary: string;
 }
@@ -527,6 +546,113 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                           </ul>
                         </CardContent>
                       </Card>
+
+                      {/* Peak Study Hours */}
+                      {insights.peakStudyHours && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-blue-600" />
+                              Peak Study Hours Analysis
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <TrendingUp className="h-5 w-5 text-green-600" />
+                                  <h4 className="font-semibold text-sm">Best Performance</h4>
+                                </div>
+                                <p className="text-2xl font-bold text-green-700 dark:text-green-400 capitalize">
+                                  {insights.peakStudyHours.bestTimeWindow}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {insights.peakStudyHours.bestTimeRange}
+                                </p>
+                                <div className="mt-3 space-y-1 text-xs">
+                                  <p>
+                                    <span className="font-medium">Completion Rate:</span>{" "}
+                                    {(insights.peakStudyHours.completionRateByWindow[insights.peakStudyHours.bestTimeWindow as keyof typeof insights.peakStudyHours.completionRateByWindow] * 100).toFixed(0)}%
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">Avg Difficulty:</span>{" "}
+                                    {insights.peakStudyHours.avgDifficultyByWindow[insights.peakStudyHours.bestTimeWindow as keyof typeof insights.peakStudyHours.avgDifficultyByWindow]?.toFixed(1)}/10
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <TrendingDown className="h-5 w-5 text-red-600" />
+                                  <h4 className="font-semibold text-sm">Most Challenging</h4>
+                                </div>
+                                <p className="text-2xl font-bold text-red-700 dark:text-red-400 capitalize">
+                                  {insights.peakStudyHours.worstTimeWindow}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {insights.peakStudyHours.worstTimeRange}
+                                </p>
+                                <div className="mt-3 space-y-1 text-xs">
+                                  <p>
+                                    <span className="font-medium">Completion Rate:</span>{" "}
+                                    {(insights.peakStudyHours.completionRateByWindow[insights.peakStudyHours.worstTimeWindow as keyof typeof insights.peakStudyHours.completionRateByWindow] * 100).toFixed(0)}%
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">Avg Difficulty:</span>{" "}
+                                    {insights.peakStudyHours.avgDifficultyByWindow[insights.peakStudyHours.worstTimeWindow as keyof typeof insights.peakStudyHours.avgDifficultyByWindow]?.toFixed(1)}/10
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="h-[200px] w-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                  data={[
+                                    {
+                                      window: "Morning",
+                                      completion: (insights.peakStudyHours.completionRateByWindow.morning * 100).toFixed(0),
+                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.morning || 0,
+                                    },
+                                    {
+                                      window: "Afternoon",
+                                      completion: (insights.peakStudyHours.completionRateByWindow.afternoon * 100).toFixed(0),
+                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.afternoon || 0,
+                                    },
+                                    {
+                                      window: "Evening",
+                                      completion: (insights.peakStudyHours.completionRateByWindow.evening * 100).toFixed(0),
+                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.evening || 0,
+                                    },
+                                  ]}
+                                >
+                                  <XAxis dataKey="window" tick={{ fontSize: 12 }} />
+                                  <YAxis tick={{ fontSize: 12 }} />
+                                  <Tooltip
+                                    contentStyle={{
+                                      backgroundColor: 'hsl(var(--card))',
+                                      border: '1px solid hsl(var(--border))',
+                                      borderRadius: '8px',
+                                    }}
+                                  />
+                                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                                  <Bar dataKey="completion" name="Completion %" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                                </BarChart>
+                              </ResponsiveContainer>
+                            </div>
+
+                            <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+                              <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                                <Lightbulb className="h-4 w-4 text-blue-600" />
+                                Smart Scheduling Recommendation
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {insights.peakStudyHours.recommendation}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </TabsContent>
                   </Tabs>
                 </div>
