@@ -439,6 +439,41 @@ SUBJECTS: ${subjectsContext}
 
 UPCOMING TESTS: ${testsContext}
 
+${testDates.length > 0 ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 TEST PREPARATION PRIORITY - CRITICAL 🎯
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ SUBJECTS WITH UPCOMING TESTS REQUIRE MAXIMUM PRIORITY ⚠️
+
+MANDATORY TEST PREPARATION RULES:
+1. **INTENSIVE FOCUS**: Subjects with tests need 2-3x MORE study sessions than subjects without tests
+2. **INCREASED SESSION TIME**: Test subjects get LONGER sessions (60-90 minutes each in flexible mode)
+3. **FREQUENT REPETITION**: Test topics should appear every 2-3 days leading up to exam
+4. **EXAM-STYLE PRACTICE**: 70% of test subject sessions should be exam questions/past papers
+5. **PEAK HOURS SCHEDULING**: When peak study hours data is available, schedule test subjects during BEST performance times
+6. **FINAL WEEK INTENSITY**: In the 7 days before each test:
+   - Schedule test subject DAILY (minimum 1 session per day)
+   - Increase to 90-minute intensive sessions where possible
+   - Focus entirely on exam questions and past papers
+   - Review all topic areas covered in that test
+
+TEST-SPECIFIC ALLOCATION TARGETS:
+- If 3 subjects with tests + 7 subjects without tests = 10 total subjects:
+  → Test subjects should get ~60% of total revision time
+  → Non-test subjects share remaining 40%
+- Each test subject should have MINIMUM 8-12 revision sessions across the timetable
+- Non-test subjects can have 3-5 sessions each
+
+EXAM DAY PREPARATION:
+- 2 days before test: Final comprehensive review (all topics)
+- 1 day before test: Light review + exam strategy practice
+- Test day: COMPLETELY BLOCKED (no sessions)
+
+🎯 REMEMBER: Tests are THE PRIORITY - allocate study time accordingly! 🎯
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+` : ''}
+
 HOMEWORK ASSIGNMENTS: ${homeworksContext}
 ${priorityContext}
 ${difficultTopicsContext}
@@ -594,10 +629,17 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
 7. **HOMEWORK DURATION**: ${preferences.duration_mode === "fixed" 
   ? `Each homework session MUST use the fixed ${preferences.session_duration} minute duration. If homework needs more time, split it into multiple ${preferences.session_duration}-minute sessions across different days.`
   : "Each homework session MUST use its exact specified duration (e.g., 150 mins, 60 mins, 30 mins). Large homework (>120 mins) can be split into multiple sessions if needed."}
-8. DO NOT schedule any revision for a topic AFTER its test date has passed
-9. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
-10. Include the test date in the notes field for sessions related to topics with tests
-11. MUST schedule study sessions ONLY within the specified time periods for each day
+8. **TEST PREPARATION IS ABSOLUTE PRIORITY**: Subjects with upcoming tests MUST receive significantly more study sessions:
+   - Allocate 2-3x MORE sessions to test subjects compared to non-test subjects
+   - Schedule test subjects MORE FREQUENTLY (every 2-3 days)
+   - Use LONGER sessions for test subjects (60-90 mins in flexible mode)
+   - Focus heavily on EXAM QUESTIONS and PAST PAPERS for test subjects (70% of sessions)
+   - In final 7 days before test: DAILY sessions for that subject (intensive review)
+   - Schedule test subjects during PEAK STUDY HOURS when available
+9. DO NOT schedule any revision for a topic AFTER its test date has passed
+10. Prioritize revision for topics with upcoming test dates (schedule more sessions closer to the test)
+11. Include the test date in the notes field for sessions related to topics with tests
+12. MUST schedule study sessions ONLY within the specified time periods for each day
 12. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
 10. **HOMEWORK INTEGRATION (CRITICAL)**: 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
