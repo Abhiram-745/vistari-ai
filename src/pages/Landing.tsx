@@ -2,14 +2,24 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap, Coffee, Laptop, CalendarDays, PenTool } from "lucide-react";
 import sessionLegend from "@/assets/session-legend.png";
 import aiTopicParse from "@/assets/ai-topic-parse.png";
 import topicPriorityOrder from "@/assets/topic-priority-order.png";
 import topicDetailsCard from "@/assets/topic-details-card.png";
+import { supabase } from "@/integrations/supabase/client";
+
 const Landing = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        navigate("/dashboard");
+      }
+    });
+  }, [navigate]);
   const heroRef = useRef(null);
   const {
     scrollYProgress
