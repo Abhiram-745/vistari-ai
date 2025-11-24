@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap } from "lucide-react";
+import { Calendar, Brain, Target, TrendingUp, Users, BookOpen, Clock, Sparkles, ArrowRight, CheckCircle2, Star, Heart, Zap, Coffee, Laptop, CalendarDays, PenTool } from "lucide-react";
 import sessionLegend from "@/assets/session-legend.png";
 import aiTopicParse from "@/assets/ai-topic-parse.png";
 import topicPriorityOrder from "@/assets/topic-priority-order.png";
@@ -75,8 +75,8 @@ const Landing = () => {
               duration: 0.8,
               delay: 0.2
             }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary/20 border border-secondary/30">
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span className="text-sm font-medium text-secondary-foreground">Trusted by 100+ students</span>
+                <Coffee className="w-4 h-4 text-secondary" />
+                <span className="text-sm font-medium text-secondary-foreground">Built by students, for students</span>
               </motion.div>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold tracking-tight leading-[1.1]">
@@ -88,9 +88,7 @@ const Landing = () => {
               </h1>
 
               <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Exams in two weeks? Six subjects to cover? We get it. 
-                <br className="hidden sm:block" />
-                Here's your plan — one you'll actually stick to.
+                StudySync creates personalized study timetables that actually fit your life—around homework, football practice, family dinners, and those days you just need a break.
               </p>
             </div>
 
@@ -105,11 +103,41 @@ const Landing = () => {
             duration: 0.8,
             delay: 0.6
           }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full">
-              Start free today
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <p className="text-sm text-muted-foreground">Free plan • £5/month Premium • 2 min setup</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button size="lg" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg group rounded-full">
+                Get Started Free
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="text-lg px-10 py-7 hover:scale-105 transition-all duration-300 rounded-full">
+                <Laptop className="mr-2 w-5 h-5" />
+                See How It Works
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-4">✓ No credit card required  ✓ Setup in 2 minutes  ✓ Actually works</p>
+            
+            {/* Student testimonial */}
+            <motion.div initial={{
+            opacity: 0,
+            y: 10
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.8
+          }} className="mt-8 p-4 bg-card/50 border border-border/50 rounded-2xl max-w-md mx-auto backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                  A
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">Abhiram, Year 11</p>
+                  <p className="text-xs text-muted-foreground">GCSE Student</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground text-left italic">
+                "Finally, a revision planner that doesn't expect me to study 24/7. It actually works around my football practice!"
+              </p>
+            </motion.div>
             </motion.div>
 
             {/* Floating cards with animations - Dashboard Preview with Flow */}
