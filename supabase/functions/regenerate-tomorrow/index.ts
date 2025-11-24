@@ -210,6 +210,44 @@ ${testsOnDay.map((test: any) => `- ${test.subject}: ${test.test_type}`).join('\n
 
 The user CANNOT study on test days. Return: {"schedule": [], "summary": "Tomorrow is a test day - no study sessions scheduled", "reasoning": "Test days are blocked for studying"}`;
     }
+    
+    // Check for upcoming tests within the next 7 days
+    const tomorrowTime = new Date(validTomorrowDate).getTime();
+    const upcomingTests = timetable.test_dates.filter((test: any) => {
+      const testTime = new Date(test.test_date).getTime();
+      const daysUntilTest = Math.ceil((testTime - tomorrowTime) / (1000 * 60 * 60 * 24));
+      return daysUntilTest > 0 && daysUntilTest <= 7;
+    });
+    
+    if (upcomingTests.length > 0) {
+      return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 UPCOMING TESTS - PRIORITY SCHEDULING 🎯
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ TESTS IN THE NEXT 7 DAYS - MAXIMUM PRIORITY ⚠️
+
+${upcomingTests.map((test: any) => {
+  const testTime = new Date(test.test_date).getTime();
+  const daysUntilTest = Math.ceil((testTime - tomorrowTime) / (1000 * 60 * 60 * 24));
+  return `📅 ${test.subject} ${test.test_type} in ${daysUntilTest} day${daysUntilTest !== 1 ? 's' : ''} (${test.test_date})`;
+}).join('\n')}
+
+MANDATORY TEST PREPARATION RULES FOR TOMORROW:
+1. **INTENSIVE FOCUS**: If selected topics include test subjects, schedule them FIRST
+2. **LONGER SESSIONS**: Test subject topics get 75-90 minutes (intensive exam prep)
+3. **EXAM PRACTICE PRIORITY**: Focus on exam questions and past papers for test subjects
+4. **PEAK TIME ALLOCATION**: Schedule test subjects during the earliest/freshest hours
+5. **FINAL WEEK PROTOCOL**: Since these tests are within 7 days:
+   - Test subjects should take 60-70% of tomorrow's study time
+   - Prioritize comprehensive review and exam-style practice
+   - Include at least ONE test subject topic if available in selected topics
+
+🎯 REMEMBER: These exams are approaching fast - make every minute count! 🎯
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+    }
+    
     return '';
   })()
 : ''}
