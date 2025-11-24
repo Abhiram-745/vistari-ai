@@ -233,7 +233,10 @@ const GenerateStep = ({
         "generate-timetable",
         {
           body: {
-            subjects: savedSubjects,
+            subjects: savedSubjects.map((saved, index) => ({
+              ...saved,
+              mode: subjects[index].mode
+            })),
             topics: topics.map((t) => ({
               ...t,
               subject_id: subjectIdMap[t.subject_id],

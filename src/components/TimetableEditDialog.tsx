@@ -81,7 +81,9 @@ export const TimetableEditDialog = ({
 }: TimetableEditDialogProps) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [subjects, setSubjects] = useState<Subject[]>(currentSubjects);
+  const [subjects, setSubjects] = useState<Subject[]>(
+    currentSubjects.map(s => ({ ...s, mode: s.mode || "no-exam" }))
+  );
   const [topics, setTopics] = useState<Topic[]>(currentTopics);
   const [testDates, setTestDates] = useState<TestDate[]>(currentTestDates);
   const [preferences, setPreferences] = useState<StudyPreferences>(migratePreferences(currentPreferences));
