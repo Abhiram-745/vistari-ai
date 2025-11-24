@@ -69,6 +69,9 @@ serve(async (req) => {
       hardAspects: r.reflection_data.hardAspects?.filter((a: any) => a.type === 'text').map((a: any) => a.content) || [],
       generalNotes: r.reflection_data.generalNotes?.filter((a: any) => a.type === 'text').map((a: any) => a.content) || [],
       overallFeeling: r.reflection_data.overallFeeling || '',
+      difficultyRating: r.reflection_data.difficultyRating || 5,
+      sessionCompleted: r.reflection_data.sessionCompleted !== false,
+      timeOfDay: r.reflection_data.timeOfDay || 'unknown',
     }));
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -84,9 +87,9 @@ ${JSON.stringify(analysisData, null, 2)}
 
 Analyze these reflections and provide:
 
-1. **Struggling Topics**: Identify 3-5 topics where the student is experiencing the most difficulty, ranked by severity. Include specific quotes from their reflections.
+1. **Struggling Topics**: Identify 3-5 topics where the student is experiencing the most difficulty (high difficultyRating 7-10), ranked by severity. Include specific quotes from their reflections.
 
-2. **Strong Areas**: Identify 3-5 topics where the student excels or feels confident. Include specific quotes.
+2. **Strong Areas**: Identify 3-5 topics where the student excels or feels confident (low difficultyRating 1-4). Include specific quotes.
 
 3. **Learning Patterns**: What patterns do you notice in how they learn? (e.g., visual learner, struggles with abstract concepts, excels at practical application)
 
@@ -96,13 +99,19 @@ Analyze these reflections and provide:
 
 6. **Subject Breakdown**: For each subject, provide a confidence score (1-10) and brief summary.
 
+7. **Peak Study Hours**: Analyze the timeOfDay data and sessionCompleted status to identify when the student studies most effectively:
+   - Identify time windows (morning 06:00-11:59, afternoon 12:00-17:59, evening 18:00-23:59) with highest completion rates
+   - Calculate average difficulty rating per time window
+   - Identify patterns: when do they struggle most vs when do they perform best?
+   - Provide specific time recommendations for difficult vs easy topics
+
 Format your response as JSON with this structure:
 {
   "strugglingTopics": [
-    { "topic": "string", "subject": "string", "severity": "high|medium|low", "reason": "string", "quotes": ["string"] }
+    { "topic": "string", "subject": "string", "severity": "high|medium|low", "reason": "string", "quotes": ["string"], "avgDifficulty": number }
   ],
   "strongAreas": [
-    { "topic": "string", "subject": "string", "reason": "string", "quotes": ["string"] }
+    { "topic": "string", "subject": "string", "reason": "string", "quotes": ["string"], "avgDifficulty": number }
   ],
   "learningPatterns": ["string"],
   "recommendedFocus": ["string"],
@@ -113,6 +122,23 @@ Format your response as JSON with this structure:
       "summary": "string",
       "topicsCount": number
     }
+  },
+  "peakStudyHours": {
+    "bestTimeWindow": "morning|afternoon|evening",
+    "bestTimeRange": "HH:MM-HH:MM",
+    "worstTimeWindow": "morning|afternoon|evening",
+    "worstTimeRange": "HH:MM-HH:MM",
+    "completionRateByWindow": {
+      "morning": number,
+      "afternoon": number,
+      "evening": number
+    },
+    "avgDifficultyByWindow": {
+      "morning": number,
+      "afternoon": number,
+      "evening": number
+    },
+    "recommendation": "string describing when to schedule hard vs easy topics"
   },
   "overallSummary": "string"
 }`;

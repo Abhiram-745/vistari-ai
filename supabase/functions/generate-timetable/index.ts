@@ -125,6 +125,52 @@ serve(async (req) => {
       ])).values()
     );
 
+    // Fetch existing study insights for peak hours analysis
+    let peakHoursContext = "";
+    try {
+      const { data: insightsData } = await supabaseClient
+        .from('study_insights')
+        .select('insights_data')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (insightsData?.insights_data?.peakStudyHours) {
+        const peak = insightsData.insights_data.peakStudyHours;
+        peakHoursContext = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 PEAK STUDY HOURS - PERSONALIZED SCHEDULING 🧠
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Based on this user's past performance:
+
+✅ BEST PERFORMANCE: ${peak.bestTimeWindow.toUpperCase()} (${peak.bestTimeRange})
+   - Completion Rate: ${(peak.completionRateByWindow[peak.bestTimeWindow] * 100).toFixed(0)}%
+   - Avg Difficulty Handled: ${peak.avgDifficultyByWindow[peak.bestTimeWindow]?.toFixed(1)}/10
+
+❌ MOST CHALLENGING: ${peak.worstTimeWindow.toUpperCase()} (${peak.worstTimeRange})
+   - Completion Rate: ${(peak.completionRateByWindow[peak.worstTimeWindow] * 100).toFixed(0)}%
+   - Avg Difficulty Handled: ${peak.avgDifficultyByWindow[peak.worstTimeWindow]?.toFixed(1)}/10
+
+📊 SMART SCHEDULING STRATEGY:
+${peak.recommendation}
+
+**CRITICAL SCHEDULING RULES BASED ON PEAK HOURS:**
+✓ Schedule DIFFICULT/HIGH-PRIORITY topics during ${peak.bestTimeWindow.toUpperCase()} hours
+✓ Schedule EASIER/REVIEW topics during ${peak.worstTimeWindow.toUpperCase()} hours
+✓ Place topics with difficulty rating 7-10 during peak performance times
+✓ Place topics with difficulty rating 1-4 during lower performance times
+✓ If user has high completion rates in ${peak.bestTimeWindow}, load more intensive work then
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      }
+    } catch (error) {
+      console.log('No existing insights found, proceeding without peak hours data');
+    }
+
     console.log("Generating timetable with:", {
       subjectsCount: subjects.length,
       topicsCount: topics.length,
@@ -132,6 +178,7 @@ serve(async (req) => {
       homeworksCount: homeworks.length,
       eventsCount: events.length,
       hasAnalysis: !!topicAnalysis,
+      hasPeakHours: !!peakHoursContext,
       dateRange: `${startDate} to ${endDate}`,
     });
 
@@ -356,6 +403,7 @@ SCHEDULING STRATEGY:
     const prompt = `You are an expert study planner for GCSE students. Create a personalized revision timetable with the following details:
 
 ${modeContext}
+${peakHoursContext}
 
 SUBJECTS: ${subjectsContext}
 
@@ -464,6 +512,14 @@ Students cannot study on test days. Schedule all revision BEFORE the test date, 
 
 **🔴 CRITICAL REQUIREMENTS - MUST FOLLOW 🔴:**
 ${aiNotes ? "0. **FOLLOW USER'S CUSTOM INSTRUCTIONS**: The user has provided specific instructions above. These MUST be followed precisely - they take priority over general guidelines below." : ""}
+${peakHoursContext ? `
+0. **🧠 PEAK HOURS OPTIMIZATION - CRITICAL 🧠**
+   - You have been provided with the user's peak study hours analysis above
+   - Schedule HIGH-DIFFICULTY topics (priority 7-10, difficult/focus topics) during BEST performance window
+   - Schedule LOW-DIFFICULTY topics (priority 1-4, easy/review topics) during WORST performance window
+   - This is based on the user's actual past performance data and MUST be respected
+   - Prioritize matching topic difficulty to optimal time windows for maximum effectiveness
+` : ""}
 ${events.length > 0 ? `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 0. **⛔ EVENT BLOCKING - ABSOLUTE PRIORITY ⛔**
