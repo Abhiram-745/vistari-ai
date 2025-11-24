@@ -163,8 +163,8 @@ MANDATORY BLOCKING RULES:
 
 ${preferences.study_before_school || preferences.study_during_lunch || preferences.study_during_free_periods ? `
 OPTIONAL SCHOOL-TIME STUDY:
-${preferences.study_before_school ? '✓ Before school: SHORT homework (15-25 mins) BEFORE school start' : ''}
-${preferences.study_during_lunch ? '✓ Lunch: SHORT homework (15-20 mins) during lunch' : ''}
+${preferences.study_before_school && preferences.before_school_start && preferences.before_school_end ? `✓ Before school: ${preferences.before_school_start} - ${preferences.before_school_end} (SHORT homework, 15-25 mins)` : ''}
+${preferences.study_during_lunch && preferences.lunch_start && preferences.lunch_end ? `✓ Lunch: ${preferences.lunch_start} - ${preferences.lunch_end} (SHORT homework, 15-20 mins)` : ''}
 ${preferences.study_during_free_periods ? '✓ Free periods: SHORT homework during free periods' : ''}
 
 - ONLY homework during these times (never revision)

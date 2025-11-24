@@ -39,7 +39,11 @@ const inputSchema = z.object({
     aiNotes: z.string().optional(),
     study_before_school: z.boolean().optional(),
     study_during_lunch: z.boolean().optional(),
-    study_during_free_periods: z.boolean().optional()
+    study_during_free_periods: z.boolean().optional(),
+    before_school_start: z.string().optional(),
+    before_school_end: z.string().optional(),
+    lunch_start: z.string().optional(),
+    lunch_end: z.string().optional()
   }),
   homeworks: z.array(z.object({
     id: z.string().uuid().optional(),
@@ -200,7 +204,7 @@ ${peak.recommendation}
     try {
       const { data: schoolPrefs } = await supabaseClient
         .from('study_preferences')
-        .select('school_start_time, school_end_time, study_before_school, study_during_lunch, study_during_free_periods')
+        .select('school_start_time, school_end_time, study_before_school, study_during_lunch, study_during_free_periods, before_school_start, before_school_end, lunch_start, lunch_end')
         .eq('user_id', user.id)
         .single();
       
@@ -224,8 +228,8 @@ MANDATORY BLOCKING RULES:
 
 ${schoolPrefs.study_before_school || schoolPrefs.study_during_lunch || schoolPrefs.study_during_free_periods ? `
 OPTIONAL SCHOOL-TIME STUDY SLOTS:
-${schoolPrefs.study_before_school ? '✓ Before school: SHORT homework sessions (15-25 mins) BEFORE school start time' : ''}
-${schoolPrefs.study_during_lunch ? '✓ Lunch time: SHORT homework sessions (15-20 mins) during lunch period' : ''}
+${schoolPrefs.study_before_school && schoolPrefs.before_school_start && schoolPrefs.before_school_end ? `✓ Before school: ${schoolPrefs.before_school_start} - ${schoolPrefs.before_school_end} (SHORT homework only, 15-25 mins max)` : ''}
+${schoolPrefs.study_during_lunch && schoolPrefs.lunch_start && schoolPrefs.lunch_end ? `✓ Lunch time: ${schoolPrefs.lunch_start} - ${schoolPrefs.lunch_end} (SHORT homework only, 15-20 mins max)` : ''}
 ${schoolPrefs.study_during_free_periods ? '✓ Free periods: SHORT homework sessions during free/study periods at school' : ''}
 
 SCHOOL-TIME STUDY RULES:

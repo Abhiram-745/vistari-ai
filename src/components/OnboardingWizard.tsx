@@ -56,6 +56,11 @@ export interface StudyPreferences {
   study_before_school?: boolean;
   study_during_lunch?: boolean;
   study_during_free_periods?: boolean;
+  before_school_start?: string;
+  before_school_end?: string;
+  lunch_start?: string;
+  lunch_end?: string;
+  free_period_times?: string[];
 }
 
 const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {

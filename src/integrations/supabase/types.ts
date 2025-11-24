@@ -733,11 +733,15 @@ export type Database = {
       }
       study_preferences: {
         Row: {
+          before_school_end: string | null
+          before_school_start: string | null
           break_duration: number | null
           created_at: string | null
           daily_study_hours: number | null
           day_time_slots: Json | null
           id: string
+          lunch_end: string | null
+          lunch_start: string | null
           preferred_end_time: string | null
           preferred_start_time: string | null
           school_end_time: string | null
@@ -751,11 +755,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          before_school_end?: string | null
+          before_school_start?: string | null
           break_duration?: number | null
           created_at?: string | null
           daily_study_hours?: number | null
           day_time_slots?: Json | null
           id?: string
+          lunch_end?: string | null
+          lunch_start?: string | null
           preferred_end_time?: string | null
           preferred_start_time?: string | null
           school_end_time?: string | null
@@ -769,11 +777,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          before_school_end?: string | null
+          before_school_start?: string | null
           break_duration?: number | null
           created_at?: string | null
           daily_study_hours?: number | null
           day_time_slots?: Json | null
           id?: string
+          lunch_end?: string | null
+          lunch_start?: string | null
           preferred_end_time?: string | null
           preferred_start_time?: string | null
           school_end_time?: string | null
