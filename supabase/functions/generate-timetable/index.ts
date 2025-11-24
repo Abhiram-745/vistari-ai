@@ -210,19 +210,38 @@ ${peak.recommendation}
       })
       .join("; ");
 
-    // Filter homework to only include items within timetable range
+    // Filter homework to only include items that can be scheduled at least 1 day before due date
     const relevantHomework = homeworks.filter((hw: any) => {
       const dueDate = new Date(hw.due_date);
       const start = new Date(startDate);
       const end = new Date(endDate);
-      return dueDate >= start && dueDate <= end;
+      
+      // Homework must be due within the timetable range
+      if (dueDate < start || dueDate > end) return false;
+      
+      // Calculate the latest possible scheduling date (1 day before due date)
+      const latestScheduleDate = new Date(dueDate);
+      latestScheduleDate.setDate(latestScheduleDate.getDate() - 1);
+      
+      // Only include homework if we have at least 1 day before the due date to schedule it
+      return latestScheduleDate >= start;
     });
 
     const homeworksContext = relevantHomework.length > 0 
       ? "\n\n**HOMEWORK ASSIGNMENTS (ALL MUST BE SCHEDULED - MANDATORY):**\n" + relevantHomework
-          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}, DURATION: ${hw.duration || 60} minutes - MUST SCHEDULE (prefer 1-3 days before, but schedule ASAP if urgent)`)
+          .map((hw: any) => {
+            const dueDate = new Date(hw.due_date);
+            const formattedDueDate = dueDate.toISOString().split('T')[0];
+            const dueTime = dueDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            return `- "${hw.title}" (${hw.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${hw.duration || 60} minutes - ⚠️ MUST SCHEDULE AT LEAST 1 DAY BEFORE DUE DATE (NEVER ON ${formattedDueDate})`;
+          })
           .join("\n") + 
-          `\n\n**CRITICAL**: You MUST schedule ALL ${relevantHomework.length} homework assignments listed above. Count them and verify you've created ${relevantHomework.length} homework sessions.`
+          `\n\n**CRITICAL HOMEWORK RULES**: 
+1. You MUST schedule ALL ${relevantHomework.length} homework assignments listed above
+2. NEVER schedule homework ON the due date - always schedule at least 1 day BEFORE
+3. If homework is due on 2024-01-15, the LATEST you can schedule it is 2024-01-14
+4. Prefer scheduling homework 2-3 days before the due date when possible
+5. Count and verify you've created exactly ${relevantHomework.length} homework sessions`
       : "\n\nNo homework assignments";
 
     const enabledDays = preferences.day_time_slots
