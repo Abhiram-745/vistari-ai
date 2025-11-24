@@ -18,7 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp, Menu } from "lucide-react";
+import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp, Menu, Brain } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
 import { useUserRole, useUsageLimits } from "@/hooks/useUserRole";
@@ -226,6 +226,19 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         <span className="font-medium">Test Scores</span>
       </Button>
 
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          navigate("/ai-insights");
+          onItemClick?.();
+        }}
+        className="w-full justify-start gap-2 hover:bg-gradient-primary/10 hover:text-primary"
+      >
+        <Brain className="h-4 w-4" />
+        <span className="font-medium">AI Insights</span>
+      </Button>
+
       <Separator className="my-2" />
 
       <Button
@@ -374,6 +387,16 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm font-medium">Tests</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/ai-insights")}
+                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+              >
+                <Brain className="h-4 w-4" />
+                <span className="text-sm font-medium">AI Insights</span>
               </Button>
             </div>
 

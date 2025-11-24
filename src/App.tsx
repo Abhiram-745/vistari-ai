@@ -16,6 +16,7 @@ import ImportTimetable from "./pages/ImportTimetable";
 import Events from "./pages/Events";
 import Homework from "./pages/Homework";
 import TestScores from "./pages/TestScores";
+import AIInsights from "./pages/AIInsights";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/events" element={<Events />} />
           <Route path="/homework" element={<Homework />} />
           <Route path="/test-scores" element={<TestScores />} />
+          <Route path="/ai-insights" element={<AIInsights />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
