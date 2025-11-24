@@ -307,96 +307,96 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               </div>
             </div>
 
-            {/* Desktop Navigation - Hidden on mobile */}
-            <div className="hidden lg:flex items-center gap-1 flex-1 justify-center max-w-3xl mx-4">
+            {/* Desktop Navigation - Compact */}
+            <div className="hidden xl:flex items-center gap-0.5 flex-1 justify-center max-w-4xl mx-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/dashboard")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <Home className="h-4 w-4" />
-                <span className="text-sm font-medium">Dashboard</span>
+                <Home className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Dashboard</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/social")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <Users className="h-4 w-4" />
-                <span className="text-sm font-medium">Social</span>
+                <Users className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Social</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/groups")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <Users className="h-4 w-4" />
-                <span className="text-sm font-medium">Groups</span>
+                <Users className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Groups</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/timetables")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <BookOpen className="h-4 w-4" />
-                <span className="text-sm font-medium">Timetables</span>
+                <BookOpen className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Timetables</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/calendar")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <Calendar className="h-4 w-4" />
-                <span className="text-sm font-medium">Calendar</span>
+                <Calendar className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Calendar</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/events")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <CalendarClock className="h-4 w-4" />
-                <span className="text-sm font-medium">Events</span>
+                <CalendarClock className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Events</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/homework")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <ClipboardList className="h-4 w-4" />
-                <span className="text-sm font-medium">Homework</span>
+                <ClipboardList className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Homework</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/test-scores")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">Tests</span>
+                <TrendingUp className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Tests</span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/ai-insights")}
-                className="gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                className="gap-1 px-2 hover:bg-gradient-primary/10 hover:text-primary transition-all"
               >
-                <Brain className="h-4 w-4" />
-                <span className="text-sm font-medium">AI Insights</span>
+                <Brain className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">AI Insights</span>
               </Button>
             </div>
 
@@ -407,7 +407,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className="hidden lg:flex gap-1.5 hover:bg-primary/10 transition-all"
+                className="hidden xl:flex gap-1.5 hover:bg-primary/10 transition-all"
               >
                 {theme === "light" ? (
                   <Moon className="h-4 w-4" />
@@ -422,10 +422,10 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   variant="default"
                   size="sm"
                   onClick={onNewTimetable}
-                  className="hidden lg:flex gap-1.5"
+                  className="hidden xl:flex gap-1.5 px-3 whitespace-nowrap"
                 >
                   <Sparkles className="h-4 w-4" />
-                  <span className="font-semibold">New Timetable</span>
+                  <span className="font-semibold text-sm">New Timetable</span>
                 </Button>
               )}
 
@@ -435,7 +435,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="lg:hidden"
+                    className="xl:hidden"
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
