@@ -83,6 +83,26 @@ export const EventsWidget = () => {
 
   useEffect(() => {
     fetchEvents();
+
+    // Set up realtime subscription for events
+    const channel = supabase
+      .channel('events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events',
+        },
+        () => {
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const generateRecurringInstances = (
