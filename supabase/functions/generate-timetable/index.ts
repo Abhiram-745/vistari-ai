@@ -210,10 +210,19 @@ ${peak.recommendation}
       })
       .join("; ");
 
-    const homeworksContext = homeworks.length > 0 
-      ? "\n\n**HOMEWORK ASSIGNMENTS (MUST BE SCHEDULED WITH EXACT DURATIONS):**\n" + homeworks
-          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}, DURATION: ${hw.duration || 60} minutes - MUST schedule EXACTLY ${hw.duration || 60} minutes BEFORE due date`)
-          .join("\n")
+    // Filter homework to only include items within timetable range
+    const relevantHomework = homeworks.filter((hw: any) => {
+      const dueDate = new Date(hw.due_date);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return dueDate >= start && dueDate <= end;
+    });
+
+    const homeworksContext = relevantHomework.length > 0 
+      ? "\n\n**HOMEWORK ASSIGNMENTS (ALL MUST BE SCHEDULED - MANDATORY):**\n" + relevantHomework
+          .map((hw: any) => `- "${hw.title}" (${hw.subject}) - DUE: ${hw.due_date}, DURATION: ${hw.duration || 60} minutes - MUST SCHEDULE (prefer 1-3 days before, but schedule ASAP if urgent)`)
+          .join("\n") + 
+          `\n\n**CRITICAL**: You MUST schedule ALL ${relevantHomework.length} homework assignments listed above. Count them and verify you've created ${relevantHomework.length} homework sessions.`
       : "\n\nNo homework assignments";
 
     const enabledDays = preferences.day_time_slots
@@ -579,18 +588,21 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
    - Homework is NOT optional - it has hard deadlines and MUST be scheduled
    
-   **🔴 CRITICAL SCHEDULING RULE 🔴**
-   ✗ NEVER schedule homework ON its due date
-   ✓ ALWAYS schedule homework 1-3 days BEFORE the due date
-   
-   SCHEDULING FORMULA:
-   If homework due date = X
-   Then schedule on: X-1, X-2, or X-3 (preferably X-2 or X-3)
-   
-   EXAMPLES:
-   • Homework due 2025-11-24 → Schedule on 2025-11-21, 2025-11-22, or 2025-11-23
-   • Homework due 2025-11-25 → Schedule on 2025-11-22, 2025-11-23, or 2025-11-24
-   • WRONG: Homework due 2025-11-24 → Schedule on 2025-11-24 ❌
+    **🔴 CRITICAL SCHEDULING RULE 🔴**
+    ✗ NEVER schedule homework ON its due date
+    ✓ PREFER to schedule homework 1-3 days BEFORE the due date
+    ✓ If homework is urgent (due tomorrow), schedule it TODAY (as early as possible)
+    ✓ If homework is very urgent (due today), it won't be in the list - don't worry about it
+    
+    SCHEDULING FORMULA (in order of preference):
+    1. IDEAL: If homework due date = X, schedule on X-2 or X-3
+    2. ACCEPTABLE: If time is tight, schedule on X-1 (day before due date)
+    3. URGENT: If due tomorrow and no better slot, schedule TODAY (do not skip!)
+    
+    EXAMPLES:
+    • Homework due 2025-11-24 → IDEAL: 2025-11-22, ACCEPTABLE: 2025-11-23, NEVER: 2025-11-24
+    • Homework due 2025-11-25 (tomorrow) → Schedule TODAY 2025-11-24 if no earlier slot
+    • WRONG: Homework due 2025-11-24 → Schedule on 2025-11-24 ❌
    
    - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration (e.g., 150, 60, 30 mins)
    - Break large homework (>120 mins) into 2-3 sessions across different days, each using portion of total duration
@@ -599,19 +611,22 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
    - Subject field should match the homework subject
    - Notes field should describe the homework (e.g., "Complete algebra homework - Due: YYYY-MM-DD")
    
-   **VERIFICATION CHECKLIST**:
-   ✓ Number of homework sessions = Number of homework assignments provided
-   ✓ ALL homework scheduled 1-3 days before due date
-   ✓ NO homework session on its actual due date
-   ✓ Front-load homework in the schedule (schedule earlier rather than later)
+    **VERIFICATION CHECKLIST**:
+    ✓ Number of homework sessions = EXACTLY the number of homework assignments provided above
+    ✓ ALL homework scheduled BEFORE (not on) due date - preferably 1-3 days before, but AT LEAST 1 day before
+    ✓ NO homework session on its actual due date
+    ✓ URGENT homework (due soon) scheduled ASAP even if not ideal timing
+    ✓ Front-load homework in the schedule (schedule earlier rather than later)
+    ✓ If homework list says "X homework assignments", you MUST create EXACTLY X homework sessions
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Create a detailed, balanced study schedule that:
 1. **FIRST AND FOREMOST: Schedule ALL homework assignments** 
-   - Homework has HARD DEADLINES and is MANDATORY
-   - Count the homework assignments and ensure you create exactly that many homework sessions
-   - **CRITICAL**: Schedule each homework 1-3 days BEFORE its due date - NEVER on the due date itself
-   - If homework is due on date X, schedule it on X-1, X-2, or X-3 only
+   - Homework has HARD DEADLINES and is MANDATORY - EVERY assignment MUST be scheduled
+   - Count the homework assignments listed above and create EXACTLY that many homework sessions
+   - **CRITICAL**: Preferably schedule 1-3 days BEFORE due date, but if urgent (due tomorrow), schedule TODAY
+   - NEVER schedule homework ON its actual due date - always at least 1 day before
+   - If you see 5 homework assignments in the list, you MUST create 5 homework sessions in the schedule
    ${preferences.duration_mode === "fixed" 
      ? `- **FIXED DURATION**: Each homework session MUST be ${preferences.session_duration} minutes. Split larger homework into multiple ${preferences.session_duration}-min sessions if needed.`
      : "- **EXACT DURATION**: Set duration field to the homework's specified duration (e.g., 150 mins, 60 mins, 30 mins). Split large homework (>120 mins) into 2-3 sessions if needed."}
@@ -662,12 +677,15 @@ Create a detailed, balanced study schedule that:
 14. STOPS scheduling revision for each topic after its test date
 15. Ensures consistent daily coverage on all enabled study days
 
-**HOMEWORK COMPLETION CHECK**: Before finalizing, verify:
-1. You've created a homework session for EACH homework assignment listed above
-${preferences.duration_mode === "fixed" 
-  ? `2. Each homework session uses the FIXED ${preferences.session_duration} minute duration (split larger homework into multiple sessions if needed)`
-  : "2. Each homework session uses the EXACT duration specified for that homework"}
-3. NO homework session is scheduled ON its due date - all must be scheduled BEFORE the due date
+**HOMEWORK COMPLETION CHECK - CRITICAL VERIFICATION**: Before finalizing, verify:
+1. **COUNT CHECK**: You've created a homework session for EACH homework assignment listed above
+   - If list shows 5 homework assignments, you MUST have exactly 5 homework sessions in schedule
+   - Missing even ONE homework is a CRITICAL FAILURE
+2. **DURATION CHECK**: ${preferences.duration_mode === "fixed" 
+  ? `Each homework session uses the FIXED ${preferences.session_duration} minute duration (split larger homework into multiple sessions if needed)`
+  : "Each homework session uses the EXACT duration specified for that homework"}
+3. **DATE CHECK**: NO homework session is scheduled ON its due date - all must be scheduled BEFORE (preferably 1-3 days, minimum 1 day)
+4. **TYPE CHECK**: All homework sessions use type="homework" and include homeworkDueDate field
 
 **SESSION STRUCTURE CHECK**: Before finalizing, verify:
 1. Most topics have 2 sessions (Practice + Exam Questions) where time permits
