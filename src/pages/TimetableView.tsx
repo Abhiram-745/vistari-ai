@@ -236,21 +236,6 @@ const TimetableView = () => {
     return total > 0 ? (completed / total) * 100 : 0;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading timetable...</div>
-      </div>
-    );
-  }
-
-  if (!timetable) {
-    return null;
-  }
-
-  const sortedDates = Object.keys(timetable.schedule).sort();
-  const progress = calculateProgress();
-
   // Helper function to validate dates
   const isValidDate = (date: any): boolean => {
     const d = new Date(date);
@@ -258,7 +243,10 @@ const TimetableView = () => {
   };
 
   // Merge events into schedule for display - memoized to prevent duplicates
+  // MUST be called before early returns to follow Rules of Hooks
   const mergedSchedule = useMemo(() => {
+    if (!timetable) return {};
+    
     // CRITICAL: First, remove ALL existing events from the schedule
     // This prevents duplicates when events are already stored in timetable.schedule
     const cleanedSchedule: TimetableSchedule = {};
@@ -300,17 +288,20 @@ const TimetableView = () => {
       cleanedSchedule[eventDate].push(eventSession);
     });
     
-    // Sort all dates by time
+    // Sort each day's sessions by time
     Object.keys(cleanedSchedule).forEach((date) => {
       cleanedSchedule[date].sort((a, b) => {
         const timeA = a.time.split(':').map(Number);
         const timeB = b.time.split(':').map(Number);
-        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+        return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
       });
     });
     
     return cleanedSchedule;
-  }, [timetable.schedule, events]);
+  }, [timetable?.schedule, events]);
+
+  const sortedDates = timetable ? Object.keys(mergedSchedule).sort() : [];
+  const progress = calculateProgress();
 
   const scheduleDates = Object.keys(mergedSchedule)
     .sort()
@@ -324,6 +315,18 @@ const TimetableView = () => {
         return format(dateObj, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
       })
     : Object.keys(mergedSchedule).sort().filter(date => isValidDate(date));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading timetable...</div>
+      </div>
+    );
+  }
+
+  if (!timetable) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
