@@ -105,17 +105,19 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    // Fetch events for tomorrow
+    // Fetch events for tomorrow (all instances)
     const { data: tomorrowEvents } = await supabase
       .from('events')
       .select('*')
       .eq('user_id', user.id)
       .gte('start_time', `${validTomorrowDate}T00:00:00`)
-      .lte('start_time', `${validTomorrowDate}T23:59:59`);
+      .lte('end_time', `${validTomorrowDate}T23:59:59`)
+      .order('start_time', { ascending: true });
 
+    // Deduplicate events by unique combination of time and title (not ID)
     const uniqueTomorrowEvents = Array.from(
       new Map((tomorrowEvents || []).map((e: any) => [
-        `${e.title}-${e.start_time}-${e.end_time}-${e.id}`,
+        `${e.title}-${e.start_time}-${e.end_time}`,
         e,
       ])).values()
     );

@@ -124,21 +124,22 @@ export const TimetableEditDialog = ({
 
       if (homeworkError) throw homeworkError;
 
-      // Fetch user's events within the timetable date range
+      // Fetch user's events within the timetable date range (all instances, no parents)
       const { data: events, error: eventsError } = await supabase
         .from("events")
         .select("*")
         .eq("user_id", user.id)
         .gte("start_time", `${startDate}T00:00:00`)
-        .lte("start_time", `${endDate}T23:59:59`)
+        .lte("end_time", `${endDate}T23:59:59`)
         .order("start_time", { ascending: true });
 
       if (eventsError) throw eventsError;
 
+      // Deduplicate events by unique combination of time and title (not ID)
       const uniqueEvents = Array.from(
         new Map(
           (events || []).map((evt) => [
-            `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+            `${evt.title}-${evt.start_time}-${evt.end_time}`,
             evt,
           ])
         ).values()
