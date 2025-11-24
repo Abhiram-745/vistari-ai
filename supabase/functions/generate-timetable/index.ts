@@ -445,34 +445,42 @@ STEADY LEARNING APPROACH:
         case "no-exam":
           return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 TIMETABLE MODE: NO EXAM FOCUS (HOMEWORK-CENTRIC) 📚
+📝 TIMETABLE MODE: NO EXAM FOCUS (GETTING AHEAD) 📚
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🎯 HOMEWORK PRIORITY - COURSEWORK FOCUS MODE
+🎯 GET AHEAD ON SUBJECTS - GENERAL LEARNING MODE
 
 MANDATORY SCHEDULING RULES (FLEXIBLE MODE):
-✓ Revision Session Duration: ~20 minutes per topic (VERY SHORT, light sessions)
-✓ Break Duration: 15-20 minutes (LONGER breaks for relaxed pace)
-✓ Daily Sessions: 2-3 light study sessions per day
-✓ Repeat Frequency: Review topics every 10-14 days (minimal repetition)
-✓ Homework: Schedule ALL homework as TOP PRIORITY with extra buffer time
-✓ Revision Priority: Schedule 25% LIGHT REVISION, 75% HOMEWORK
-✓ Session Types: Primarily practice and notes review (minimal exam focus)
-✓ Topic Coverage: Light maintenance only - just staying current
+✓ Priority Order: HOMEWORK FIRST, then general subject revision
+✓ Homework: Schedule ALL homework assignments (mandatory completion)
+✓ Revision Session Duration: 45-60 minutes per topic (STANDARD learning sessions)
+✓ Break Duration: 15 minutes (regular breaks)
+✓ Daily Sessions: 3-4 sessions per day
+✓ Repeat Frequency: Review topics every 7-10 days (general reinforcement)
+✓ Session Types: General revision notes, practice, understanding concepts
+✓ Topic Coverage: Broad coverage to get ahead - not exam-focused, just general learning
+✓ NO exam pressure: Focus on understanding and getting ahead at comfortable pace
 
-TIME ALLOCATION TARGETS:
-- 75% of daily time = Homework assignments
-- 25% of daily time = Light topic maintenance
-- Complete homework well ahead of due dates
-- Revision is secondary - just to stay fresh
+TIME ALLOCATION STRATEGY:
+1. FIRST: Complete ALL homework assignments (these are mandatory)
+2. THEN: Use remaining available time for general subject revision
+3. Revision is about getting ahead on topics, not exam prep
+4. Study sessions focus on understanding concepts thoroughly
+5. No urgency - steady progress through subject material
 
-RELAXED APPROACH:
-- Topics only reviewed 1-2 times total (maintenance only)
-- Generous break times for comfortable pacing
-- Homework completion is PRIMARY goal
-- Study sessions are shorter and less intensive
+BALANCED LEARNING APPROACH:
+- Homework always gets scheduled first (must be done)
+- Spare time after homework = getting ahead on the subject
+- Topics reviewed regularly for general understanding (not exam cramming)
+- Standard session lengths for proper learning (not rushed)
+- Focus is on broad understanding, not test performance
+- Build solid foundations across all topics at steady pace
 
-📝 HOMEWORK MODE - COURSEWORK COMES FIRST! 📝
+PHILOSOPHY:
+"Complete your homework, then use free time to genuinely understand 
+and get ahead on subject material - no exam stress, just learning."
+
+📝 GET AHEAD MODE - HOMEWORK FIRST, THEN GENERAL LEARNING! 📝
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
         default:
@@ -505,12 +513,12 @@ SUBJECTS: ${subjectsContext}
 
 ⚠️ CRITICAL: EACH SUBJECT HAS ITS OWN STUDY MODE ⚠️
 
-Some subjects are set to "Short-Term Exam Prep" (intensive, 1-4 weeks), some to "Long-Term Exam Prep" (balanced, 5-8+ weeks), and some to "No Exam Focus" (homework-focused). 
+Some subjects are set to "Short-Term Exam Prep" (intensive, 1-4 weeks), some to "Long-Term Exam Prep" (balanced, 5-8+ weeks), and some to "No Exam Focus" (getting ahead on topics). 
 
 **PER-SUBJECT MODE HANDLING:**
 - Short-Term Exam Prep subjects: Allocate 60-90 min sessions, schedule frequently (every 2-3 days), prioritize exam practice
 - Long-Term Exam Prep subjects: Allocate 45-60 min sessions, schedule moderately (every 3-5 days), balanced revision
-- No Exam Focus subjects: Allocate 20-30 min sessions for light maintenance, focus on homework completion
+- No Exam Focus subjects: Allocate 45-60 min sessions for general learning, homework first then use spare time for getting ahead on topics
 
 The overall timetable mode (${timetableMode}) sets the baseline intensity, but ADJUST each subject's scheduling based on its individual mode shown above.
 
