@@ -171,12 +171,30 @@ ${JSON.stringify(incompleteSessions || [], null, 2)}
 
 **AVAILABLE HOMEWORK** (Use exact subject/title/duration from this list)
 ${homeworkList && homeworkList.length > 0 ? 
-  homeworkList.map(h => {
+  `🚨 HOMEWORK MUST BE COMPLETED BEFORE DUE DATE - NEVER ON THE DUE DATE 🚨
+
+${homeworkList.map(h => {
     const dueDate = new Date(h.due_date);
     const formattedDueDate = dueDate.toISOString().split('T')[0];
     const dueTime = dueDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return `- "${h.title}" (${h.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${h.duration || 60} minutes - ⚠️ DO NOT SCHEDULE ON ${validTomorrowDate} (homework is due AFTER tomorrow)`;
-  }).join('\n')
+    const tomorrowDateObj = new Date(validTomorrowDate);
+    const daysUntilDue = Math.ceil((dueDate.getTime() - tomorrowDateObj.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilDue <= 1) {
+      return `- "${h.title}" (${h.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${h.duration || 60} minutes
+   🚨 URGENT: Due in ${daysUntilDue} day(s) - MUST schedule tomorrow to complete before deadline!`;
+    } else {
+      return `- "${h.title}" (${h.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${h.duration || 60} minutes
+   ⏰ Due in ${daysUntilDue} days - Can schedule tomorrow or wait, but MUST complete BEFORE ${formattedDueDate}`;
+    }
+  }).join('\n')}
+
+CRITICAL HOMEWORK RULES:
+- Homework due date = submission/hand-in date (must be completed BEFORE then)
+- NEVER schedule homework ON its due date - it must be ready for submission
+- If homework is due tomorrow (${validTomorrowDate}), DO NOT schedule it - it's too late!
+- Only schedule homework if there's at least 1 day between tomorrow and the due date
+- Prioritize urgent homework (due in 1-2 days) over regular study topics`
   : 'No homework to schedule (all completed or due too soon)'
 }
 

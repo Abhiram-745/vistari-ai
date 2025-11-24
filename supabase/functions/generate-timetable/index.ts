@@ -233,15 +233,20 @@ ${peak.recommendation}
             const dueDate = new Date(hw.due_date);
             const formattedDueDate = dueDate.toISOString().split('T')[0];
             const dueTime = dueDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            return `- "${hw.title}" (${hw.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${hw.duration || 60} minutes - ⚠️ MUST SCHEDULE AT LEAST 1 DAY BEFORE DUE DATE (NEVER ON ${formattedDueDate})`;
+            return `- "${hw.title}" (${hw.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${hw.duration || 60} minutes - 🚨 MUST COMPLETE BEFORE DUE DATE - NEVER SCHEDULE ON ${formattedDueDate}`;
           })
           .join("\n") + 
-          `\n\n**CRITICAL HOMEWORK RULES**: 
+          `\n\n**🚨 ABSOLUTE HOMEWORK DEADLINE REQUIREMENTS 🚨**: 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. You MUST schedule ALL ${relevantHomework.length} homework assignments listed above
-2. NEVER schedule homework ON the due date - always schedule at least 1 day BEFORE
-3. If homework is due on 2024-01-15, the LATEST you can schedule it is 2024-01-14
-4. Prefer scheduling homework 2-3 days before the due date when possible
-5. Count and verify you've created exactly ${relevantHomework.length} homework sessions`
+2. 🔴 CRITICAL: Homework MUST be completed BEFORE the due date - NEVER ON the due date
+3. Homework is submitted/handed in on the due date, so it must be DONE BEFORE THEN
+4. If homework is due on 2024-01-15, it MUST be scheduled on 2024-01-14 or earlier
+5. IDEAL: Schedule homework 2-3 days before the due date for best time management
+6. MINIMUM: Schedule at least 1 full day before the due date (never on the due date itself)
+7. Count and verify you've created exactly ${relevantHomework.length} homework sessions
+8. Each homework session MUST be scheduled with enough time to complete before due date
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
       : "\n\nNo homework assignments";
 
     const enabledDays = preferences.day_time_slots
@@ -643,27 +648,36 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
 12. Distribute sessions EVENLY across ALL enabled study days - do not skip any enabled day
 10. **HOMEWORK INTEGRATION (CRITICAL)**: 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ⚠️  HOMEWORK HAS HARD DEADLINES - CANNOT BE DONE ON DUE DATE
+   🚨 HOMEWORK MUST BE COMPLETED BEFORE THE DUE DATE 🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    
    - **MANDATORY**: EVERY homework assignment MUST appear in the timetable as dedicated "homework" type sessions
-   - Homework is NOT optional - it has hard deadlines and MUST be scheduled
+   - Homework has HARD DEADLINES - it must be SUBMITTED/HANDED IN on the due date
+   - This means homework must be COMPLETED at least 1 day BEFORE the due date
+   - Scheduling homework ON the due date means it won't be ready for submission
    
-    **🔴 CRITICAL SCHEDULING RULE 🔴**
-    ✗ NEVER schedule homework ON its due date
-    ✓ PREFER to schedule homework 1-3 days BEFORE the due date
-    ✓ If homework is urgent (due tomorrow), schedule it TODAY (as early as possible)
-    ✓ If homework is very urgent (due today), it won't be in the list - don't worry about it
+    **🔴 ABSOLUTE DEADLINE RULE 🔴**
+    ✗ NEVER schedule homework ON its due date (it must be ready for submission then!)
+    ✗ Student cannot work on homework the same day it's due - it's too late
+    ✓ MUST schedule at least 1 FULL DAY before the due date (MINIMUM requirement)
+    ✓ IDEAL: Schedule homework 2-3 days BEFORE the due date for best results
+    ✓ URGENT: If homework is due very soon, schedule it ASAP (as early as possible)
+    
+    **HOMEWORK SUBMISSION TIMELINE**:
+    The due date is when homework must be SUBMITTED/HANDED IN (already completed).
+    Therefore, the work must be DONE BEFORE that date.
     
     SCHEDULING FORMULA (in order of preference):
-    1. IDEAL: If homework due date = X, schedule on X-2 or X-3
-    2. ACCEPTABLE: If time is tight, schedule on X-1 (day before due date)
-    3. URGENT: If due tomorrow and no better slot, schedule TODAY (do not skip!)
+    1. ⭐ BEST PRACTICE: If homework due date = X, schedule on X-2 or X-3 (2-3 days before)
+    2. ✅ ACCEPTABLE: If time is tight, schedule on X-1 (1 day before due date)
+    3. 🚨 URGENT: If due very soon and no earlier slot available, schedule ASAP
+    4. ❌ NEVER: Schedule on X (the due date itself) - homework won't be ready!
     
-    EXAMPLES:
-    • Homework due 2025-11-24 → IDEAL: 2025-11-22, ACCEPTABLE: 2025-11-23, NEVER: 2025-11-24
-    • Homework due 2025-11-25 (tomorrow) → Schedule TODAY 2025-11-24 if no earlier slot
-    • WRONG: Homework due 2025-11-24 → Schedule on 2025-11-24 ❌
+    REAL EXAMPLES:
+    • Homework due 2025-01-15 → ⭐ BEST: 2025-01-13, ✅ OK: 2025-01-14, ❌ NEVER: 2025-01-15
+    • Homework due 2025-01-25 → ⭐ BEST: 2025-01-23, ✅ OK: 2025-01-24, ❌ NEVER: 2025-01-25
+    • Homework due tomorrow → 🚨 Schedule TODAY (as early as possible in the day)
+    • WRONG EXAMPLE: Homework due 2025-01-20 → Scheduled on 2025-01-20 ❌ (TOO LATE!)
    
    - **USE EXACT HOMEWORK DURATION**: The duration field MUST match the homework's specified duration (e.g., 150, 60, 30 mins)
    - Break large homework (>120 mins) into 2-3 sessions across different days, each using portion of total duration
@@ -674,19 +688,22 @@ ${testDates.length > 0 ? "0. **TEST DAYS ARE COMPLETELY BLOCKED**: DO NOT schedu
    
     **VERIFICATION CHECKLIST**:
     ✓ Number of homework sessions = EXACTLY the number of homework assignments provided above
-    ✓ ALL homework scheduled BEFORE (not on) due date - preferably 1-3 days before, but AT LEAST 1 day before
-    ✓ NO homework session on its actual due date
-    ✓ URGENT homework (due soon) scheduled ASAP even if not ideal timing
-    ✓ Front-load homework in the schedule (schedule earlier rather than later)
+    ✓ ALL homework scheduled BEFORE (not on) due date - MINIMUM 1 day before, IDEAL 2-3 days before
+    ✓ ZERO homework sessions on their actual due dates (homework must be ready for submission)
+    ✓ URGENT homework (due very soon) scheduled ASAP even if not ideal timing
+    ✓ Front-load homework in the schedule (schedule earlier rather than later for safety)
     ✓ If homework list says "X homework assignments", you MUST create EXACTLY X homework sessions
+    ✓ Each homework has enough time allocated BEFORE its due date to complete the work
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Create a detailed, balanced study schedule that:
 1. **FIRST AND FOREMOST: Schedule ALL homework assignments** 
    - Homework has HARD DEADLINES and is MANDATORY - EVERY assignment MUST be scheduled
    - Count the homework assignments listed above and create EXACTLY that many homework sessions
-   - **CRITICAL**: Preferably schedule 1-3 days BEFORE due date, but if urgent (due tomorrow), schedule TODAY
-   - NEVER schedule homework ON its actual due date - always at least 1 day before
+   - **🚨 CRITICAL DEADLINE RULE**: Homework MUST be completed BEFORE the due date (not on the due date)
+   - Due date = submission/hand-in date, so work must be DONE at least 1 day before
+   - IDEAL: Schedule 2-3 days BEFORE due date | MINIMUM: Schedule at least 1 day before
+   - NEVER schedule homework ON its actual due date - it must be ready for submission then!
    - If you see 5 homework assignments in the list, you MUST create 5 homework sessions in the schedule
    ${preferences.duration_mode === "fixed" 
      ? `- **FIXED DURATION**: Each homework session MUST be ${preferences.session_duration} minutes. Split larger homework into multiple ${preferences.session_duration}-min sessions if needed.`
@@ -745,7 +762,11 @@ Create a detailed, balanced study schedule that:
 2. **DURATION CHECK**: ${preferences.duration_mode === "fixed" 
   ? `Each homework session uses the FIXED ${preferences.session_duration} minute duration (split larger homework into multiple sessions if needed)`
   : "Each homework session uses the EXACT duration specified for that homework"}
-3. **DATE CHECK**: NO homework session is scheduled ON its due date - all must be scheduled BEFORE (preferably 1-3 days, minimum 1 day)
+3. **🚨 DATE CHECK - ABSOLUTE REQUIREMENT**: 
+   - ZERO homework sessions scheduled ON their due dates
+   - ALL homework must be scheduled BEFORE the due date (minimum 1 day, ideal 2-3 days)
+   - The due date is submission day - homework must be COMPLETED before then
+   - Verify each homework is scheduled with enough time to finish BEFORE its due date
 4. **TYPE CHECK**: All homework sessions use type="homework" and include homeworkDueDate field
 
 **SESSION STRUCTURE CHECK**: Before finalizing, verify:
