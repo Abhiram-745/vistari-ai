@@ -54,6 +54,14 @@ Deno.serve(async (req) => {
       analyticsData,
       insightsData,
       achievementsData,
+      friendshipsData,
+      groupMembersData,
+      groupMessagesData,
+      groupResourcesData,
+      sharedTimetablesData,
+      timetableHistoryData,
+      usageLimitsData,
+      userRolesData,
     ] = await Promise.all([
       supabaseClient.from('profiles').select('*').eq('id', user.id).single(),
       supabaseClient.from('study_preferences').select('*').eq('user_id', user.id).single(),
@@ -72,6 +80,14 @@ Deno.serve(async (req) => {
       supabaseClient.from('session_analytics').select('*').eq('user_id', user.id),
       supabaseClient.from('study_insights').select('*').eq('user_id', user.id),
       supabaseClient.from('user_achievements').select('*').eq('user_id', user.id),
+      supabaseClient.from('friendships').select('*').or(`user_id.eq.${user.id},friend_id.eq.${user.id}`),
+      supabaseClient.from('group_members').select('*').eq('user_id', user.id),
+      supabaseClient.from('group_messages').select('*').eq('user_id', user.id),
+      supabaseClient.from('group_resources').select('*').eq('uploaded_by', user.id),
+      supabaseClient.from('shared_timetables').select('*').eq('shared_by', user.id),
+      supabaseClient.from('timetable_history').select('*').eq('user_id', user.id),
+      supabaseClient.from('usage_limits').select('*').eq('user_id', user.id).single(),
+      supabaseClient.from('user_roles').select('*').eq('user_id', user.id).single(),
     ]);
 
     // Build export JSON
@@ -97,6 +113,14 @@ Deno.serve(async (req) => {
         session_analytics: analyticsData.data || [],
         study_insights: insightsData.data || [],
         user_achievements: achievementsData.data || [],
+        friendships: friendshipsData.data || [],
+        group_members: groupMembersData.data || [],
+        group_messages: groupMessagesData.data || [],
+        group_resources: groupResourcesData.data || [],
+        shared_timetables: sharedTimetablesData.data || [],
+        timetable_history: timetableHistoryData.data || [],
+        usage_limits: usageLimitsData.data || null,
+        user_roles: userRolesData.data || null,
       },
       metadata: {
         total_timetables: timetablesData.data?.length || 0,
@@ -104,6 +128,9 @@ Deno.serve(async (req) => {
         total_homework: homeworkData.data?.length || 0,
         total_events: eventsData.data?.length || 0,
         total_study_sessions: sessionsData.data?.length || 0,
+        total_friendships: friendshipsData.data?.length || 0,
+        total_group_memberships: groupMembersData.data?.length || 0,
+        total_timetable_versions: timetableHistoryData.data?.length || 0,
       },
     };
 
