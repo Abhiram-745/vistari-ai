@@ -18,6 +18,8 @@ import Homework from "./pages/Homework";
 import TestScores from "./pages/TestScores";
 import AIInsights from "./pages/AIInsights";
 import NotFound from "./pages/NotFound";
+import LogoGenerator from "./pages/LogoGenerator";
+import ImportAccount from "./pages/ImportAccount";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
@@ -44,6 +46,7 @@ const App = () => (
           <Route path="/test-scores" element={<TestScores />} />
           <Route path="/ai-insights" element={<AIInsights />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
+          <Route path="/import-account" element={<ImportAccount />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
