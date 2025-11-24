@@ -217,6 +217,13 @@ const GenerateStep = ({
           session_duration: preferences.session_duration,
           break_duration: preferences.break_duration,
           day_time_slots: preferences.day_time_slots as any,
+          study_before_school: preferences.study_before_school || false,
+          study_during_lunch: preferences.study_during_lunch || false,
+          study_during_free_periods: preferences.study_during_free_periods || false,
+          before_school_start: preferences.before_school_start || null,
+          before_school_end: preferences.before_school_end || null,
+          lunch_start: preferences.lunch_start || null,
+          lunch_end: preferences.lunch_end || null,
         }], { onConflict: 'user_id' });
 
       if (prefsError) throw prefsError;

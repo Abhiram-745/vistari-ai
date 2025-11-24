@@ -193,42 +193,102 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
             Select if you'd like short study sessions before/during school hours
           </p>
           <Card className="p-3 space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="before-school"
-                checked={preferences.study_before_school || false}
-                onCheckedChange={(checked) =>
-                  setPreferences({
-                    ...preferences,
-                    study_before_school: !!checked,
-                  })
-                }
-              />
-              <label
-                htmlFor="before-school"
-                className="text-sm font-medium leading-none cursor-pointer"
-              >
-                Study before school (short homework sessions)
-              </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="before-school"
+                  checked={preferences.study_before_school || false}
+                  onCheckedChange={(checked) =>
+                    setPreferences({
+                      ...preferences,
+                      study_before_school: !!checked,
+                    })
+                  }
+                />
+                <label
+                  htmlFor="before-school"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Study before school (short homework sessions)
+                </label>
+              </div>
+              
+              {preferences.study_before_school && (
+                <div className="ml-6 flex items-center gap-2 pt-2">
+                  <Input
+                    type="time"
+                    value={preferences.before_school_start || "07:00"}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        before_school_start: e.target.value,
+                      })
+                    }
+                    className="w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">to</span>
+                  <Input
+                    type="time"
+                    value={preferences.before_school_end || "08:00"}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        before_school_end: e.target.value,
+                      })
+                    }
+                    className="w-32"
+                  />
+                </div>
+              )}
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="during-lunch"
-                checked={preferences.study_during_lunch || false}
-                onCheckedChange={(checked) =>
-                  setPreferences({
-                    ...preferences,
-                    study_during_lunch: !!checked,
-                  })
-                }
-              />
-              <label
-                htmlFor="during-lunch"
-                className="text-sm font-medium leading-none cursor-pointer"
-              >
-                Study during lunch time (15-20 min homework)
-              </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="during-lunch"
+                  checked={preferences.study_during_lunch || false}
+                  onCheckedChange={(checked) =>
+                    setPreferences({
+                      ...preferences,
+                      study_during_lunch: !!checked,
+                    })
+                  }
+                />
+                <label
+                  htmlFor="during-lunch"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Study during lunch time (15-20 min homework)
+                </label>
+              </div>
+              
+              {preferences.study_during_lunch && (
+                <div className="ml-6 flex items-center gap-2 pt-2">
+                  <Input
+                    type="time"
+                    value={preferences.lunch_start || "12:00"}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        lunch_start: e.target.value,
+                      })
+                    }
+                    className="w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">to</span>
+                  <Input
+                    type="time"
+                    value={preferences.lunch_end || "12:30"}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        lunch_end: e.target.value,
+                      })
+                    }
+                    className="w-32"
+                  />
+                </div>
+              )}
             </div>
             
             <div className="flex items-center space-x-2">

@@ -75,11 +75,26 @@ export const SchoolSchedule = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
+      // Get current study_before_school, study_during_lunch, study_during_free_periods values
+      const { data: currentPrefs } = await supabase
+        .from("study_preferences")
+        .select("study_before_school, study_during_lunch, study_during_free_periods, before_school_start, before_school_end, lunch_start, lunch_end")
+        .eq("user_id", user.id)
+        .single();
+
       const { error } = await supabase
         .from("study_preferences")
         .update({
           school_start_time: schoolStartTime || null,
           school_end_time: schoolEndTime || null,
+          // Preserve existing school-time study preferences
+          study_before_school: currentPrefs?.study_before_school,
+          study_during_lunch: currentPrefs?.study_during_lunch,
+          study_during_free_periods: currentPrefs?.study_during_free_periods,
+          before_school_start: currentPrefs?.before_school_start,
+          before_school_end: currentPrefs?.before_school_end,
+          lunch_start: currentPrefs?.lunch_start,
+          lunch_end: currentPrefs?.lunch_end,
         })
         .eq("user_id", user.id);
 
