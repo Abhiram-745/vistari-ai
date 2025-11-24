@@ -292,14 +292,19 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div 
-              className="flex items-center space-x-2 cursor-pointer group transition-all duration-300 hover:scale-105" 
+              className="flex items-center space-x-2 cursor-pointer group logo-container" 
               onClick={() => navigate("/dashboard")}
             >
               <div className="relative">
-                <img src={vistariLogo} alt="Vistari" className="h-10 w-10 object-cover logo-glow-subtle hover:logo-glow transition-all duration-300" />
+                <div className="logo-bg-glow" />
+                <img 
+                  src={vistariLogo} 
+                  alt="Vistari" 
+                  className="h-11 w-11 object-cover rounded-xl logo-glow-subtle hover:logo-glow transition-all duration-500 logo-pulse" 
+                />
               </div>
               <div className="hidden lg:flex flex-col">
-                <h1 className="text-lg font-display font-bold gradient-text">
+                <h1 className="text-lg font-display font-bold gradient-text transition-all duration-300 group-hover:scale-105">
                   Vistari
                 </h1>
                 <p className="text-[9px] text-muted-foreground -mt-1 font-medium">Your revision companion</p>
