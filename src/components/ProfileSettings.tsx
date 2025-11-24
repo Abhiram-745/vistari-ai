@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, User, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 interface ProfileSettingsProps {
   open: boolean;
@@ -237,6 +238,52 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
             ) : (
               "Save Changes"
             )}
+          </Button>
+        </div>
+
+        <Separator className="my-6" />
+
+        {/* Export Account Section */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-display font-semibold">Export Account Data</h3>
+            <p className="text-sm text-muted-foreground">
+              Download all your Vistari data as a JSON file for backup or migration to another account.
+            </p>
+          </div>
+          
+          <Button
+            onClick={async () => {
+              try {
+                setLoading(true);
+                const { data, error } = await supabase.functions.invoke('export-account');
+                
+                if (error) throw error;
+                
+                // Create download
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `vistari-export-${email}-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                toast.success("Export complete! Your data has been downloaded.");
+              } catch (error: any) {
+                console.error('Export error:', error);
+                toast.error(error?.message || "Failed to export data. Please try again.");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            variant="outline"
+            className="w-full"
+          >
+            {loading ? "Exporting..." : "Export Account Data"}
           </Button>
         </div>
       </DialogContent>
