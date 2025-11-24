@@ -16,6 +16,7 @@ import TopicsEditStep from "./onboarding/TopicsEditStep";
 import TestDatesStep from "./onboarding/TestDatesStep";
 import PreferencesStep from "./onboarding/PreferencesStep";
 import HomeworkEditStep from "./onboarding/HomeworkEditStep";
+import GenerationProgress from "./onboarding/GenerationProgress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Subject, Topic, TestDate, StudyPreferences } from "./OnboardingWizard";
 import { checkCanRegenerateTimetable, incrementUsage } from "@/hooks/useUserRole";
@@ -88,6 +89,7 @@ export const TimetableEditDialog = ({
   const [testDates, setTestDates] = useState<TestDate[]>(currentTestDates);
   const [preferences, setPreferences] = useState<StudyPreferences>(migratePreferences(currentPreferences));
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [generationStage, setGenerationStage] = useState<string>("");
   const [showPaywall, setShowPaywall] = useState(false);
 
   const handleRegenerate = async () => {
@@ -118,6 +120,7 @@ export const TimetableEditDialog = ({
     }
 
     setIsRegenerating(true);
+    setGenerationStage("saving");
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -153,6 +156,13 @@ export const TimetableEditDialog = ({
         ).values()
       );
 
+      // Update stage to analyzing
+      setGenerationStage("analyzing");
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Update stage to scheduling
+      setGenerationStage("scheduling");
+
       const { data: scheduleData, error: functionError } = await supabase.functions.invoke(
         "generate-timetable",
         {
@@ -179,6 +189,13 @@ export const TimetableEditDialog = ({
 
       if (functionError) throw functionError;
 
+      // Update stage to optimizing
+      setGenerationStage("optimizing");
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Update stage to finalizing
+      setGenerationStage("finalizing");
+
       // Update the timetable with new schedule and configuration
       const { error: updateError } = await supabase
         .from("timetables")
@@ -204,6 +221,7 @@ export const TimetableEditDialog = ({
       toast.error("Failed to regenerate timetable");
     } finally {
       setIsRegenerating(false);
+      setGenerationStage("");
     }
   };
 
@@ -253,6 +271,13 @@ export const TimetableEditDialog = ({
             <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
           </TabsContent>
         </Tabs>
+
+        {/* Generation Progress - shows during regeneration */}
+        {isRegenerating && generationStage && (
+          <div className="mt-4 animate-fade-in">
+            <GenerationProgress currentStage={generationStage} />
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isRegenerating}>
