@@ -168,11 +168,11 @@ All colors MUST be HSL.
   }
   
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-primary/10 shadow-lg;
+    @apply bg-card border border-border/40 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)];
   }
   
   .glass-header {
-    @apply bg-card/95 backdrop-blur-md border-b border-primary/20 shadow-lg;
+    @apply bg-card/95 backdrop-blur-lg border-b border-border/40;
   }
   
   .gradient-text {
@@ -183,7 +183,7 @@ All colors MUST be HSL.
     @apply transition-all duration-300 hover:scale-105 hover:shadow-xl;
   }
   
-  .floating-blob {
-    @apply absolute rounded-full blur-3xl opacity-20;
-  }
+.floating-blob {
+  @apply absolute rounded-full blur-[100px] opacity-[0.08];
+}
 }
