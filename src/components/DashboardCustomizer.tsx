@@ -3,31 +3,79 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings } from "lucide-react";
+import { Settings, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface DashboardSection {
   id: string;
   label: string;
   description: string;
   enabled: boolean;
+  order: number;
 }
 
 const DEFAULT_SECTIONS: DashboardSection[] = [
-  { id: "progress", label: "Progress Tracking", description: "Study streak, weekly goals, and deadlines", enabled: true },
-  { id: "events", label: "Events & Commitments", description: "Your schedule at a glance", enabled: true },
-  { id: "analytics", label: "AI Analytics", description: "Insights and performance analysis", enabled: true },
-  { id: "timetables", label: "Timetables", description: "Your study plans", enabled: true },
-  { id: "homework", label: "Active Homework", description: "Homework tracker", enabled: true },
+  { id: "progress", label: "Progress Tracking", description: "Study streak, leaderboards, and goals", enabled: true, order: 0 },
+  { id: "events", label: "Events & Commitments", description: "Your schedule at a glance", enabled: true, order: 1 },
+  { id: "analytics", label: "AI Analytics", description: "Insights and performance analysis", enabled: true, order: 2 },
+  { id: "timetables", label: "Timetables", description: "Your study plans", enabled: true, order: 3 },
+  { id: "homework", label: "Active Homework", description: "Homework tracker", enabled: true, order: 4 },
 ];
 
 interface DashboardCustomizerProps {
-  onSettingsChange: (sections: Record<string, boolean>) => void;
+  onSettingsChange: (sections: DashboardSection[]) => void;
 }
+
+const SortableItem = ({ section, onToggle }: { section: DashboardSection; onToggle: (id: string) => void }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between space-x-4 rounded-lg border p-4 bg-card"
+    >
+      <div className="flex items-center gap-3 flex-1">
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div className="flex-1 space-y-1">
+          <Label htmlFor={section.id} className="text-base font-medium cursor-pointer">
+            {section.label}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {section.description}
+          </p>
+        </div>
+      </div>
+      <Switch
+        id={section.id}
+        checked={section.enabled}
+        onCheckedChange={() => onToggle(section.id)}
+      />
+    </div>
+  );
+};
 
 export const DashboardCustomizer = ({ onSettingsChange }: DashboardCustomizerProps) => {
   const [sections, setSections] = useState<DashboardSection[]>([]);
   const [open, setOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     // Load saved settings from localStorage
@@ -36,16 +84,14 @@ export const DashboardCustomizer = ({ onSettingsChange }: DashboardCustomizerPro
       try {
         const savedSections = JSON.parse(saved);
         setSections(savedSections);
-        const settings = savedSections.reduce((acc: Record<string, boolean>, section: DashboardSection) => {
-          acc[section.id] = section.enabled;
-          return acc;
-        }, {});
-        onSettingsChange(settings);
+        onSettingsChange(savedSections);
       } catch {
         setSections(DEFAULT_SECTIONS);
+        onSettingsChange(DEFAULT_SECTIONS);
       }
     } else {
       setSections(DEFAULT_SECTIONS);
+      onSettingsChange(DEFAULT_SECTIONS);
     }
   }, []);
 
@@ -55,13 +101,28 @@ export const DashboardCustomizer = ({ onSettingsChange }: DashboardCustomizerPro
     );
     setSections(updated);
     localStorage.setItem("dashboardSections", JSON.stringify(updated));
-    
-    const settings = updated.reduce((acc: Record<string, boolean>, section) => {
-      acc[section.id] = section.enabled;
-      return acc;
-    }, {});
-    onSettingsChange(settings);
+    onSettingsChange(updated);
     toast.success("Dashboard updated");
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setSections((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        const reordered = arrayMove(items, oldIndex, newIndex).map((item, index) => ({
+          ...item,
+          order: index,
+        }));
+        
+        localStorage.setItem("dashboardSections", JSON.stringify(reordered));
+        onSettingsChange(reordered);
+        toast.success("Dashboard reordered");
+        return reordered;
+      });
+    }
   };
 
   return (
@@ -80,23 +141,13 @@ export const DashboardCustomizer = ({ onSettingsChange }: DashboardCustomizerPro
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {sections.map((section) => (
-            <div key={section.id} className="flex items-center justify-between space-x-4 rounded-lg border p-4">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor={section.id} className="text-base font-medium cursor-pointer">
-                  {section.label}
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {section.description}
-                </p>
-              </div>
-              <Switch
-                id={section.id}
-                checked={section.enabled}
-                onCheckedChange={() => handleToggle(section.id)}
-              />
-            </div>
-          ))}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+              {sections.map((section) => (
+                <SortableItem key={section.id} section={section} onToggle={handleToggle} />
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       </DialogContent>
     </Dialog>
