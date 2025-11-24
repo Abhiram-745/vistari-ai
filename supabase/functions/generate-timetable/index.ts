@@ -983,12 +983,11 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
               {
                 role: "system",
                 content:
-                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. If the timetable is very long, prioritize completeness - ensure all days have closing braces.",
+                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. CRITICAL: Ensure the JSON is complete with all closing braces and brackets. If approaching token limit, reduce the number of study sessions per day rather than returning incomplete JSON.",
               },
               { role: "user", content: prompt },
             ],
-            max_completion_tokens: 32000, // Increased for large timetables
-            // Note: GPT-5 models don't support temperature parameter - defaults to 1.0
+            max_completion_tokens: 100000 // Maximum limit for Gemini
           }),
           signal: controller.signal,
         }
@@ -1061,23 +1060,52 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       if (!jsonString.endsWith('}')) {
         console.log('JSON appears truncated, attempting comprehensive repair...');
         
-        // Remove any incomplete array element at the end
-        const lastCompleteObject = jsonString.lastIndexOf('},');
-        const lastArrayClose = jsonString.lastIndexOf(']');
+        // Find the last complete day entry by looking for the last occurrence of a complete date key
+        const datePattern = /"20\d{2}-\d{2}-\d{2}":\s*\[/g;
+        const matches = [...jsonString.matchAll(datePattern)];
         
-        if (lastCompleteObject > lastArrayClose) {
-          // We're in the middle of an object, find the last complete one
-          jsonString = jsonString.substring(0, lastCompleteObject + 1);
-        } else if (lastArrayClose > -1) {
-          // We have at least one complete array
-          jsonString = jsonString.substring(0, lastArrayClose + 1);
+        if (matches.length > 0) {
+          // Start from the end and find the last complete day
+          let workingString = jsonString;
+          let foundComplete = false;
+          
+          // Try to find the last complete array closing bracket
+          for (let i = jsonString.length - 1; i >= 0; i--) {
+            if (jsonString[i] === ']') {
+              // Found a closing bracket, try to parse up to here
+              const testString = jsonString.substring(0, i + 1);
+              
+              // Check if this closes a complete day by counting braces
+              const openBrackets = (testString.match(/\[/g) || []).length;
+              const closeBrackets = (testString.match(/\]/g) || []).length;
+              
+              if (openBrackets === closeBrackets) {
+                workingString = testString;
+                foundComplete = true;
+                console.log('Found last complete day at position', i);
+                break;
+              }
+            }
+          }
+          
+          if (!foundComplete) {
+            // Fallback: remove everything after the last complete object
+            const lastCompleteObject = jsonString.lastIndexOf('},');
+            if (lastCompleteObject > -1) {
+              workingString = jsonString.substring(0, lastCompleteObject + 1) + '\n    ]';
+            }
+          }
+          
+          jsonString = workingString;
         }
         
-        // Count opening and closing braces to balance them
+        // Count and balance braces/brackets
         let openBraces = (jsonString.match(/{/g) || []).length;
         let closeBraces = (jsonString.match(/}/g) || []).length;
         let openBrackets = (jsonString.match(/\[/g) || []).length;
         let closeBrackets = (jsonString.match(/\]/g) || []).length;
+        
+        console.log(`Balancing JSON: { ${openBraces} vs } ${closeBraces}, [ ${openBrackets} vs ] ${closeBrackets}`);
         
         // Close any open arrays
         while (closeBrackets < openBrackets) {
@@ -1085,13 +1113,13 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           closeBrackets++;
         }
         
-        // Close any open objects
+        // Close any open objects  
         while (closeBraces < openBraces) {
           jsonString += '\n  }';
           closeBraces++;
         }
         
-        console.log('Repair complete - balanced braces and brackets');
+        console.log('JSON repair complete');
       }
       
       // Additional validation that we have some JSON-like content
