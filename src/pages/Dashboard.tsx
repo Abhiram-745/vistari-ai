@@ -9,9 +9,10 @@ import Header from "@/components/Header";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import TimetableList from "@/components/TimetableList";
 import { HomeworkList } from "@/components/HomeworkList";
-import { StudyStreakTracker } from "@/components/StudyStreakTracker";
 import { WeeklyGoalsWidget } from "@/components/WeeklyGoalsWidget";
 import { UpcomingDeadlines } from "@/components/UpcomingDeadlines";
+import { ProgressSection } from "@/components/dashboard/ProgressSection";
+import { RecentActivityWidget } from "@/components/dashboard/RecentActivityWidget";
 import { EventsWidget } from "@/components/EventsWidget";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import { DashboardCustomizer } from "@/components/DashboardCustomizer";
@@ -26,13 +27,13 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [dashboardSections, setDashboardSections] = useState<Record<string, boolean>>({
-    progress: true,
-    events: true,
-    analytics: true,
-    timetables: true,
-    homework: true,
-  });
+  const [dashboardSections, setDashboardSections] = useState<Array<{
+    id: string;
+    label: string;
+    description: string;
+    enabled: boolean;
+    order: number;
+  }>>([]);
   const { data: userRole } = useUserRole();
 
   useEffect(() => {
@@ -181,81 +182,96 @@ const Dashboard = () => {
               <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/15 rounded-full blur-3xl"></div>
             </div>
 
-            {/* Progress Tracking Section */}
-            {dashboardSections.progress && (
-              <div className="space-y-6">
-                <div className="section-header">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md">
-                    <Sparkles className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="section-title">📊 Your Progress</h2>
-                    <p className="text-sm text-muted-foreground">Track your study journey</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <StudyStreakTracker userId={user?.id || ""} />
-                  <WeeklyGoalsWidget userId={user?.id || ""} />
-                  <UpcomingDeadlines userId={user?.id || ""} />
-                </div>
-              </div>
-            )}
-
-            {/* Events Section */}
-            {dashboardSections.events && (
-              <div className="space-y-6">
-                <div className="section-header">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-secondary flex items-center justify-center shadow-md">
-                    <Calendar className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="section-title">📅 Events & Commitments</h2>
-                    <p className="text-sm text-muted-foreground">Your schedule at a glance</p>
-                  </div>
-                </div>
-                <EventsWidget />
-              </div>
-            )}
-
-            {/* AI Analytics Section */}
-            {dashboardSections.analytics && (
-              <div className="space-y-6">
-                <DashboardAnalytics userId={user?.id || ""} />
-              </div>
-            )}
-
-            {/* Timetables Section */}
-            {dashboardSections.timetables && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="section-header mb-0">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center shadow-md">
-                      <Calendar className="h-5 w-5 text-white" />
+            {/* Render sections in order */}
+            {dashboardSections
+              .filter((section) => section.enabled)
+              .sort((a, b) => a.order - b.order)
+              .map((section) => {
+                if (section.id === "progress") {
+                  return (
+                    <div key="progress" className="space-y-6">
+                      <div className="section-header">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md">
+                          <Sparkles className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="section-title">📊 Your Progress</h2>
+                          <p className="text-sm text-muted-foreground">Track your study journey</p>
+                        </div>
+                      </div>
+                      <ProgressSection userId={user?.id || ""} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <WeeklyGoalsWidget userId={user?.id || ""} />
+                        <RecentActivityWidget userId={user?.id || ""} />
+                      </div>
+                      <UpcomingDeadlines userId={user?.id || ""} />
                     </div>
-                    <div>
-                      <h2 className="section-title">📘 Your Timetables</h2>
-                      <p className="text-sm text-muted-foreground">Manage your study plans</p>
+                  );
+                }
+                
+                if (section.id === "events") {
+                  return (
+                    <div key="events" className="space-y-6">
+                      <div className="section-header">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-secondary flex items-center justify-center shadow-md">
+                          <Calendar className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="section-title">📅 Events & Commitments</h2>
+                          <p className="text-sm text-muted-foreground">Your schedule at a glance</p>
+                        </div>
+                      </div>
+                      <EventsWidget />
                     </div>
-                  </div>
-                  <Button
-                    onClick={() => setShowOnboarding(true)}
-                    className="gap-2 rounded-full shadow-md hover:-translate-y-0.5 transition-all"
-                    size="lg"
-                  >
-                    <Plus className="h-4 w-4" />
-                    New Timetable
-                  </Button>
-                </div>
-                <TimetableList userId={user?.id || ""} />
-              </div>
-            )}
-            
-            {/* Homework Section */}
-            {dashboardSections.homework && (
-              <div className="space-y-6">
-                <HomeworkList userId={user?.id || ""} />
-              </div>
-            )}
+                  );
+                }
+                
+                if (section.id === "analytics") {
+                  return (
+                    <div key="analytics" className="space-y-6">
+                      <DashboardAnalytics userId={user?.id || ""} />
+                    </div>
+                  );
+                }
+                
+                if (section.id === "timetables") {
+                  return (
+                    <div key="timetables" className="space-y-6">
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="section-header mb-0">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center shadow-md">
+                            <Calendar className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="section-title">📘 Your Timetables</h2>
+                            <p className="text-sm text-muted-foreground">Manage your study plans</p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => setShowOnboarding(true)}
+                          className="gap-2 rounded-full shadow-md hover:-translate-y-0.5 transition-all"
+                          size="lg"
+                        >
+                          <Plus className="h-4 w-4" />
+                          New Timetable
+                        </Button>
+                      </div>
+                      <TimetableList userId={user?.id || ""} />
+                    </div>
+                  );
+                }
+                
+                if (section.id === "homework") {
+                  return (
+                    <div key="homework" className="space-y-6">
+                      <HomeworkList userId={user?.id || ""} />
+                    </div>
+                  );
+                }
+                
+                return null;
+              })}
+
 
             {/* Pricing Cards Section */}
             <div className="py-16 relative overflow-hidden">
