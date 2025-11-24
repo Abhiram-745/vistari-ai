@@ -140,6 +140,42 @@ serve(async (req) => {
     // Get day of week for tomorrow
     const tomorrowDayOfWeek = targetDateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
+    // Fetch school schedule from preferences
+    let schoolHoursContext = "";
+    if (preferences) {
+      const hasSchoolHours = preferences.school_start_time && preferences.school_end_time;
+      if (hasSchoolHours) {
+        const isWeekday = !['saturday', 'sunday'].includes(tomorrowDayOfWeek);
+        
+        schoolHoursContext = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏫 SCHOOL HOURS BLOCKING ${isWeekday ? '- ACTIVE TODAY' : '- NOT ACTIVE (WEEKEND)'} 🏫
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${isWeekday ? `⚠️ CRITICAL: User attends school TODAY:
+   Leave for school: ${preferences.school_start_time}
+   Return from school: ${preferences.school_end_time}
+
+MANDATORY BLOCKING RULES:
+1. DO NOT schedule ANY study sessions between ${preferences.school_start_time} and ${preferences.school_end_time}
+2. This time is COMPLETELY UNAVAILABLE
+3. Only schedule BEFORE ${preferences.school_start_time} OR AFTER ${preferences.school_end_time}
+
+${preferences.study_before_school || preferences.study_during_lunch || preferences.study_during_free_periods ? `
+OPTIONAL SCHOOL-TIME STUDY:
+${preferences.study_before_school ? '✓ Before school: SHORT homework (15-25 mins) BEFORE school start' : ''}
+${preferences.study_during_lunch ? '✓ Lunch: SHORT homework (15-20 mins) during lunch' : ''}
+${preferences.study_during_free_periods ? '✓ Free periods: SHORT homework during free periods' : ''}
+
+- ONLY homework during these times (never revision)
+- Keep VERY SHORT (15-25 mins max)
+` : ''}` : 'Today is a weekend - no school hours blocking required.'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      }
+    }
+    
     // Use provided timing
     const effectiveStartTime = startTime || '09:00';
     const effectiveEndTime = endTime || '17:00';
@@ -148,6 +184,8 @@ serve(async (req) => {
 
     // Build comprehensive prompt for AI
     const prompt = `You are an expert study schedule generator. Generate a realistic study schedule for tomorrow with QUALITY over quantity.
+
+${schoolHoursContext}
 
 **DATE**: ${validTomorrowDate} (${tomorrowDayOfWeek})
 
