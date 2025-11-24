@@ -184,12 +184,8 @@ export const GroupInvitations = () => {
     );
   }
 
-  if (invitations.length === 0) {
-    return null;
-  }
-
   return (
-    <Card className="border-primary/20">
+    <Card className="border-primary/20" style={{ display: invitations.length === 0 ? 'none' : 'block' }}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5 text-primary" />
