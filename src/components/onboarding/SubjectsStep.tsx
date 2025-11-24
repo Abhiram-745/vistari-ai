@@ -79,7 +79,7 @@ const SubjectsStep = ({ subjects, setSubjects }: SubjectsStepProps) => {
       case "long-term-exam":
         return { icon: Clock, label: "Long-Term Exam Prep", color: "primary", description: "5-8+ weeks" };
       case "no-exam":
-        return { icon: BookOpen, label: "No Exam Focus", color: "secondary", description: "Homework-focused" };
+        return { icon: BookOpen, label: "No Exam Focus", color: "secondary", description: "Getting ahead on topics" };
     }
   };
 
