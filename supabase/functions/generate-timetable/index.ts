@@ -843,7 +843,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
               { role: "user", content: prompt },
             ],
             max_completion_tokens: 32000, // Increased for large timetables
-            temperature: 0.7, // Add some creativity while maintaining structure
+            // Note: GPT-5 models don't support temperature parameter - defaults to 1.0
           }),
           signal: controller.signal,
         }
