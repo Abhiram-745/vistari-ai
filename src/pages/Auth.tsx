@@ -102,7 +102,7 @@ const Auth = () => {
               <GraduationCap className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">Study Planner</CardTitle>
+          <CardTitle className="text-3xl font-bold">Vistari</CardTitle>
           <CardDescription>
             AI-powered revision timetables for GCSE students
           </CardDescription>

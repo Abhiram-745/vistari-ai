@@ -25,6 +25,8 @@ import { useUserRole, useUsageLimits } from "@/hooks/useUserRole";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
+import vistariLogo from "@/assets/vistari-logo.png";
+
 interface HeaderProps {
   onNewTimetable?: () => void;
 }
@@ -295,13 +297,13 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-hero rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-all duration-300"></div>
-                <div className="relative bg-gradient-hero p-2 rounded-xl shadow-lg">
-                  <Calendar className="h-5 w-5 text-white" />
+                <div className="relative rounded-xl overflow-hidden shadow-lg">
+                  <img src={vistariLogo} alt="Vistari" className="h-10 w-10 object-cover" />
                 </div>
               </div>
               <div className="hidden lg:flex flex-col">
                 <h1 className="text-lg font-display font-bold gradient-text">
-                  Study Planner
+                  Vistari
                 </h1>
                 <p className="text-[9px] text-muted-foreground -mt-1 font-medium">Your revision companion</p>
               </div>

@@ -98,7 +98,7 @@ const Landing = () => {
               </h1>
 
               <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                StudySync creates personalized study timetables that actually fit your life—around homework, football practice, family dinners, and those days you just need a break.
+                Vistari creates personalized study timetables that actually fit your life—around homework, football practice, family dinners, and those days you just need a break.
               </p>
             </div>
 

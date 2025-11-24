@@ -14,7 +14,8 @@ const inputSchema = z.object({
   subjects: z.array(z.object({
     id: z.string().uuid(),
     name: z.string().max(100),
-    exam_board: z.string().max(50)
+    exam_board: z.string().max(50),
+    mode: z.enum(["short-term-exam", "long-term-exam", "no-exam"])
   })).max(20),
   topics: z.array(z.object({
     name: z.string().max(200),
@@ -196,8 +197,13 @@ ${peak.recommendation}
 
     // Build context for AI
     const subjectsContext = subjects
-      .map((s: any) => `${s.name} (${s.exam_board})`)
-      .join(", ");
+      .map((s: any) => {
+        const modeLabel = s.mode === "short-term-exam" ? "Short-Term Exam Prep" 
+          : s.mode === "long-term-exam" ? "Long-Term Exam Prep" 
+          : "No Exam Focus";
+        return `${s.name} (${s.exam_board}) - MODE: ${modeLabel}`;
+      })
+      .join("; ");
     
     // Fetch school schedule from study preferences
     let schoolHoursContext = "";
@@ -496,6 +502,17 @@ ${schoolHoursContext}
 ${peakHoursContext}
 
 SUBJECTS: ${subjectsContext}
+
+⚠️ CRITICAL: EACH SUBJECT HAS ITS OWN STUDY MODE ⚠️
+
+Some subjects are set to "Short-Term Exam Prep" (intensive, 1-4 weeks), some to "Long-Term Exam Prep" (balanced, 5-8+ weeks), and some to "No Exam Focus" (homework-focused). 
+
+**PER-SUBJECT MODE HANDLING:**
+- Short-Term Exam Prep subjects: Allocate 60-90 min sessions, schedule frequently (every 2-3 days), prioritize exam practice
+- Long-Term Exam Prep subjects: Allocate 45-60 min sessions, schedule moderately (every 3-5 days), balanced revision
+- No Exam Focus subjects: Allocate 20-30 min sessions for light maintenance, focus on homework completion
+
+The overall timetable mode (${timetableMode}) sets the baseline intensity, but ADJUST each subject's scheduling based on its individual mode shown above.
 
 **ALL TOPICS TO COVER** (schedule ALL of these topics in the timetable): ${topicsContext}
 
