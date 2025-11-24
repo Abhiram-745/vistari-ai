@@ -148,18 +148,20 @@ export const EventsWidget = () => {
           .eq("user_id", user.id)
           .single();
 
-      // Fetch all event instances (not parent events) for timetable regeneration
+      // Fetch all event instances within timetable date range
       const { data: events } = await supabase
         .from("events")
         .select("*")
         .eq("user_id", user.id)
         .gte("end_time", `${timetable.start_date}T00:00:00`)
-        .lte("start_time", `${timetable.end_date}T23:59:59`);
+        .lte("start_time", `${timetable.end_date}T23:59:59`)
+        .order("start_time", { ascending: true });
 
+      // Deduplicate events by unique combination of time and title (not ID)
       const uniqueEvents = Array.from(
         new Map(
           (events || []).map((evt) => [
-            `${evt.title}-${evt.start_time}-${evt.end_time}-${evt.id}`,
+            `${evt.title}-${evt.start_time}-${evt.end_time}`,
             evt,
           ])
         ).values()
