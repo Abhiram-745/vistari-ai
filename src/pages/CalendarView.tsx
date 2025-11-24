@@ -129,7 +129,15 @@ const DraggableItem = ({ item }: { item: CalendarItem }) => {
             <div>
               <p className="text-sm font-bold text-foreground">{item.title}</p>
               <p className="text-xs text-muted-foreground">
-                {item.type === "event" ? "Event" : item.data?.type === "homework" ? "Homework" : item.data?.type === "revision" ? "Revision" : "Study Session"}
+                {item.type === "event" 
+                  ? "Event" 
+                  : item.data?.type === "homework" 
+                  ? "Homework" 
+                  : item.data?.type === "revision" 
+                  ? "Revision"
+                  : item.data?.type === "break"
+                  ? "Break"
+                  : "Study Session"}
               </p>
             </div>
           </div>
