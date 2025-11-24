@@ -249,7 +249,9 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
                           {getUrgencyLabel(deadline.date)}
                         </span>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(deadline.date), "dd MMM")}
+                          {deadline.type === "homework" 
+                            ? format(new Date(deadline.date), "dd MMM 'at' HH:mm")
+                            : format(new Date(deadline.date), "dd MMM")}
                         </p>
                       </div>
                     </div>
@@ -281,7 +283,11 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Due Date:</span>
                   <span className="text-sm text-muted-foreground">
-                    {selectedDeadline && format(new Date(selectedDeadline.date), "MMMM dd, yyyy")}
+                    {selectedDeadline && (
+                      selectedDeadline.type === "homework"
+                        ? format(new Date(selectedDeadline.date), "MMMM dd, yyyy 'at' HH:mm")
+                        : format(new Date(selectedDeadline.date), "MMMM dd, yyyy")
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

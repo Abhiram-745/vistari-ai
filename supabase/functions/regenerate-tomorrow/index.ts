@@ -123,12 +123,14 @@ serve(async (req) => {
     );
 
     // Fetch homework - exclude homework due on or before tomorrow's date
+    // Convert validTomorrowDate to end of day to properly filter
+    const tomorrowEndOfDay = `${validTomorrowDate}T23:59:59`;
     const { data: homeworkList } = await supabase
       .from('homeworks')
       .select('*')
       .eq('user_id', user.id)
       .eq('completed', false)
-      .gt('due_date', validTomorrowDate); // Only homework due AFTER tomorrow
+      .gt('due_date', tomorrowEndOfDay); // Only homework due AFTER tomorrow (next day or later)
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -168,13 +170,15 @@ ${JSON.stringify(difficultTopics || [], null, 2)}
 ${JSON.stringify(incompleteSessions || [], null, 2)}
 
 **AVAILABLE HOMEWORK** (Use exact subject/title/duration from this list)
-${JSON.stringify(homeworkList?.map(h => ({
-  subject: h.subject,
-  title: h.title,
-  description: h.description,
-  dueDate: h.due_date,
-  duration: h.duration
-})) || [], null, 2)}
+${homeworkList && homeworkList.length > 0 ? 
+  homeworkList.map(h => {
+    const dueDate = new Date(h.due_date);
+    const formattedDueDate = dueDate.toISOString().split('T')[0];
+    const dueTime = dueDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `- "${h.title}" (${h.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${h.duration || 60} minutes - ⚠️ DO NOT SCHEDULE ON ${validTomorrowDate} (homework is due AFTER tomorrow)`;
+  }).join('\n')
+  : 'No homework to schedule (all completed or due too soon)'
+}
 
 **🔴 BLOCKED EVENT TIMES TOMORROW 🔴**
 ${uniqueTomorrowEvents && uniqueTomorrowEvents.length > 0 ? 
@@ -219,11 +223,13 @@ The user CANNOT study on test days. Return: {"schedule": [], "summary": "Tomorro
    - Medium confidence (5-7): 60-75 minutes  
    - High confidence (8-10): 45-60 minutes
 5. **🔴 HOMEWORK DEADLINE RULE 🔴**: 
-   - ✗ NEVER schedule homework ON or BEFORE its due date
-   - ✓ Only schedule homework if due date is AFTER ${validTomorrowDate}
-   - Homework list has already been filtered - only includes homework due AFTER tomorrow
+   - ✗ NEVER schedule homework ON its due date - homework must be completed BEFORE the due date
+   - ✓ Homework list has been filtered to ONLY include items due AFTER ${validTomorrowDate}
+   - ✓ If homework is due on Jan 15, and tomorrow is Jan 14, it will NOT appear in the list (too close to deadline)
+   - ✓ Only homework due on Jan 16 or later will appear for scheduling on Jan 14
    - Use EXACT duration from homework list (already calculated correctly)
    - DO NOT DUPLICATE homework - each homework item should appear ONLY ONCE in the schedule
+   - Each homework session must be completed at least 1 day before its actual due date
 6. **🔴 EVENT BLOCKING 🔴**: 
    - Events create COMPLETE time blocks that are UNAVAILABLE
    - If event is 18:00-21:00 (180 mins), you CANNOT schedule ANY sessions during this time

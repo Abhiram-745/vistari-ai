@@ -46,6 +46,7 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
+  const [dueTime, setDueTime] = useState<string>("23:59");
   const [duration, setDuration] = useState<string>("");
 
   const durationOptions = [
@@ -86,12 +87,15 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
       return;
     }
 
+    // Combine date and time into ISO datetime string
+    const dueDateTimeStr = `${format(dueDate, "yyyy-MM-dd")}T${dueTime}:00`;
+
     const { error } = await supabase.from("homeworks").insert({
       user_id: userId,
       subject: subject.trim(),
       title: title.trim(),
       description: description.trim() || null,
-      due_date: format(dueDate, "yyyy-MM-dd"),
+      due_date: dueDateTimeStr,
       duration: duration ? parseInt(duration) : null,
     });
 
@@ -103,6 +107,7 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
       setTitle("");
       setDescription("");
       setDueDate(undefined);
+      setDueTime("23:59");
       setDuration("");
       setIsDialogOpen(false);
       fetchHomeworks();
@@ -242,6 +247,15 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
                     </PopoverContent>
                   </Popover>
                 </div>
+                <div>
+                  <label className="text-sm font-medium">Due Time *</label>
+                  <Input
+                    type="time"
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
                 <Button onClick={addHomework} className="w-full">
                   Add Homework
                 </Button>
@@ -280,7 +294,7 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
                             {homework.subject}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy")}
+                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy 'at' HH:mm")}
                           </span>
                           {homework.duration && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -339,7 +353,7 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
                             {homework.subject}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy")}
+                            Due: {format(new Date(homework.due_date), "dd/MM/yyyy 'at' HH:mm")}
                           </span>
                           {homework.duration && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
