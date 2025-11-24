@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import { EventsWidget } from "@/components/EventsWidget";
+import { SchoolSchedule } from "@/components/SchoolSchedule";
 
 const Events = () => {
   const navigate = useNavigate();
@@ -34,7 +35,10 @@ const Events = () => {
           </p>
         </div>
 
-        <EventsWidget />
+        <div className="space-y-6">
+          <SchoolSchedule />
+          <EventsWidget />
+        </div>
       </div>
     </div>
   );

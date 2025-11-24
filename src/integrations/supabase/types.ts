@@ -740,6 +740,8 @@ export type Database = {
           id: string
           preferred_end_time: string | null
           preferred_start_time: string | null
+          school_end_time: string | null
+          school_start_time: string | null
           session_duration: number | null
           study_days: Json | null
           updated_at: string | null
@@ -753,6 +755,8 @@ export type Database = {
           id?: string
           preferred_end_time?: string | null
           preferred_start_time?: string | null
+          school_end_time?: string | null
+          school_start_time?: string | null
           session_duration?: number | null
           study_days?: Json | null
           updated_at?: string | null
@@ -766,6 +770,8 @@ export type Database = {
           id?: string
           preferred_end_time?: string | null
           preferred_start_time?: string | null
+          school_end_time?: string | null
+          school_start_time?: string | null
           session_duration?: number | null
           study_days?: Json | null
           updated_at?: string | null
