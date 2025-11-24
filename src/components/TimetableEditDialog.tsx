@@ -97,8 +97,14 @@ export const TimetableEditDialog = ({
       toast.error("Please add at least one topic");
       return;
     }
-    if (testDates.length === 0) {
-      toast.error("Please add at least one test date");
+    
+    // Check if any subject requires test dates (short-term or long-term exam prep)
+    const subjectsNeedingExams = subjects.filter(s => 
+      s.mode === 'short-term-exam' || s.mode === 'long-term-exam'
+    );
+    
+    if (subjectsNeedingExams.length > 0 && testDates.length === 0) {
+      toast.error("Please add test dates for subjects with exam preparation mode");
       return;
     }
 
@@ -252,7 +258,12 @@ export const TimetableEditDialog = ({
           </Button>
           <Button
             onClick={handleRegenerate}
-            disabled={isRegenerating || subjects.length === 0 || topics.length === 0 || testDates.length === 0}
+            disabled={
+              isRegenerating || 
+              subjects.length === 0 || 
+              topics.length === 0 ||
+              (subjects.some(s => s.mode === 'short-term-exam' || s.mode === 'long-term-exam') && testDates.length === 0)
+            }
             className="gap-2"
           >
             {isRegenerating && <Loader2 className="h-4 w-4 animate-spin" />}
