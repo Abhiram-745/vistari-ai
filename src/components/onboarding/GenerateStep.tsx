@@ -12,6 +12,7 @@ import PaywallDialog from "@/components/PaywallDialog";
 import FeasibilityCheck from "./FeasibilityCheck";
 import { calculateFeasibility, FeasibilityResult } from "@/utils/feasibilityCalculator";
 import { useQueryClient } from "@tanstack/react-query";
+import GenerationProgress from "./GenerationProgress";
 
 interface GenerateStepProps {
   subjects: Subject[];
@@ -36,6 +37,7 @@ const GenerateStep = ({
 }: GenerateStepProps) => {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [generationStage, setGenerationStage] = useState<string>("");
   const [timetableName, setTimetableName] = useState("My Study Timetable");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -115,6 +117,7 @@ const GenerateStep = ({
     }
 
     setLoading(true);
+    setGenerationStage("saving");
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -228,6 +231,13 @@ const GenerateStep = ({
 
       if (prefsError) throw prefsError;
 
+      // Update stage to analyzing
+      setGenerationStage("analyzing");
+      await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
+
+      // Update stage to scheduling
+      setGenerationStage("scheduling");
+
       // Generate timetable using AI
       const { data: timetableData, error: generateError } = await supabase.functions.invoke(
         "generate-timetable",
@@ -258,6 +268,13 @@ const GenerateStep = ({
       );
 
       if (generateError) throw generateError;
+
+      // Update stage to optimizing
+      setGenerationStage("optimizing");
+      await new Promise(resolve => setTimeout(resolve, 300)); // Brief pause for UX
+
+      // Update stage to finalizing
+      setGenerationStage("finalizing");
 
       // Save generated timetable
       const { error: saveError } = await supabase
@@ -292,6 +309,7 @@ const GenerateStep = ({
       toast.error(error.message || "Failed to generate timetable");
     } finally {
       setLoading(false);
+      setGenerationStage("");
     }
   };
 
@@ -344,30 +362,30 @@ const GenerateStep = ({
       </div>
 
       {/* Feasibility Check - shows after dates are selected */}
-      {feasibility && (
+      {feasibility && !loading && (
         <div className="animate-fade-in">
           <FeasibilityCheck result={feasibility} />
         </div>
       )}
 
-      <Button
-        onClick={handleGenerate}
-        disabled={loading || !startDate || !endDate}
-        className="w-full bg-gradient-primary hover:opacity-90 gap-2"
-        size="lg"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Generating Your Timetable...
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-5 w-5" />
-            Generate AI-Powered Timetable
-          </>
-        )}
-      </Button>
+      {/* Generation Progress - shows during generation */}
+      {loading && generationStage && (
+        <div className="animate-fade-in">
+          <GenerationProgress currentStage={generationStage} />
+        </div>
+      )}
+
+      {!loading && (
+        <Button
+          onClick={handleGenerate}
+          disabled={loading || !startDate || !endDate}
+          className="w-full bg-gradient-primary hover:opacity-90 gap-2"
+          size="lg"
+        >
+          <Sparkles className="h-5 w-5" />
+          Generate AI-Powered Timetable
+        </Button>
+      )}
 
       <PaywallDialog
         open={showPaywall}
