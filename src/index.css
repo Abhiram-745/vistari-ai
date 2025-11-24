@@ -225,11 +225,64 @@ All colors MUST be HSL.
   @apply absolute rounded-full blur-[120px] opacity-[0.12];
 }
 
-.logo-glow {
-  filter: drop-shadow(0 0 20px rgba(45, 212, 191, 0.5)) drop-shadow(0 0 40px rgba(45, 212, 191, 0.3));
+/* Enhanced logo hover effects */
+.logo-container {
+  @apply relative transition-all duration-500 ease-out;
+}
+
+.logo-container:hover {
+  @apply scale-110;
+  transform: scale(1.1) rotate(-3deg);
 }
 
 .logo-glow-subtle {
-  filter: drop-shadow(0 2px 8px rgba(45, 212, 191, 0.3));
+  filter: drop-shadow(0 4px 12px hsla(var(--primary), 0.35));
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-glow {
+  filter: drop-shadow(0 0 24px hsla(var(--primary), 0.7)) 
+          drop-shadow(0 0 48px hsla(var(--secondary), 0.5))
+          drop-shadow(0 8px 24px hsla(var(--primary), 0.4));
+}
+
+/* Animated glow effect for logo */
+@keyframes logo-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 4px 12px hsla(var(--primary), 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 6px 20px hsla(var(--primary), 0.55)) 
+            drop-shadow(0 0 30px hsla(var(--secondary), 0.35));
+  }
+}
+
+.logo-pulse {
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+/* Logo background glow on hover */
+.logo-bg-glow {
+  @apply absolute inset-0 rounded-2xl opacity-0 blur-2xl -z-10;
+  background: radial-gradient(circle, hsla(var(--primary), 0.5), hsla(var(--secondary), 0.4));
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-container:hover .logo-bg-glow {
+  @apply opacity-100;
+}
+
+/* Floating animation for logo */
+@keyframes logo-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+.logo-float {
+  animation: logo-float 4s ease-in-out infinite;
 }
 }
