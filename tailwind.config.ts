@@ -69,8 +69,10 @@ export default {
         'gradient-secondary': 'var(--gradient-secondary)',
         'gradient-accent': 'var(--gradient-accent)',
         'gradient-hero': 'var(--gradient-hero)',
+        'gradient-warm': 'var(--gradient-warm)',
       },
       boxShadow: {
+        'xs': 'var(--shadow-xs)',
         'sm': 'var(--shadow-sm)',
         'md': 'var(--shadow-md)',
         'lg': 'var(--shadow-lg)',

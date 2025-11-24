@@ -308,26 +308,31 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Timetable Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-            <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            Study Analytics & AI Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="section-header">
+        <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md">
+          <Brain className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h2 className="section-title">✨ Study Analytics & AI Insights</h2>
+          <p className="text-sm text-muted-foreground">Personalized feedback on your performance</p>
+        </div>
+      </div>
+
+      {/* Timetable Selection Card */}
+      <Card className="shadow-md">
+        <CardContent className="pt-6 space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex-1">
               <Select value={selectedTimetableId} onValueChange={setSelectedTimetableId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a timetable" />
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select a timetable to analyze" />
                 </SelectTrigger>
                 <SelectContent>
                   {timetables.map((tt) => (
                     <SelectItem key={tt.id} value={tt.id}>
-                      {tt.name}
+                      <span className="font-medium">{tt.name}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -336,18 +341,18 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
             <Button
               onClick={generateInsights}
               disabled={loading || reflections.length === 0}
-              className="gap-2 w-full sm:w-auto"
-              size="sm"
+              className="gap-2 w-full sm:w-auto shadow-md hover:-translate-y-0.5 transition-all"
+              size="lg"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                  <span className="text-xs sm:text-sm">Analyzing...</span>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Analyzing...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="text-xs sm:text-sm">Generate AI Analysis</span>
+                  <Sparkles className="h-4 w-4" />
+                  <span>✨ Generate AI Analysis</span>
                 </>
               )}
             </Button>
