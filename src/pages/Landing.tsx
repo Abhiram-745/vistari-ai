@@ -389,7 +389,7 @@ const Landing = () => {
               delay: 3.8
             }} whileHover={{
               scale: 1.05
-            }} className="relative md:absolute left-0 md:left-1/2 md:-translate-x-1/2 top-0 md:top-[620px] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-4 md:p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10">
+            }} className="relative md:absolute left-0 md:left-[25%] top-0 md:top-[620px] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-2xl p-4 md:p-5 shadow-xl backdrop-blur-sm max-w-md w-full z-10">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-5 h-5 text-primary" />
