@@ -286,7 +286,7 @@ export const UpcomingDeadlines = ({ userId }: UpcomingDeadlinesProps) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Time Until:</span>
-                  <span className={`text-sm font-medium ${getUrgencyColor(selectedDeadline.date)} px-3 py-1 rounded-full border`}>
+                  <span className={`text-sm font-medium ${selectedDeadline ? getUrgencyColor(selectedDeadline.date) : ''} px-3 py-1 rounded-full border`}>
                     {selectedDeadline && getUrgencyLabel(selectedDeadline.date)}
                   </span>
                 </div>
