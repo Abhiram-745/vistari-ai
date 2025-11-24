@@ -43,8 +43,8 @@ const inputSchema = z.object({
     title: z.string(),
     subject: z.string(),
     due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    duration: z.number().optional(),
-    description: z.string().optional()
+    duration: z.number().optional().nullable(),
+    description: z.string().optional().nullable()
   })).optional(),
   topicAnalysis: z.object({
     priorities: z.array(z.object({
