@@ -24,6 +24,8 @@ import { TimetableEditDialog } from "@/components/TimetableEditDialog";
 import { SessionResourceDialog } from "@/components/SessionResourceDialog";
 import { TopicResourcesPanel } from "@/components/TopicResourcesPanel";
 import { TopicReflectionDialog } from "@/components/TopicReflectionDialog";
+import { SessionReflectionDialog } from "@/components/SessionReflectionDialog";
+import { SessionTimer } from "@/components/SessionTimer";
 import { StudyInsightsPanel } from "@/components/StudyInsightsPanel";
 import { ShareTimetableDialog } from "@/components/ShareTimetableDialog";
 import { DailyInsightsPanel } from "@/components/DailyInsightsPanel";
@@ -76,6 +78,12 @@ const TimetableView = () => {
     index: number;
     session: TimetableSession;
   } | null>(null);
+  const [timerSession, setTimerSession] = useState<{
+    date: string;
+    index: number;
+    session: TimetableSession;
+  } | null>(null);
+  const [showReflectionAfterTimer, setShowReflectionAfterTimer] = useState(false);
   const [resourcesRefreshKey, setResourcesRefreshKey] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
 
@@ -535,7 +543,16 @@ const TimetableView = () => {
                               )}
                             </div>
                             {session.type !== "break" && session.type !== "event" && (
-                              <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                {!session.completed && (
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => setTimerSession({ date, index: idx, session })}
+                                  >
+                                    Start
+                                  </Button>
+                                )}
                                 <Checkbox
                                   checked={session.completed || false}
                                   onCheckedChange={() => toggleSessionComplete(date, idx)}
@@ -630,13 +647,52 @@ const TimetableView = () => {
         />
       )}
 
+      {timerSession && (
+        <Dialog open={!!timerSession} onOpenChange={(open) => !open && setTimerSession(null)}>
+          <DialogContent className="max-w-2xl">
+            <SessionTimer
+              sessionId={`${timerSession.date}-${timerSession.index}`}
+              subject={timerSession.session.subject}
+              topic={timerSession.session.topic}
+              plannedDurationMinutes={timerSession.session.duration}
+              onComplete={() => {
+                setShowReflectionAfterTimer(true);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showReflectionAfterTimer && timerSession && (
+        <SessionReflectionDialog
+          open={showReflectionAfterTimer}
+          onOpenChange={(open) => {
+            setShowReflectionAfterTimer(open);
+            if (!open) {
+              setTimerSession(null);
+            }
+          }}
+          timetableId={timetable.id}
+          sessionDate={timerSession.date}
+          sessionIndex={timerSession.index}
+          subject={timerSession.session.subject}
+          topic={timerSession.session.topic}
+          duration={timerSession.session.duration}
+          onComplete={async () => {
+            // Mark session as complete
+            await toggleSessionComplete(timerSession.date, timerSession.index);
+            setTimerSession(null);
+            setShowReflectionAfterTimer(false);
+          }}
+        />
+      )}
+
       {reflectionSession && (
-        <TopicReflectionDialog
+        <SessionReflectionDialog
           open={!!reflectionSession}
           onOpenChange={(open) => {
             if (!open) {
               setReflectionSession(null);
-              toast.success("Session marked as complete!");
             }
           }}
           timetableId={timetable.id}
@@ -644,6 +700,11 @@ const TimetableView = () => {
           sessionIndex={reflectionSession.index}
           subject={reflectionSession.session.subject}
           topic={reflectionSession.session.topic}
+          duration={reflectionSession.session.duration}
+          onComplete={() => {
+            setReflectionSession(null);
+            toast.success("Session marked as complete!");
+          }}
         />
       )}
       
