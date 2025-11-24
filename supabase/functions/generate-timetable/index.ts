@@ -15,7 +15,7 @@ const inputSchema = z.object({
     id: z.string().uuid(),
     name: z.string().max(100),
     exam_board: z.string().max(50),
-    mode: z.enum(["short-term-exam", "long-term-exam", "no-exam"])
+    mode: z.enum(["short-term-exam", "long-term-exam", "no-exam"]).optional().default("no-exam")
   })).max(20),
   topics: z.array(z.object({
     name: z.string().max(200),
