@@ -224,4 +224,12 @@ All colors MUST be HSL.
 .floating-blob {
   @apply absolute rounded-full blur-[120px] opacity-[0.12];
 }
+
+.logo-glow {
+  filter: drop-shadow(0 0 20px rgba(45, 212, 191, 0.5)) drop-shadow(0 0 40px rgba(45, 212, 191, 0.3));
+}
+
+.logo-glow-subtle {
+  filter: drop-shadow(0 2px 8px rgba(45, 212, 191, 0.3));
+}
 }

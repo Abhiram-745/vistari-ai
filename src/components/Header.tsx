@@ -296,10 +296,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               onClick={() => navigate("/dashboard")}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-hero rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-all duration-300"></div>
-                <div className="relative rounded-xl overflow-hidden shadow-lg">
-                  <img src={vistariLogo} alt="Vistari" className="h-10 w-10 object-cover" />
-                </div>
+                <img src={vistariLogo} alt="Vistari" className="h-10 w-10 object-cover logo-glow-subtle hover:logo-glow transition-all duration-300" />
               </div>
               <div className="hidden lg:flex flex-col">
                 <h1 className="text-lg font-display font-bold gradient-text">
