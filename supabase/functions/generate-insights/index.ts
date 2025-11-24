@@ -65,13 +65,13 @@ serve(async (req) => {
     const analysisData = reflections.map(r => ({
       subject: r.subject,
       topic: r.topic,
-      easyAspects: r.reflection_data.easyAspects?.filter((a: any) => a.type === 'text').map((a: any) => a.content) || [],
-      hardAspects: r.reflection_data.hardAspects?.filter((a: any) => a.type === 'text').map((a: any) => a.content) || [],
-      generalNotes: r.reflection_data.generalNotes?.filter((a: any) => a.type === 'text').map((a: any) => a.content) || [],
-      overallFeeling: r.reflection_data.overallFeeling || '',
-      difficultyRating: r.reflection_data.difficultyRating || 5,
-      sessionCompleted: r.reflection_data.sessionCompleted !== false,
+      howItWent: r.reflection_data.howItWent || '',
+      focusLevel: r.reflection_data.focusLevel || 0,
+      completionStatus: r.reflection_data.completionStatus || 'yes',
+      whatMissed: r.reflection_data.whatMissed || '',
+      quickNote: r.reflection_data.quickNote || '',
       timeOfDay: r.reflection_data.timeOfDay || 'unknown',
+      duration: r.reflection_data.duration || 0,
     }));
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -85,33 +85,42 @@ Here are the reflections from ${reflections.length} study sessions:
 
 ${JSON.stringify(analysisData, null, 2)}
 
+Each reflection contains:
+- howItWent: Student's description of how the session went
+- focusLevel: 0-100 scale (higher = more focused)
+- completionStatus: "yes" (completed), "partially" (partially completed), "no" (not completed at all)
+- whatMissed: What they didn't complete (if status is partially/no)
+- quickNote: Brief note about challenges or observations
+- timeOfDay: When the session occurred (HH:MM format)
+- duration: Session duration in minutes
+
 Analyze these reflections and provide:
 
-1. **Struggling Topics**: Identify 3-5 topics where the student is experiencing the most difficulty (high difficultyRating 7-10), ranked by severity. Include specific quotes from their reflections.
+1. **Struggling Topics**: Identify 3-5 topics where the student is experiencing the most difficulty (low focusLevel <50, not completed, mentions challenges). Include specific quotes from their reflections.
 
-2. **Strong Areas**: Identify 3-5 topics where the student excels or feels confident (low difficultyRating 1-4). Include specific quotes.
+2. **Strong Areas**: Identify 3-5 topics where the student excels or feels confident (high focusLevel >70, completed, positive howItWent). Include specific quotes.
 
-3. **Learning Patterns**: What patterns do you notice in how they learn? (e.g., visual learner, struggles with abstract concepts, excels at practical application)
+3. **Learning Patterns**: What patterns do you notice in how they learn? (e.g., loses focus on certain topics, struggles to complete longer sessions, patterns in missed content)
 
-4. **Recommended Focus**: What should they prioritize in upcoming study sessions?
+4. **Recommended Focus**: What should they prioritize in upcoming study sessions based on incomplete topics and low focus areas?
 
-5. **Personalized Tips**: 3-5 specific, actionable tips tailored to their learning style and challenges.
+5. **Personalized Tips**: 3-5 specific, actionable tips tailored to their focus patterns and completion challenges.
 
-6. **Subject Breakdown**: For each subject, provide a confidence score (1-10) and brief summary.
+6. **Subject Breakdown**: For each subject, provide a confidence score (1-10 based on average focusLevel and completion rates) and brief summary.
 
-7. **Peak Study Hours**: Analyze the timeOfDay data and sessionCompleted status to identify when the student studies most effectively:
-   - Identify time windows (morning 06:00-11:59, afternoon 12:00-17:59, evening 18:00-23:59) with highest completion rates
-   - Calculate average difficulty rating per time window
+7. **Peak Study Hours**: Analyze the timeOfDay data and completionStatus to identify when the student studies most effectively:
+   - Identify time windows (morning 06:00-11:59, afternoon 12:00-17:59, evening 18:00-23:59) with highest completion rates and focus levels
+   - Calculate average focus level per time window
    - Identify patterns: when do they struggle most vs when do they perform best?
    - Provide specific time recommendations for difficult vs easy topics
 
 Format your response as JSON with this structure:
 {
   "strugglingTopics": [
-    { "topic": "string", "subject": "string", "severity": "high|medium|low", "reason": "string", "quotes": ["string"], "avgDifficulty": number }
+    { "topic": "string", "subject": "string", "severity": "high|medium|low", "reason": "string", "quotes": ["string"], "avgFocusLevel": number }
   ],
   "strongAreas": [
-    { "topic": "string", "subject": "string", "reason": "string", "quotes": ["string"], "avgDifficulty": number }
+    { "topic": "string", "subject": "string", "reason": "string", "quotes": ["string"], "avgFocusLevel": number }
   ],
   "learningPatterns": ["string"],
   "recommendedFocus": ["string"],

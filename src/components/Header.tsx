@@ -241,6 +241,19 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         <span className="font-medium">AI Insights</span>
       </Button>
 
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          navigate("/reflections");
+          onItemClick?.();
+        }}
+        className="w-full justify-start gap-2 hover:bg-gradient-primary/10 hover:text-primary"
+      >
+        <Sparkles className="h-4 w-4" />
+        <span className="font-medium">Reflections</span>
+      </Button>
+
       <Separator className="my-2" />
 
       <Button

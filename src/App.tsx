@@ -17,6 +17,7 @@ import Events from "./pages/Events";
 import Homework from "./pages/Homework";
 import TestScores from "./pages/TestScores";
 import AIInsights from "./pages/AIInsights";
+import Reflections from "./pages/Reflections";
 import NotFound from "./pages/NotFound";
 import LogoGenerator from "./pages/LogoGenerator";
 import ImportAccount from "./pages/ImportAccount";
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/homework" element={<Homework />} />
           <Route path="/test-scores" element={<TestScores />} />
           <Route path="/ai-insights" element={<AIInsights />} />
+          <Route path="/reflections" element={<Reflections />} />
           <Route path="/timetable/:id" element={<TimetableView />} />
           <Route path="/import-account" element={<ImportAccount />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

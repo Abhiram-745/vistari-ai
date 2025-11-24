@@ -95,10 +95,6 @@ export const SessionTimer = ({ sessionId, subject, topic, plannedDurationMinutes
       })
       .eq('id', sessionId);
 
-    toast.success(`Session completed! ${actualDurationMinutes} minutes studied`, {
-      description: focusScore ? `Focus score: ${focusScore}/10` : undefined
-    });
-
     onComplete();
   };
 
