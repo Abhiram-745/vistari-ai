@@ -226,10 +226,11 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                   </div>
 
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="overview">Overview</TabsTrigger>
                       <TabsTrigger value="performance">Performance</TabsTrigger>
                       <TabsTrigger value="insights">Insights</TabsTrigger>
+                      <TabsTrigger value="peak-hours">Peak Hours</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-6">
@@ -547,18 +548,14 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                         </CardContent>
                       </Card>
 
-                      {/* Peak Study Hours */}
-                      {insights.peakStudyHours && (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-blue-600" />
-                              Peak Study Hours Analysis
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+                    </TabsContent>
+
+                    <TabsContent value="peak-hours" className="space-y-4">
+                      {insights.peakStudyHours ? (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                              <CardContent className="p-4">
                                 <div className="flex items-center gap-2 mb-2">
                                   <TrendingUp className="h-5 w-5 text-green-600" />
                                   <h4 className="font-semibold text-sm">Best Performance</h4>
@@ -579,9 +576,11 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                                     {insights.peakStudyHours.avgDifficultyByWindow[insights.peakStudyHours.bestTimeWindow as keyof typeof insights.peakStudyHours.avgDifficultyByWindow]?.toFixed(1)}/10
                                   </p>
                                 </div>
-                              </div>
+                              </CardContent>
+                            </Card>
 
-                              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+                            <Card className="bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900">
+                              <CardContent className="p-4">
                                 <div className="flex items-center gap-2 mb-2">
                                   <TrendingDown className="h-5 w-5 text-red-600" />
                                   <h4 className="font-semibold text-sm">Most Challenging</h4>
@@ -602,46 +601,76 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                                     {insights.peakStudyHours.avgDifficultyByWindow[insights.peakStudyHours.worstTimeWindow as keyof typeof insights.peakStudyHours.avgDifficultyByWindow]?.toFixed(1)}/10
                                   </p>
                                 </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Performance by Time Window
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="h-[250px] sm:h-[300px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart
+                                    data={[
+                                      {
+                                        window: "Morning",
+                                        completion: parseFloat((insights.peakStudyHours.completionRateByWindow.morning * 100).toFixed(0)),
+                                        difficulty: insights.peakStudyHours.avgDifficultyByWindow.morning || 0,
+                                      },
+                                      {
+                                        window: "Afternoon",
+                                        completion: parseFloat((insights.peakStudyHours.completionRateByWindow.afternoon * 100).toFixed(0)),
+                                        difficulty: insights.peakStudyHours.avgDifficultyByWindow.afternoon || 0,
+                                      },
+                                      {
+                                        window: "Evening",
+                                        completion: parseFloat((insights.peakStudyHours.completionRateByWindow.evening * 100).toFixed(0)),
+                                        difficulty: insights.peakStudyHours.avgDifficultyByWindow.evening || 0,
+                                      },
+                                    ]}
+                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                  >
+                                    <XAxis 
+                                      dataKey="window" 
+                                      tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                                    />
+                                    <YAxis 
+                                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                                    />
+                                    <Tooltip
+                                      contentStyle={{
+                                        backgroundColor: 'hsl(var(--card))',
+                                        border: '1px solid hsl(var(--border))',
+                                        borderRadius: '8px',
+                                        fontSize: 12
+                                      }}
+                                    />
+                                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                                    <Bar 
+                                      dataKey="completion" 
+                                      name="Completion Rate %" 
+                                      fill="hsl(var(--primary))" 
+                                      radius={[8, 8, 0, 0]} 
+                                    />
+                                    <Bar 
+                                      dataKey="difficulty" 
+                                      name="Avg Difficulty (1-10)" 
+                                      fill="hsl(var(--destructive))" 
+                                      radius={[8, 8, 0, 0]} 
+                                    />
+                                  </BarChart>
+                                </ResponsiveContainer>
                               </div>
-                            </div>
+                            </CardContent>
+                          </Card>
 
-                            <div className="h-[200px] w-full">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                  data={[
-                                    {
-                                      window: "Morning",
-                                      completion: (insights.peakStudyHours.completionRateByWindow.morning * 100).toFixed(0),
-                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.morning || 0,
-                                    },
-                                    {
-                                      window: "Afternoon",
-                                      completion: (insights.peakStudyHours.completionRateByWindow.afternoon * 100).toFixed(0),
-                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.afternoon || 0,
-                                    },
-                                    {
-                                      window: "Evening",
-                                      completion: (insights.peakStudyHours.completionRateByWindow.evening * 100).toFixed(0),
-                                      difficulty: insights.peakStudyHours.avgDifficultyByWindow.evening || 0,
-                                    },
-                                  ]}
-                                >
-                                  <XAxis dataKey="window" tick={{ fontSize: 12 }} />
-                                  <YAxis tick={{ fontSize: 12 }} />
-                                  <Tooltip
-                                    contentStyle={{
-                                      backgroundColor: 'hsl(var(--card))',
-                                      border: '1px solid hsl(var(--border))',
-                                      borderRadius: '8px',
-                                    }}
-                                  />
-                                  <Legend wrapperStyle={{ fontSize: '12px' }} />
-                                  <Bar dataKey="completion" name="Completion %" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </div>
-
-                            <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+                          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                            <CardContent className="p-4">
                               <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                                 <Lightbulb className="h-4 w-4 text-blue-600" />
                                 Smart Scheduling Recommendation
@@ -649,6 +678,16 @@ export const StudyInsightsPanel = ({ timetableId }: StudyInsightsPanelProps) => 
                               <p className="text-sm text-muted-foreground">
                                 {insights.peakStudyHours.recommendation}
                               </p>
+                            </CardContent>
+                          </Card>
+                        </>
+                      ) : (
+                        <Card>
+                          <CardContent className="py-8">
+                            <div className="text-center text-muted-foreground">
+                              <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm">No peak study hours data yet</p>
+                              <p className="text-xs mt-1">Complete more study sessions with difficulty ratings to see your peak performance times</p>
                             </div>
                           </CardContent>
                         </Card>
