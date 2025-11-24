@@ -150,7 +150,7 @@ Format your response as JSON with this structure:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-lite',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },
           { role: 'user', content: prompt }
