@@ -332,7 +332,8 @@ const ImportTimetable = () => {
                   subjects={subjects.map((s: any) => ({
                     id: typeof s === 'object' ? s.id : undefined,
                     name: typeof s === 'string' ? s : s.name,
-                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined,
+                    mode: typeof s === 'object' && s.mode ? s.mode : "long-term-exam" as const
                   }))}
                   homeworks={homeworks}
                   setHomeworks={setHomeworks}
@@ -380,7 +381,8 @@ const ImportTimetable = () => {
                   subjects={subjects.map((s: any) => ({
                     id: typeof s === 'object' ? s.id : undefined,
                     name: typeof s === 'string' ? s : s.name,
-                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined,
+                    mode: typeof s === 'object' && s.mode ? s.mode : "long-term-exam" as const
                   }))}
                   topics={parsedTopics}
                   onAnalysisComplete={(analysis) => {
@@ -413,7 +415,8 @@ const ImportTimetable = () => {
                 <TestDatesStep
                   subjects={subjects.map((s: any, idx: number) => ({
                     name: typeof s === 'string' ? s : s.name,
-                    exam_board: typeof s === 'object' ? s.exam_board : undefined
+                    exam_board: typeof s === 'object' ? s.exam_board : undefined,
+                    mode: typeof s === 'object' && s.mode ? s.mode : "long-term-exam" as const
                   }))}
                   testDates={testDates}
                   setTestDates={setTestDates}

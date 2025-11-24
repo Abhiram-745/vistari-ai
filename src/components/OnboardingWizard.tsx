@@ -22,6 +22,7 @@ export interface Subject {
   id?: string;
   name: string;
   exam_board: string;
+  mode: "short-term-exam" | "long-term-exam" | "no-exam";
 }
 
 export interface Topic {
@@ -65,7 +66,6 @@ export interface StudyPreferences {
 
 const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   const [step, setStep] = useState(1);
-  const [timetableMode, setTimetableMode] = useState<TimetableMode | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicAnalysis, setTopicAnalysis] = useState<any>(null);
@@ -87,14 +87,14 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   });
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
 
-  const totalSteps = 8;
+  const totalSteps = 7;
   const progress = (step / totalSteps) * 100;
 
   const handleNext = () => {
     if (step < totalSteps) {
-      // Skip test dates step if no-exam mode
-      if (step === 4 && timetableMode === "no-exam") {
-        setStep(step + 2); // Skip step 5 (test dates)
+      // Skip test dates step if all subjects are no-exam mode
+      if (step === 3 && subjects.every(s => s.mode === "no-exam")) {
+        setStep(step + 2); // Skip step 4 (test dates)
       } else {
         setStep(step + 1);
       }
@@ -105,9 +105,9 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     if (step === 1 && onCancel) {
       onCancel();
     } else if (step > 1) {
-      // Skip test dates step if no-exam mode when going back
-      if (step === 6 && timetableMode === "no-exam") {
-        setStep(step - 2); // Skip step 5 (test dates)
+      // Skip test dates step if all subjects are no-exam mode when going back
+      if (step === 5 && subjects.every(s => s.mode === "no-exam")) {
+        setStep(step - 2); // Skip step 4 (test dates)
       } else {
         setStep(step - 1);
       }
@@ -115,7 +115,6 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
   };
 
   const stepTitles = [
-    "Choose Your Mode",
     "Your GCSE Subjects",
     "Topics You're Studying",
     "AI Topic Analysis",
@@ -124,6 +123,13 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
     "Homework Assignments",
     "Generate Timetable",
   ];
+
+  // Get timetableMode based on subjects - prioritize most urgent
+  const timetableMode = subjects.some(s => s.mode === "short-term-exam") 
+    ? "short-term-exam" 
+    : subjects.some(s => s.mode === "long-term-exam")
+    ? "long-term-exam"
+    : "no-exam";
 
   return (
     <Card className="max-w-3xl mx-auto shadow-lg">
@@ -137,32 +143,23 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
         </div>
         <CardTitle className="text-2xl">{stepTitles[step - 1]}</CardTitle>
         <CardDescription>
-          {step === 1 && "Select the type of timetable that fits your study goals"}
-          {step === 2 && (timetableMode === "no-exam" 
-            ? "GCSE subjects that you need a bit more practice on" 
-            : "Add the subjects you're taking for your GCSEs")}
-          {step === 3 && "Tell us which topics you're currently studying"}
-          {step === 4 && "AI will analyze your topics to prioritize difficult areas"}
-          {step === 5 && "When are your tests scheduled?"}
-          {step === 6 && "Set your study preferences"}
-          {step === 7 && "Add any homework assignments to include in your timetable"}
-          {step === 8 && "Review and generate your personalized timetable"}
+          {step === 1 && "Add the subjects you're taking and select the study mode for each"}
+          {step === 2 && "Tell us which topics you're currently studying"}
+          {step === 3 && "AI will analyze your topics to prioritize difficult areas"}
+          {step === 4 && "When are your tests scheduled?"}
+          {step === 5 && "Set your study preferences"}
+          {step === 6 && "Add any homework assignments to include in your timetable"}
+          {step === 7 && "Review and generate your personalized timetable"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {step === 1 && (
-          <TimetableModeStep 
-            selectedMode={timetableMode} 
-            onModeSelect={setTimetableMode}
-          />
-        )}
-        {step === 2 && (
           <SubjectsStep subjects={subjects} setSubjects={setSubjects} />
         )}
-        {step === 3 && (
+        {step === 2 && (
           <TopicsStep subjects={subjects} topics={topics} setTopics={setTopics} />
         )}
-        {step === 4 && (
+        {step === 3 && (
           <DifficultTopicsStep 
             subjects={subjects} 
             topics={topics} 
@@ -170,16 +167,16 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
             onSkip={handleNext}
           />
         )}
-        {step === 5 && timetableMode !== "no-exam" && (
+        {step === 4 && !subjects.every(s => s.mode === "no-exam") && (
           <TestDatesStep subjects={subjects} testDates={testDates} setTestDates={setTestDates} />
         )}
-        {step === 6 && (
+        {step === 5 && (
           <PreferencesStep preferences={preferences} setPreferences={setPreferences} />
         )}
-        {step === 7 && (
+        {step === 6 && (
           <HomeworkStep subjects={subjects} homeworks={homeworks} setHomeworks={setHomeworks} />
         )}
-        {step === 8 && (
+        {step === 7 && (
           <GenerateStep
             subjects={subjects}
             topics={topics}
@@ -204,10 +201,9 @@ const OnboardingWizard = ({ onComplete, onCancel }: OnboardingWizardProps) => {
               onClick={handleNext}
               className="bg-gradient-primary hover:opacity-90"
               disabled={
-                (step === 1 && !timetableMode) ||
-                (step === 2 && subjects.length === 0) ||
-                (step === 3 && topics.length === 0) ||
-                (step === 5 && timetableMode !== "no-exam" && testDates.length === 0)
+                (step === 1 && subjects.length === 0) ||
+                (step === 2 && topics.length === 0) ||
+                (step === 4 && !subjects.every(s => s.mode === "no-exam") && testDates.length === 0)
               }
             >
               Next
