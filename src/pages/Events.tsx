@@ -15,7 +15,7 @@ const Events = () => {
       <GuidedOnboarding />
       
       {/* Floating background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 1 }}>
         <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
         <div className="floating-blob top-40 right-10 w-[500px] h-[500px] bg-secondary/15 animate-float-delayed"></div>
         <div className="floating-blob bottom-20 left-1/3 w-80 h-80 bg-accent/10 animate-float-slow"></div>
