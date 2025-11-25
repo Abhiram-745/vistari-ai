@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import ProductTour from "./ProductTour";
 import {
   dashboardTourSteps,
@@ -19,11 +20,22 @@ const TourManager = () => {
   const [activeTour, setActiveTour] = useState<string | null>(null);
 
   useEffect(() => {
-    // Determine which tour to show based on the current route
-    const path = location.pathname;
-    
-    // Small delay to ensure DOM elements are rendered
-    const timer = setTimeout(() => {
+    // Don't show tours if guided onboarding is in progress
+    const checkOnboardingStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const onboardingStage = localStorage.getItem(`onboarding_stage_${user.id}`);
+      const onboardingCompleted = localStorage.getItem(`onboarding_completed_${user.id}`);
+      
+      // Only show context-sensitive tours after guided onboarding is complete
+      if (!onboardingCompleted || onboardingStage !== "completed") {
+        return;
+      }
+      
+      // Determine which tour to show based on the current route
+      const path = location.pathname;
+      
       if (path === "/dashboard" || path === "/") {
         setActiveTour("dashboard");
       } else if (path === "/social") {
@@ -47,6 +59,11 @@ const TourManager = () => {
       } else {
         setActiveTour(null);
       }
+    };
+    
+    // Small delay to ensure DOM elements are rendered
+    const timer = setTimeout(() => {
+      checkOnboardingStatus();
     }, 500);
 
     return () => clearTimeout(timer);

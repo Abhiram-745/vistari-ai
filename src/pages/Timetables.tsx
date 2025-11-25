@@ -55,7 +55,7 @@ const Timetables = () => {
       <Header onNewTimetable={() => setShowOnboarding(true)} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8" data-tour="timetables-page">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-hero rounded-xl blur-md opacity-60"></div>
@@ -77,6 +77,7 @@ const Timetables = () => {
             onClick={() => setShowOnboarding(true)}
             className="gap-2 bg-gradient-hero hover:opacity-90 shadow-lg"
             size="lg"
+            data-tour="new-timetable"
           >
             <Plus className="h-5 w-5" />
             New Timetable

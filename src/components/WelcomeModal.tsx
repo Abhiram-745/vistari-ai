@@ -32,6 +32,7 @@ const WelcomeModal = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       localStorage.setItem(`welcome_shown_${user.id}`, "true");
+      localStorage.setItem(`onboarding_stage_${user.id}`, "events");
     }
     setOpen(false);
   };
@@ -206,15 +207,45 @@ const WelcomeModal = () => {
                 <Play className="h-12 w-12 text-white" />
               </div>
             </motion.div>
+            <motion.h3
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-xl font-display font-bold text-foreground mb-2"
+            >
+              Ready to Excel! 🎯
+            </motion.h3>
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-muted-foreground leading-relaxed max-w-md mx-auto"
+              className="text-muted-foreground leading-relaxed"
             >
-              Each section has an interactive tutorial with arrows and tooltips that guide you through 
-              the features. You'll see these automatically when you visit a new section.
+              Click "Start Guided Tour" to begin your journey through Vistari. We'll take you through each step with interactive arrows and tooltips:
             </motion.p>
+            <motion.ul 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 space-y-2 text-sm text-muted-foreground"
+            >
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                <strong>Events:</strong> Set up your schedule and add commitments
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                <strong>Homework:</strong> Add your assignments and deadlines
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                <strong>Timetable:</strong> Create your AI-powered study plan
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                <strong>Features:</strong> Learn to use sessions, feedback, and insights
+              </li>
+            </motion.ul>
           </div>
           
           <div className="space-y-4 max-w-lg mx-auto">
@@ -365,7 +396,7 @@ const WelcomeModal = () => {
                   </>
                 ) : (
                   <>
-                    Get Started
+                    Start Guided Tour
                     <CheckCircle2 className="h-4 w-4" />
                   </>
                 )}
