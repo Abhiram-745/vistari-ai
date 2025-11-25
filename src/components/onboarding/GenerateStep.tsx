@@ -311,9 +311,12 @@ const GenerateStep = ({
         .eq("user_id", user.id);
       
       if (allTimetables && allTimetables.length === 1) {
-        // This is the first timetable - advance onboarding to features tour
+        // This is the first timetable - only advance if user is actively in onboarding
         const onboardingStage = localStorage.getItem(`onboarding_stage_${user.id}`);
-        if (onboardingStage === "timetable-create") {
+        const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+        
+        // Only trigger features tour if user is in onboarding flow (not completed)
+        if (onboardingStage === "timetable-create" && completedFlag !== "true") {
           localStorage.setItem(`onboarding_stage_${user.id}`, "timetable-features");
         }
       }
