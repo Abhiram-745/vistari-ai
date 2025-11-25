@@ -153,20 +153,23 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
   const eventsOnboardingSteps: Step[] = [
     {
       target: "[data-tour='school-schedule']",
-      content: "Welcome! Let's start by setting up your school schedule. Fill in what time you leave for school and when you return home. This ensures study sessions won't be scheduled during school hours.",
+      content:
+        "Welcome! Let's start by setting up your school schedule. Try entering an example, like leaving at 08:30 and returning at 15:30. This makes sure Vistari never schedules study sessions during school hours.",
       disableBeacon: true,
       placement: "bottom",
       spotlightPadding: 10,
     },
     {
       target: "[data-tour='add-event']",
-      content: "Great! Now add any other commitments like sports practice, music lessons, or clubs. Click 'Add Event' to get started.",
+      content:
+        "Great! Now add another commitment like sports practice or music lessons. Click 'Add Event' and type in one real or example event so you can see how it appears in your timetable.",
       placement: "left",
       spotlightPadding: 10,
     },
     {
       target: "[data-tour='events-list']",
-      content: "All your events appear here. You can edit or delete them anytime. Once you're done adding events, click 'Next' to continue to homework!",
+      content:
+        "All your events appear here. You can edit or delete them anytime. Once you've added at least one event, click 'Next' to continue to homework.",
       placement: "top",
       spotlightPadding: 10,
     },
@@ -229,40 +232,35 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     <Joyride
       steps={steps}
       run={runTour}
-      continuous={true}
-      showProgress={true}
-      showSkipButton={true}
-      scrollToFirstStep={true}
-      scrollOffset={100}
+      continuous
+      showProgress
+      showSkipButton
+      scrollToFirstStep
       disableScrolling={false}
-      spotlightClicks={true}
-      disableOverlayClose={true}
-      disableCloseOnEsc={false}
+      spotlightClicks
+      disableOverlayClose
       callback={handleJoyrideCallback}
       styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.9)",
-          arrowColor: "hsl(var(--primary))",
+          overlayColor: "rgba(0, 0, 0, 0.75)",
+          arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          mixBlendMode: "normal",
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
         },
         spotlight: {
-          borderRadius: "16px",
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.9), 0 0 40px 8px hsl(var(--primary) / 0.6)",
-          backgroundColor: "transparent",
+          borderRadius: "8px",
+          boxShadow: "0px 0px 0px 9999px rgba(0, 0, 0, 0.75)",
         },
         tooltip: {
           borderRadius: "16px",
           padding: "24px",
-          boxShadow: "0 20px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px hsl(var(--border))",
+          boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.4)",
           fontSize: "15px",
-          background: "hsl(var(--card))",
         },
         tooltipContainer: {
           textAlign: "left",
@@ -270,54 +268,39 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         tooltipTitle: {
           fontSize: "18px",
           fontWeight: 700,
-          marginBottom: "12px",
-          color: "hsl(var(--foreground))",
+          marginBottom: "8px",
         },
         tooltipContent: {
-          fontSize: "15px",
-          lineHeight: "1.7",
-          color: "hsl(var(--muted-foreground))",
+          fontSize: "14px",
+          lineHeight: "1.6",
         },
         buttonNext: {
           backgroundColor: "hsl(var(--primary))",
           borderRadius: "10px",
-          padding: "12px 24px",
+          padding: "10px 20px",
           fontSize: "14px",
           fontWeight: 600,
           transition: "all 0.2s ease",
-          border: "none",
-          color: "white",
         },
         buttonBack: {
           color: "hsl(var(--muted-foreground))",
           marginRight: "12px",
           fontSize: "14px",
-          padding: "12px 20px",
-          border: "1px solid hsl(var(--border))",
-          borderRadius: "10px",
-          background: "transparent",
         },
         buttonSkip: {
           color: "hsl(var(--muted-foreground))",
           fontSize: "14px",
-          padding: "12px 20px",
         },
       }}
       floaterProps={{
         disableAnimation: false,
         styles: {
           arrow: {
-            length: 20,
-            spread: 32,
-          },
-          floater: {
-            filter: "drop-shadow(0 10px 40px rgba(0, 0, 0, 0.5))",
+            length: 12,
+            spread: 24,
           },
         },
       }}
-      disableScrollParentFix
-      disableOverlay={false}
-      spotlightPadding={8}
     />
   );
 };
