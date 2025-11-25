@@ -19,7 +19,7 @@ const Events = () => {
 
       <Header />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+      <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10" data-tour="events-page">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -36,8 +36,12 @@ const Events = () => {
         </div>
 
         <div className="space-y-6">
-          <SchoolSchedule />
-          <EventsWidget />
+          <div data-tour="school-schedule">
+            <SchoolSchedule />
+          </div>
+          <div data-tour="events-list">
+            <EventsWidget />
+          </div>
         </div>
       </div>
     </div>

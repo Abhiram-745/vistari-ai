@@ -50,7 +50,7 @@ const Social = () => {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in" data-tour="social-page">
           {/* Header Section */}
           <div className="space-y-2">
             <h1 className="text-4xl font-display font-bold gradient-text">
@@ -80,12 +80,18 @@ const Social = () => {
 
             <TabsContent value="friends" className="space-y-6 mt-6">
               <GroupInvitations />
-              <AddFriend userId={userId} />
-              <FriendsList userId={userId} />
+              <div data-tour="add-friend">
+                <AddFriend userId={userId} />
+              </div>
+              <div data-tour="friends-list">
+                <FriendsList userId={userId} />
+              </div>
             </TabsContent>
 
             <TabsContent value="leaderboard" className="space-y-6 mt-6">
-              <Leaderboard userId={userId} />
+              <div data-tour="leaderboard">
+                <Leaderboard userId={userId} />
+              </div>
               <GroupLeaderboard />
             </TabsContent>
 
