@@ -157,21 +157,21 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         "Welcome! Let's start by setting up your school schedule. Try entering an example, like leaving at 08:30 and returning at 15:30. This makes sure Vistari never schedules study sessions during school hours.",
       disableBeacon: true,
       placement: "bottom",
-      spotlightPadding: 10,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='add-event']",
       content:
         "Great! Now add another commitment like sports practice or music lessons. Click 'Add Event' and type in one real or example event so you can see how it appears in your timetable.",
       placement: "left",
-      spotlightPadding: 10,
+      spotlightPadding: 5,
     },
     {
       target: "[data-tour='events-list']",
       content:
         "All your events appear here. You can edit or delete them anytime. Once you've added at least one event, click 'Next' to continue to homework.",
       placement: "top",
-      spotlightPadding: 10,
+      spotlightPadding: 20,
     },
   ];
 
@@ -180,14 +180,14 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       target: "[data-tour='add-homework']",
       content: "Perfect! Now let's add your homework assignments. Click 'Add Homework' and enter the subject, title, due date, and estimated duration. Vistari will schedule time to complete them!",
       disableBeacon: true,
-      placement: "bottom",
-      spotlightPadding: 10,
+      placement: "left",
+      spotlightPadding: 5,
     },
     {
       target: "[data-tour='active-homework']",
       content: "Your active homework shows up here, sorted by due date. Add a few assignments, then click 'Next' to create your first AI-powered timetable!",
       placement: "top",
-      spotlightPadding: 10,
+      spotlightPadding: 20,
     },
   ];
 
@@ -245,18 +245,16 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.75)",
+          overlayColor: "rgba(0, 0, 0, 0.85)",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.75)",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
           mixBlendMode: "normal",
         },
         spotlight: {
           borderRadius: "12px",
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)",
-          backgroundColor: "transparent",
         },
         tooltip: {
           borderRadius: "16px",
