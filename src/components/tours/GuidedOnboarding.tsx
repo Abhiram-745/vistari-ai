@@ -127,18 +127,22 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       target: "[data-tour='events-page']",
       content: "Welcome to Events! Let's start by setting up your schedule. This helps Vistari know when you're busy so it won't schedule study sessions during these times.",
       disableBeacon: true,
+      placement: "center",
     },
     {
       target: "[data-tour='school-schedule']",
       content: "First, set your school hours. Click here to tell Vistari when you leave for school and when you get back home.",
+      placement: "bottom",
     },
     {
       target: "[data-tour='add-event']",
-      content: "Now add any recurring events like sports practice, music lessons, or clubs. Click 'Add Event' and fill in the details. Don't worry, you can add more later!",
+      content: "Now add any recurring events like sports practice, music lessons, or clubs. Click 'Add Event' and fill in the details.",
+      placement: "bottom",
     },
     {
       target: "[data-tour='events-list']",
-      content: "All your events will appear here. You can edit or delete them anytime. Once you've added at least one event, we'll move on to homework!",
+      content: "All your events will appear here. You can edit or delete them anytime. Once you've added at least one event, click 'Next' to continue!",
+      placement: "top",
     },
   ];
 
@@ -147,14 +151,17 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       target: "[data-tour='homework-page']",
       content: "Great job! Now let's add your homework assignments. Vistari will automatically schedule time to complete them before the due dates.",
       disableBeacon: true,
+      placement: "center",
     },
     {
       target: "[data-tour='add-homework']",
       content: "Click 'Add Homework' to get started. Enter the subject, title, due date, and how long you think it will take.",
+      placement: "bottom",
     },
     {
       target: "[data-tour='active-homework']",
-      content: "Your active homework will show up here, sorted by due date. Add a few assignments, then we'll create your first timetable!",
+      content: "Your active homework will show up here, sorted by due date. Add a few assignments, then click 'Next' to create your first timetable!",
+      placement: "top",
     },
   ];
 
@@ -163,10 +170,12 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       target: "[data-tour='timetables-page']",
       content: "Excellent! Now for the exciting part - creating your personalized AI-powered study timetable!",
       disableBeacon: true,
+      placement: "center",
     },
     {
       target: "[data-tour='new-timetable']",
-      content: "Click here to start the timetable creation wizard. We'll walk you through each step to create the perfect study plan.",
+      content: "Click here to start the timetable creation wizard. We'll walk you through each step to create the perfect study plan. Take your time filling in all the details!",
+      placement: "bottom",
     },
   ];
 
@@ -175,18 +184,26 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       target: "[data-tour='calendar-page']",
       content: "Amazing! Your timetable is ready. Let's explore the powerful features that make Vistari special.",
       disableBeacon: true,
+      placement: "center",
     },
     {
       target: "[data-tour='session-card']",
       content: "Click on any study session to start a timer. The timer will count down and automatically prompt you for feedback when done.",
+      placement: "top",
     },
     {
       target: "[data-tour='calendar-legend']",
       content: "Each color represents a different type of activity. Red = events, Blue = revision, Green = homework, Yellow = test prep.",
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour='daily-insights']",
+      content: "Check your daily insights to see how you're progressing. The AI analyzes your feedback to improve future schedules.",
+      placement: "left",
     },
     {
       target: "body",
-      content: "That's it! You're all set to start your study journey. The tour for other sections (Social, Groups, etc.) will appear when you visit them. Good luck!",
+      content: "That's it! You're all set to start your study journey. Context-sensitive tours for other sections (Social, Groups, etc.) will appear when you visit them. Good luck!",
       placement: "center",
     },
   ];
@@ -208,22 +225,23 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.75)",
+          overlayColor: "rgba(0, 0, 0, 0.85)",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.75)",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
         },
         spotlight: {
-          borderRadius: "8px",
-          boxShadow: "0px 0px 0px 9999px rgba(0, 0, 0, 0.75)",
+          borderRadius: "12px",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.85), 0 0 20px 4px hsl(var(--primary) / 0.5)",
         },
         tooltip: {
           borderRadius: "16px",
           padding: "24px",
-          boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.4)",
+          boxShadow: "0 20px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px hsl(var(--border))",
           fontSize: "15px",
+          background: "hsl(var(--card))",
         },
         tooltipContainer: {
           textAlign: "left",
@@ -231,36 +249,48 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         tooltipTitle: {
           fontSize: "18px",
           fontWeight: 700,
-          marginBottom: "8px",
+          marginBottom: "12px",
+          color: "hsl(var(--foreground))",
         },
         tooltipContent: {
-          fontSize: "14px",
-          lineHeight: "1.6",
+          fontSize: "15px",
+          lineHeight: "1.7",
+          color: "hsl(var(--muted-foreground))",
         },
         buttonNext: {
           backgroundColor: "hsl(var(--primary))",
           borderRadius: "10px",
-          padding: "10px 20px",
+          padding: "12px 24px",
           fontSize: "14px",
           fontWeight: 600,
           transition: "all 0.2s ease",
+          border: "none",
+          color: "white",
         },
         buttonBack: {
           color: "hsl(var(--muted-foreground))",
           marginRight: "12px",
           fontSize: "14px",
+          padding: "12px 20px",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "10px",
+          background: "transparent",
         },
         buttonSkip: {
           color: "hsl(var(--muted-foreground))",
           fontSize: "14px",
+          padding: "12px 20px",
         },
       }}
       floaterProps={{
         disableAnimation: false,
         styles: {
           arrow: {
-            length: 12,
-            spread: 24,
+            length: 16,
+            spread: 28,
+          },
+          floater: {
+            filter: "drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))",
           },
         },
       }}
