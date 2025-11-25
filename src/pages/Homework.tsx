@@ -55,11 +55,7 @@ const Homework = () => {
           </p>
         </div>
 
-        {userId && (
-          <div data-tour="active-homework">
-            <HomeworkList userId={userId} />
-          </div>
-        )}
+        {userId && <HomeworkList userId={userId} />}
       </div>
     </div>
   );
