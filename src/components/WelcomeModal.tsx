@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -10,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import vistariLogo from "@/assets/vistari-logo.png";
 
 const WelcomeModal = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -33,8 +35,15 @@ const WelcomeModal = () => {
     if (user) {
       localStorage.setItem(`welcome_shown_${user.id}`, "true");
       localStorage.setItem(`onboarding_stage_${user.id}`, "events");
+      localStorage.removeItem(`onboarding_completed_${user.id}`);
     }
     setOpen(false);
+    
+    // Navigate to events and reload to trigger tour
+    navigate("/events");
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   const handleNext = () => {

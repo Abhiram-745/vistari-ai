@@ -18,7 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp, Menu, Brain } from "lucide-react";
+import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp, Menu, Brain, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import ProfileSettings from "./ProfileSettings";
 import { useUserRole, useUsageLimits } from "@/hooks/useUserRole";
@@ -109,6 +109,24 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
     document.documentElement.classList.toggle("dark", newTheme === "dark");
     localStorage.setItem("theme", newTheme);
     toast.success(`${newTheme === "dark" ? "Dark" : "Light"} mode enabled`);
+  };
+
+  const startGuidedTour = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Reset onboarding to events stage
+    localStorage.setItem(`onboarding_stage_${user.id}`, "events");
+    localStorage.removeItem(`onboarding_completed_${user.id}`);
+    
+    // Navigate to events to start tour
+    navigate("/events");
+    toast.success("Starting guided tour...");
+    
+    // Reload to trigger the guided tour
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   const getInitials = (name?: string) => {
@@ -255,6 +273,19 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
       </Button>
 
       <Separator className="my-2" />
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          startGuidedTour();
+          onItemClick?.();
+        }}
+        className="w-full justify-start gap-2 hover:bg-gradient-primary/10 hover:text-primary"
+      >
+        <HelpCircle className="h-4 w-4" />
+        <span className="font-medium">Start Tutorial</span>
+      </Button>
 
       <Button
         variant="ghost"
@@ -419,6 +450,17 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
+              {/* Tutorial Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={startGuidedTour}
+                className="hidden xl:flex gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
+                title="Start Guided Tour"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+
               {/* Theme Toggle - Desktop only */}
               <Button
                 variant="ghost"
