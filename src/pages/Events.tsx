@@ -40,12 +40,8 @@ const Events = () => {
         </div>
 
         <div className="space-y-6">
-          <div data-tour="school-schedule">
-            <SchoolSchedule />
-          </div>
-          <div data-tour="events-list">
-            <EventsWidget />
-          </div>
+          <SchoolSchedule />
+          <EventsWidget />
         </div>
       </div>
     </div>
