@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { GraduationCap, Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import vistariLogo from "@/assets/vistari-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -98,11 +99,15 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-gradient-primary p-3">
-              <GraduationCap className="h-8 w-8 text-primary-foreground" />
+            <div className="relative">
+              <img 
+                src={vistariLogo} 
+                alt="Vistari" 
+                className="h-20 w-20 object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300" 
+              />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">Vistari</CardTitle>
+          <CardTitle className="text-3xl font-bold gradient-text">Vistari</CardTitle>
           <CardDescription>
             AI-powered revision timetables for GCSE students
           </CardDescription>

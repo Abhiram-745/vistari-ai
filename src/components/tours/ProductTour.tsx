@@ -57,36 +57,70 @@ const ProductTour = ({ tourKey, steps, onComplete, run = false }: ProductTourPro
       continuous
       showProgress
       showSkipButton
+      scrollToFirstStep
+      disableScrolling={false}
+      spotlightClicks
+      disableOverlayClose
       callback={handleJoyrideCallback}
       styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.5)",
+          overlayColor: "rgba(0, 0, 0, 0.75)",
           arrowColor: "hsl(var(--card))",
-          zIndex: 1000,
+          zIndex: 10000,
+        },
+        overlay: {
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
+        },
+        spotlight: {
+          borderRadius: "8px",
+          boxShadow: "0px 0px 0px 9999px rgba(0, 0, 0, 0.75)",
         },
         tooltip: {
-          borderRadius: "12px",
-          padding: "20px",
+          borderRadius: "16px",
+          padding: "24px",
+          boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.4)",
+          fontSize: "15px",
         },
         tooltipContainer: {
           textAlign: "left",
         },
+        tooltipTitle: {
+          fontSize: "18px",
+          fontWeight: 700,
+          marginBottom: "8px",
+        },
+        tooltipContent: {
+          fontSize: "14px",
+          lineHeight: "1.6",
+        },
         buttonNext: {
           backgroundColor: "hsl(var(--primary))",
-          borderRadius: "8px",
-          padding: "8px 16px",
+          borderRadius: "10px",
+          padding: "10px 20px",
           fontSize: "14px",
           fontWeight: 600,
+          transition: "all 0.2s ease",
         },
         buttonBack: {
           color: "hsl(var(--muted-foreground))",
-          marginRight: "10px",
+          marginRight: "12px",
+          fontSize: "14px",
         },
         buttonSkip: {
           color: "hsl(var(--muted-foreground))",
+          fontSize: "14px",
+        },
+      }}
+      floaterProps={{
+        disableAnimation: false,
+        styles: {
+          arrow: {
+            length: 12,
+            spread: 24,
+          },
         },
       }}
     />
