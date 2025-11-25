@@ -4,12 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import { EventsWidget } from "@/components/EventsWidget";
 import { SchoolSchedule } from "@/components/SchoolSchedule";
+import GuidedOnboarding from "@/components/tours/GuidedOnboarding";
 
 const Events = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Guided Onboarding Tour */}
+      <GuidedOnboarding />
+      
       {/* Floating background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
