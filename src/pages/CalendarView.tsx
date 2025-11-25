@@ -11,6 +11,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
+import GuidedOnboarding from "@/components/tours/GuidedOnboarding";
 
 interface TimetableSession {
   date: string;
@@ -480,6 +481,9 @@ const CalendarView = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Guided Onboarding Tour */}
+      <GuidedOnboarding />
+      
       <Header />
       
       <div className="p-4 md:p-6 space-y-4">

@@ -245,16 +245,17 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.75)",
+          overlayColor: "rgba(0, 0, 0, 0.85)",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.75)",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          mixBlendMode: "normal",
         },
         spotlight: {
-          borderRadius: "8px",
-          boxShadow: "0px 0px 0px 9999px rgba(0, 0, 0, 0.75)",
+          borderRadius: "12px",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.85), 0 0 50px 10px rgba(0, 0, 0, 0.5)",
         },
         tooltip: {
           borderRadius: "16px",

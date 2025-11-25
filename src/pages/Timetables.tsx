@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import TimetableList from "@/components/TimetableList";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import GuidedOnboarding from "@/components/tours/GuidedOnboarding";
 
 const Timetables = () => {
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ const Timetables = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Guided Onboarding Tour */}
+      <GuidedOnboarding />
+      
       {/* Floating background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
