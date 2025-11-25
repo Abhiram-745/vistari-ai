@@ -453,12 +453,26 @@ const CalendarView = () => {
 
   const activeItem = activeId ? calendarItems.find((item) => item.id === activeId) : null;
 
-  if (loading && !selectedTimetableId) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="p-8 flex items-center justify-center">
           <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (timetables.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="p-8 flex flex-col items-center justify-center gap-4">
+          <p className="text-muted-foreground">No timetables found. Create a timetable first to view your calendar.</p>
+          <Button onClick={() => navigate("/timetables")}>
+            Create Timetable
+          </Button>
         </div>
       </div>
     );
