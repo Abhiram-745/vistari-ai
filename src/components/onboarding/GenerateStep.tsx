@@ -303,6 +303,21 @@ const GenerateStep = ({
       await incrementUsage("timetable_creation", queryClient);
 
       toast.success("Timetable generated successfully!");
+      
+      // Check if this is the user's first timetable and trigger the features tour
+      const { data: allTimetables } = await supabase
+        .from("timetables")
+        .select("id")
+        .eq("user_id", user.id);
+      
+      if (allTimetables && allTimetables.length === 1) {
+        // This is the first timetable - advance onboarding to features tour
+        const onboardingStage = localStorage.getItem(`onboarding_stage_${user.id}`);
+        if (onboardingStage === "timetable-create") {
+          localStorage.setItem(`onboarding_stage_${user.id}`, "timetable-features");
+        }
+      }
+      
       onComplete();
     } catch (error: any) {
       console.error("Error generating timetable:", error);

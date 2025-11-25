@@ -226,26 +226,42 @@ ${peak.recommendation}
    Leave for school: ${schoolPrefs.school_start_time}
    Return from school: ${schoolPrefs.school_end_time}
 
-MANDATORY BLOCKING RULES:
-1. DO NOT schedule ANY study sessions between ${schoolPrefs.school_start_time} and ${schoolPrefs.school_end_time} on weekdays (Mon-Fri)
-2. This time is COMPLETELY UNAVAILABLE - treat like a daily recurring event
-3. Only schedule BEFORE ${schoolPrefs.school_start_time} OR AFTER ${schoolPrefs.school_end_time}
-4. Weekends (Saturday, Sunday) are NOT affected by school hours
+🚫 MANDATORY BLOCKING RULES - STRICTLY ENFORCED:
+1. ❌ NEVER schedule ANY study sessions between ${schoolPrefs.school_start_time} and ${schoolPrefs.school_end_time} on weekdays (Mon-Fri)
+2. ❌ This time is COMPLETELY UNAVAILABLE - treat like a daily recurring event
+3. ✅ Only schedule BEFORE ${schoolPrefs.school_start_time} OR AFTER ${schoolPrefs.school_end_time}
+4. ✅ Weekends (Saturday, Sunday) are NOT affected by school hours
 
-${schoolPrefs.study_before_school || schoolPrefs.study_during_lunch || schoolPrefs.study_during_free_periods ? `
-OPTIONAL SCHOOL-TIME STUDY SLOTS:
-${schoolPrefs.study_before_school && schoolPrefs.before_school_start && schoolPrefs.before_school_end ? `✓ Before school: ${schoolPrefs.before_school_start} - ${schoolPrefs.before_school_end} (SHORT homework only, 15-25 mins max)` : ''}
-${schoolPrefs.study_during_lunch && schoolPrefs.lunch_start && schoolPrefs.lunch_end ? `✓ Lunch time: ${schoolPrefs.lunch_start} - ${schoolPrefs.lunch_end} (SHORT homework only, 15-20 mins max)` : ''}
-${schoolPrefs.study_during_free_periods ? '✓ Free periods: SHORT homework sessions during free/study periods at school' : ''}
+🔒 USER PREFERENCE FLAGS (RESPECT THESE STRICTLY):
+${schoolPrefs.study_before_school === true ? `✅ BEFORE SCHOOL ENABLED: User wants sessions before school (${schoolPrefs.before_school_start} - ${schoolPrefs.before_school_end})
+   - You MAY schedule SHORT homework sessions (15-25 mins) in this time slot
+   - ONLY homework, never revision/exam prep` : `❌ BEFORE SCHOOL DISABLED: User does NOT want any sessions before school
+   - DO NOT schedule anything before ${schoolPrefs.school_start_time} on weekdays
+   - Leave this time completely empty`}
 
-SCHOOL-TIME STUDY RULES:
-- ONLY schedule HOMEWORK during these times (never revision/exam prep)
-- Keep sessions SHORT (15-25 minutes maximum)
-- Use these slots for quick homework tasks, not intensive study
-- These are OPTIONAL additions - main study time is still after school
-` : ''}
+${schoolPrefs.study_during_lunch === true ? `✅ LUNCH TIME ENABLED: User wants sessions during lunch (${schoolPrefs.lunch_start} - ${schoolPrefs.lunch_end})
+   - You MAY schedule SHORT homework sessions (15-20 mins) during lunch
+   - ONLY homework, never revision/exam prep` : `❌ LUNCH TIME DISABLED: User does NOT want any sessions during lunch
+   - DO NOT schedule anything during lunch hours
+   - Lunch time is break time, not study time`}
 
-🏫 REMEMBER: School hours are BLOCKED for regular study - schedule around them! 🏫
+${schoolPrefs.study_during_free_periods === true ? `✅ FREE PERIODS ENABLED: User wants short homework during free periods at school
+   - You MAY add SHORT homework sessions during school hours (15-25 mins)
+   - ONLY homework, never revision/exam prep` : `❌ FREE PERIODS DISABLED: User does NOT want any sessions during school
+   - DO NOT schedule anything during ${schoolPrefs.school_start_time} - ${schoolPrefs.school_end_time}
+   - School time is completely off-limits for study`}
+
+🎯 CRITICAL SUMMARY:
+${!schoolPrefs.study_before_school && !schoolPrefs.study_during_lunch && !schoolPrefs.study_during_free_periods 
+  ? `⚠️ ALL SCHOOL-TIME STUDY DISABLED ⚠️
+     The user has explicitly disabled ALL school-time study options.
+     DO NOT schedule ANYTHING before school, during school, or during lunch.
+     ONLY schedule AFTER ${schoolPrefs.school_end_time} on weekdays.` 
+  : `⚠️ SOME SCHOOL-TIME STUDY ENABLED ⚠️
+     Respect the enabled flags above - only schedule in explicitly enabled time slots.
+     All other school time remains COMPLETELY BLOCKED.`}
+
+🏫 REMEMBER: School hours are BLOCKED unless explicitly enabled! 🏫
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
         }
