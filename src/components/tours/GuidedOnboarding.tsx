@@ -28,7 +28,10 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
 
   useEffect(() => {
     if (stage !== "welcome" && stage !== "completed") {
-      updateTourForStage();
+      // Small delay to ensure DOM elements are ready
+      setTimeout(() => {
+        updateTourForStage();
+      }, 100);
     }
   }, [stage, location.pathname]);
 
@@ -229,16 +232,18 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.85)",
-          arrowColor: "hsl(var(--card))",
+          overlayColor: "rgba(0, 0, 0, 0.9)",
+          arrowColor: "hsl(var(--primary))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          mixBlendMode: "normal",
         },
         spotlight: {
-          borderRadius: "12px",
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.85), 0 0 20px 4px hsl(var(--primary) / 0.5)",
+          borderRadius: "16px",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.9), 0 0 40px 8px hsl(var(--primary) / 0.6)",
+          backgroundColor: "transparent",
         },
         tooltip: {
           borderRadius: "16px",
@@ -290,14 +295,19 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         disableAnimation: false,
         styles: {
           arrow: {
-            length: 16,
-            spread: 28,
+            length: 20,
+            spread: 32,
           },
           floater: {
-            filter: "drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))",
+            filter: "drop-shadow(0 10px 40px rgba(0, 0, 0, 0.5))",
           },
         },
       }}
+      disableScrollParentFix
+      hideBackButton={false}
+      disableCloseOnEsc
+      disableOverlay={false}
+      spotlightPadding={8}
     />
   );
 };
