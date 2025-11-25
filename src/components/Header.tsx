@@ -17,6 +17,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Plus, Home, LogOut, Settings, User, Sparkles, BookOpen, Users, Moon, Sun, ClipboardList, CalendarClock, TrendingUp, Menu, Brain, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -36,6 +46,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
   const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showTutorialConfirm, setShowTutorialConfirm] = useState(false);
   const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string; id: string } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const { data: userRole } = useUserRole();
@@ -127,6 +138,15 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
     setTimeout(() => {
       window.location.reload();
     }, 500);
+  };
+
+  const handleTutorialClick = () => {
+    setShowTutorialConfirm(true);
+  };
+
+  const confirmStartTutorial = () => {
+    setShowTutorialConfirm(false);
+    startGuidedTour();
   };
 
   const getInitials = (name?: string) => {
@@ -278,7 +298,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         variant="ghost"
         size="sm"
         onClick={() => {
-          startGuidedTour();
+          handleTutorialClick();
           onItemClick?.();
         }}
         className="w-full justify-start gap-2 hover:bg-gradient-primary/10 hover:text-primary"
@@ -454,7 +474,7 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={startGuidedTour}
+                onClick={handleTutorialClick}
                 className="hidden xl:flex gap-1.5 hover:bg-gradient-primary/10 hover:text-primary transition-all"
                 title="Start Guided Tour"
               >
@@ -627,6 +647,21 @@ const Header = ({ onNewTimetable }: HeaderProps) => {
         </div>
       </div>
     </header>
+
+      <AlertDialog open={showTutorialConfirm} onOpenChange={setShowTutorialConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restart Tutorial?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to restart the guided tour? This will take you through all features step-by-step, starting from the Events page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStartTutorial}>Yes, Start Tutorial</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ProfileSettings
         open={showSettings}
