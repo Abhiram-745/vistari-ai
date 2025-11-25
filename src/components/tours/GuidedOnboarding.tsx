@@ -44,18 +44,25 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
     const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
     
+    // If onboarding is completed, don't start the tour
     if (completedFlag === "true") {
       setStage("completed");
+      setRunTour(false);
       return;
     }
     
+    // Only start tour automatically for new users who haven't completed it
     if (savedStage && savedStage !== "completed") {
       setStage(savedStage as OnboardingStage);
       setRunTour(false); // Reset to trigger update
-    } else if (!savedStage) {
-      // Start at events stage by default
+    } else if (!savedStage && !completedFlag) {
+      // New user - start at events stage
       setStage("events");
       localStorage.setItem(`onboarding_stage_${user.id}`, "events");
+    } else {
+      // User has completed or should not see tour
+      setStage("completed");
+      setRunTour(false);
     }
   };
 
@@ -228,20 +235,22 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
   ];
 
   return (
-    <Joyride
-      steps={steps}
-      run={runTour}
-      continuous
-      showProgress
-      showSkipButton
-      scrollToFirstStep
-      disableScrolling={false}
-      disableScrollParentFix={false}
-      scrollOffset={100}
-      spotlightClicks={true}
-      disableOverlayClose={false}
-      callback={handleJoyrideCallback}
-      styles={{
+    <>
+      {stage !== "completed" && (
+        <Joyride
+          steps={steps}
+          run={runTour}
+          continuous
+          showProgress
+          showSkipButton
+          scrollToFirstStep
+          disableScrolling={false}
+          disableScrollParentFix={false}
+          scrollOffset={100}
+          spotlightClicks={true}
+          disableOverlayClose={false}
+          callback={handleJoyrideCallback}
+          styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
@@ -310,6 +319,8 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         },
       }}
     />
+      )}
+    </>
   );
 };
 
