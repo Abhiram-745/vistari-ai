@@ -39,6 +39,10 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
     if (savedStage && savedStage !== "completed") {
       setStage(savedStage as OnboardingStage);
+    } else if (!savedStage) {
+      // Start at events stage by default
+      setStage("events");
+      localStorage.setItem(`onboarding_stage_${user.id}`, "events");
     }
   };
 
