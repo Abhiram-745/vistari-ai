@@ -19,6 +19,7 @@ import { DashboardCustomizer } from "@/components/DashboardCustomizer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
+import WelcomeModal from "@/components/WelcomeModal";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -98,6 +99,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Welcome Modal for first-time users */}
+      <WelcomeModal />
+      
       {/* Floating background elements - just like landing page */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>
