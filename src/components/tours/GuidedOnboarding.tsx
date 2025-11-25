@@ -139,9 +139,43 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     }
   };
 
+  const updateSpotlightForStep = (target?: string | HTMLElement) => {
+    if (!target || typeof target !== "string" || target === "body") return;
+
+    const targetElement = document.querySelector(target) as HTMLElement | null;
+    const spotlight = document.querySelector(".react-joyride__spotlight") as HTMLElement | null;
+
+    if (!targetElement || !spotlight) return;
+
+    const rect = targetElement.getBoundingClientRect();
+    const padding = 24;
+
+    const top = Math.max(rect.top - padding, 8);
+    const left = Math.max(rect.left - padding, 8);
+    const width = rect.width + padding * 2;
+    const height = rect.height + padding * 2;
+
+    spotlight.style.position = "fixed";
+    spotlight.style.top = `${top}px`;
+    spotlight.style.left = `${left}px`;
+    spotlight.style.width = `${width}px`;
+    spotlight.style.height = `${height}px`;
+    spotlight.style.pointerEvents = "none";
+  };
+
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, index, type } = data;
+    const { status, action, index, type, step } = data;
     console.log("Tour: Joyride callback", { status, action, index, type, stage });
+
+    if (
+      (action === ACTIONS.UPDATE ||
+        action === ACTIONS.NEXT ||
+        action === ACTIONS.PREV ||
+        action === ACTIONS.START) &&
+      step?.target
+    ) {
+      updateSpotlightForStep(step.target as string);
+    }
 
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       console.log("Tour: Tour finished/skipped, advancing stage");
@@ -247,18 +281,19 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "rgba(0, 0, 0, 0.85)",
+          overlayColor: "transparent",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          backgroundColor: "transparent",
           mixBlendMode: "normal",
         },
         spotlight: {
-          borderRadius: "12px",
-          backgroundColor: "transparent !important",
-          border: "2px solid rgba(255, 255, 255, 0.3)",
+          borderRadius: "18px",
+          backgroundColor: "transparent",
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.80)",
+          border: "2px solid rgba(255, 255, 255, 0.4)",
         },
         tooltip: {
           borderRadius: "16px",
