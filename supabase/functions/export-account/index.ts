@@ -62,6 +62,9 @@ Deno.serve(async (req) => {
       timetableHistoryData,
       usageLimitsData,
       userRolesData,
+      groupInvitationsData,
+      studyGroupsData,
+      testDatesData,
     ] = await Promise.all([
       supabaseClient.from('profiles').select('*').eq('id', user.id).single(),
       supabaseClient.from('study_preferences').select('*').eq('user_id', user.id).single(),
@@ -88,6 +91,9 @@ Deno.serve(async (req) => {
       supabaseClient.from('timetable_history').select('*').eq('user_id', user.id),
       supabaseClient.from('usage_limits').select('*').eq('user_id', user.id).single(),
       supabaseClient.from('user_roles').select('*').eq('user_id', user.id).single(),
+      supabaseClient.from('group_invitations').select('*').or(`inviter_id.eq.${user.id},invitee_id.eq.${user.id}`),
+      supabaseClient.from('study_groups').select('*').or(`created_by.eq.${user.id},id.in.(select group_id from group_members where user_id = '${user.id}')`),
+      supabaseClient.from('test_dates').select('*, subjects!inner(user_id)').eq('subjects.user_id', user.id),
     ]);
 
     // Build export JSON
@@ -121,6 +127,9 @@ Deno.serve(async (req) => {
         timetable_history: timetableHistoryData.data || [],
         usage_limits: usageLimitsData.data || null,
         user_roles: userRolesData.data || null,
+        group_invitations: groupInvitationsData.data || [],
+        study_groups: studyGroupsData.data || [],
+        test_dates: testDatesData.data || [],
       },
       metadata: {
         total_timetables: timetablesData.data?.length || 0,
@@ -131,6 +140,9 @@ Deno.serve(async (req) => {
         total_friendships: friendshipsData.data?.length || 0,
         total_group_memberships: groupMembersData.data?.length || 0,
         total_timetable_versions: timetableHistoryData.data?.length || 0,
+        total_group_invitations: groupInvitationsData.data?.length || 0,
+        total_study_groups: studyGroupsData.data?.length || 0,
+        total_test_dates: testDatesData.data?.length || 0,
       },
     };
 
