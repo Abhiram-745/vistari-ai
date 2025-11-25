@@ -139,43 +139,9 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     }
   };
 
-  const updateSpotlightForStep = (target?: string | HTMLElement) => {
-    if (!target || typeof target !== "string" || target === "body") return;
-
-    const targetElement = document.querySelector(target) as HTMLElement | null;
-    const spotlight = document.querySelector(".react-joyride__spotlight") as HTMLElement | null;
-
-    if (!targetElement || !spotlight) return;
-
-    const rect = targetElement.getBoundingClientRect();
-    const padding = 24;
-
-    const top = Math.max(rect.top - padding, 8);
-    const left = Math.max(rect.left - padding, 8);
-    const width = rect.width + padding * 2;
-    const height = rect.height + padding * 2;
-
-    spotlight.style.position = "fixed";
-    spotlight.style.top = `${top}px`;
-    spotlight.style.left = `${left}px`;
-    spotlight.style.width = `${width}px`;
-    spotlight.style.height = `${height}px`;
-    spotlight.style.pointerEvents = "none";
-  };
-
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, index, type, step } = data;
+    const { status, action, index, type } = data;
     console.log("Tour: Joyride callback", { status, action, index, type, stage });
-
-    if (
-      (action === ACTIONS.UPDATE ||
-        action === ACTIONS.NEXT ||
-        action === ACTIONS.PREV ||
-        action === ACTIONS.START) &&
-      step?.target
-    ) {
-      updateSpotlightForStep(step.target as string);
-    }
 
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       console.log("Tour: Tour finished/skipped, advancing stage");
@@ -183,7 +149,6 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       advanceStage();
     }
   };
-
   const eventsOnboardingSteps: Step[] = [
     {
       target: "[data-tour='school-schedule']",
@@ -191,21 +156,21 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         "Welcome! Let's start by setting up your school schedule. Try entering an example, like leaving at 08:30 and returning at 15:30. This makes sure Vistari never schedules study sessions during school hours.",
       disableBeacon: true,
       placement: "bottom",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='add-event']",
       content:
         "Great! Now add another commitment like sports practice or music lessons. Click 'Add Event' and type in one real or example event so you can see how it appears in your timetable.",
       placement: "left",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='events-list']",
       content:
         "All your events appear here. You can edit or delete them anytime. Once you've added at least one event, click 'Next' to continue to homework.",
       placement: "top",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
   ];
 
@@ -215,13 +180,13 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       content: "Perfect! Now let's add your homework assignments. Click 'Add Homework' and enter the subject, title, due date, and estimated duration. Vistari will schedule time to complete them!",
       disableBeacon: true,
       placement: "left",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='active-homework']",
       content: "Your active homework shows up here, sorted by due date. Add a few assignments, then click 'Next' to create your first AI-powered timetable!",
       placement: "top",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
   ];
 
@@ -231,7 +196,7 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       content: "Excellent! Now for the exciting part - creating your AI-powered study timetable! Click 'New Timetable' and we'll walk you through each step to create the perfect personalized study plan.",
       disableBeacon: true,
       placement: "bottom",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
   ];
 
@@ -241,19 +206,19 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       content: "Amazing! Your timetable is ready. Click on any study session to start a timer. The timer counts down and automatically asks for feedback when you're done.",
       disableBeacon: true,
       placement: "top",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='calendar-legend']",
       content: "Each color represents a different activity type: Red = events, Blue = revision, Green = homework, Yellow = test prep. This helps you see your day at a glance!",
       placement: "bottom",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "[data-tour='daily-insights']",
       content: "Check your daily insights panel to see your progress. The AI learns from your feedback and adapts future schedules to match your needs!",
       placement: "left",
-      spotlightPadding: 15,
+      spotlightPadding: 20,
     },
     {
       target: "body",
@@ -281,18 +246,17 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
           primaryColor: "hsl(var(--primary))",
           textColor: "hsl(var(--foreground))",
           backgroundColor: "hsl(var(--card))",
-          overlayColor: "transparent",
+          overlayColor: "rgba(0, 0, 0, 0.75)",
           arrowColor: "hsl(var(--card))",
           zIndex: 10000,
         },
         overlay: {
-          backgroundColor: "transparent",
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
           mixBlendMode: "normal",
         },
         spotlight: {
           borderRadius: "18px",
           backgroundColor: "transparent",
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.80)",
           border: "2px solid rgba(255, 255, 255, 0.4)",
         },
         tooltip: {
