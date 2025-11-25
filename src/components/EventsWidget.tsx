@@ -610,6 +610,11 @@ export const EventsWidget = () => {
                       {format(new Date(event.start_time), "MMM d, h:mm a")} -{" "}
                       {format(new Date(event.end_time), "h:mm a")}
                     </span>
+                    {event.is_recurring && (
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round((new Date(event.end_time).getTime() - new Date(event.start_time).getTime()) / (1000 * 60))} min, recurring)
+                      </span>
+                    )}
                   </div>
                   {event.is_recurring && event.recurrence_end_date && (
                     <p className="text-xs text-muted-foreground mt-1">

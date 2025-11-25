@@ -156,20 +156,40 @@ ${isWeekday ? `⚠️ CRITICAL: User attends school TODAY:
    Leave for school: ${preferences.school_start_time}
    Return from school: ${preferences.school_end_time}
 
-MANDATORY BLOCKING RULES:
-1. DO NOT schedule ANY study sessions between ${preferences.school_start_time} and ${preferences.school_end_time}
-2. This time is COMPLETELY UNAVAILABLE
-3. Only schedule BEFORE ${preferences.school_start_time} OR AFTER ${preferences.school_end_time}
+🚫 MANDATORY BLOCKING RULES - STRICTLY ENFORCED:
+1. ❌ NEVER schedule ANY study sessions between ${preferences.school_start_time} and ${preferences.school_end_time}
+2. ❌ This time is COMPLETELY UNAVAILABLE
+3. ✅ Only schedule BEFORE ${preferences.school_start_time} OR AFTER ${preferences.school_end_time}
 
-${preferences.study_before_school || preferences.study_during_lunch || preferences.study_during_free_periods ? `
-OPTIONAL SCHOOL-TIME STUDY:
-${preferences.study_before_school && preferences.before_school_start && preferences.before_school_end ? `✓ Before school: ${preferences.before_school_start} - ${preferences.before_school_end} (SHORT homework, 15-25 mins)` : ''}
-${preferences.study_during_lunch && preferences.lunch_start && preferences.lunch_end ? `✓ Lunch: ${preferences.lunch_start} - ${preferences.lunch_end} (SHORT homework, 15-20 mins)` : ''}
-${preferences.study_during_free_periods ? '✓ Free periods: SHORT homework during free periods' : ''}
+🔒 USER PREFERENCE FLAGS (RESPECT THESE STRICTLY):
+${preferences.study_before_school === true ? `✅ BEFORE SCHOOL ENABLED: User wants sessions before school (${preferences.before_school_start} - ${preferences.before_school_end})
+   - You MAY schedule SHORT homework sessions (15-25 mins) in this time slot
+   - ONLY homework, never revision/exam prep` : `❌ BEFORE SCHOOL DISABLED: User does NOT want any sessions before school
+   - DO NOT schedule anything before ${preferences.school_start_time}
+   - Leave this time completely empty`}
 
-- ONLY homework during these times (never revision)
-- Keep VERY SHORT (15-25 mins max)
-` : ''}` : 'Today is a weekend - no school hours blocking required.'}
+${preferences.study_during_lunch === true ? `✅ LUNCH TIME ENABLED: User wants sessions during lunch (${preferences.lunch_start} - ${preferences.lunch_end})
+   - You MAY schedule SHORT homework sessions (15-20 mins) during lunch
+   - ONLY homework, never revision/exam prep` : `❌ LUNCH TIME DISABLED: User does NOT want any sessions during lunch
+   - DO NOT schedule anything during lunch hours
+   - Lunch time is break time, not study time`}
+
+${preferences.study_during_free_periods === true ? `✅ FREE PERIODS ENABLED: User wants short homework during free periods at school
+   - You MAY add SHORT homework sessions during school hours (15-25 mins)
+   - ONLY homework, never revision/exam prep` : `❌ FREE PERIODS DISABLED: User does NOT want any sessions during school
+   - DO NOT schedule anything during ${preferences.school_start_time} - ${preferences.school_end_time}
+   - School time is completely off-limits for study`}
+
+🎯 CRITICAL SUMMARY:
+${!preferences.study_before_school && !preferences.study_during_lunch && !preferences.study_during_free_periods 
+  ? `⚠️ ALL SCHOOL-TIME STUDY DISABLED ⚠️
+     The user has explicitly disabled ALL school-time study options.
+     DO NOT schedule ANYTHING before school, during school, or during lunch.
+     ONLY schedule AFTER ${preferences.school_end_time}.` 
+  : `⚠️ SOME SCHOOL-TIME STUDY ENABLED ⚠️
+     Respect the enabled flags above - only schedule in explicitly enabled time slots.
+     All other school time remains COMPLETELY BLOCKED.`}
+` : 'Today is a weekend - no school hours blocking required.'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
