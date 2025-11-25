@@ -81,6 +81,38 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     }
   };
 
+  const checkTimetableAndStartTour = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Check if user has any timetables
+    const { data: timetables } = await supabase
+      .from("timetables")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (!timetables || timetables.length === 0) {
+      // No timetables - skip features tour and mark as completed
+      console.log("Tour: No timetables found, skipping features tour");
+      setStage("completed");
+      localStorage.setItem(`onboarding_stage_${user.id}`, "completed");
+      localStorage.setItem(`onboarding_completed_${user.id}`, "true");
+      setRunTour(false);
+      return;
+    }
+
+    // Has timetables - proceed with features tour
+    if (location.pathname === "/calendar") {
+      console.log("Tour: Setting timetable features steps, runTour = true");
+      setSteps(timetableFeaturesSteps);
+      setRunTour(true);
+    } else {
+      console.log("Tour: Navigating to /calendar");
+      navigate("/calendar");
+    }
+  };
+
   const updateTourForStage = () => {
     console.log("Tour: updateTourForStage called, stage:", stage, "path:", location.pathname);
     switch (stage) {
@@ -115,14 +147,8 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         }
         break;
       case "timetable-features":
-        if (location.pathname === "/calendar") {
-          console.log("Tour: Setting timetable features steps, runTour = true");
-          setSteps(timetableFeaturesSteps);
-          setRunTour(true);
-        } else {
-          console.log("Tour: Navigating to /calendar");
-          navigate("/calendar");
-        }
+        // Check if user has a timetable before starting features tour
+        checkTimetableAndStartTour();
         break;
     }
   };
