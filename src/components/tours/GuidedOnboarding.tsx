@@ -131,86 +131,75 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
 
   const eventsOnboardingSteps: Step[] = [
     {
-      target: "[data-tour='events-page']",
-      content: "Welcome to Events! Let's start by setting up your schedule. This helps Vistari know when you're busy so it won't schedule study sessions during these times.",
-      disableBeacon: true,
-      placement: "center",
-    },
-    {
       target: "[data-tour='school-schedule']",
-      content: "First, set your school hours. Click here to tell Vistari when you leave for school and when you get back home.",
+      content: "Welcome! Let's start by setting up your school schedule. Fill in what time you leave for school and when you return home. This ensures study sessions won't be scheduled during school hours.",
+      disableBeacon: true,
       placement: "bottom",
+      spotlightPadding: 10,
     },
     {
       target: "[data-tour='add-event']",
-      content: "Now add any recurring events like sports practice, music lessons, or clubs. Click 'Add Event' and fill in the details.",
-      placement: "bottom",
+      content: "Great! Now add any other commitments like sports practice, music lessons, or clubs. Click 'Add Event' to get started.",
+      placement: "left",
+      spotlightPadding: 10,
     },
     {
       target: "[data-tour='events-list']",
-      content: "All your events will appear here. You can edit or delete them anytime. Once you've added at least one event, click 'Next' to continue!",
+      content: "All your events appear here. You can edit or delete them anytime. Once you're done adding events, click 'Next' to continue to homework!",
       placement: "top",
+      spotlightPadding: 10,
     },
   ];
 
   const homeworkOnboardingSteps: Step[] = [
     {
-      target: "[data-tour='homework-page']",
-      content: "Great job! Now let's add your homework assignments. Vistari will automatically schedule time to complete them before the due dates.",
-      disableBeacon: true,
-      placement: "center",
-    },
-    {
       target: "[data-tour='add-homework']",
-      content: "Click 'Add Homework' to get started. Enter the subject, title, due date, and how long you think it will take.",
+      content: "Perfect! Now let's add your homework assignments. Click 'Add Homework' and enter the subject, title, due date, and estimated duration. Vistari will schedule time to complete them!",
+      disableBeacon: true,
       placement: "bottom",
+      spotlightPadding: 10,
     },
     {
       target: "[data-tour='active-homework']",
-      content: "Your active homework will show up here, sorted by due date. Add a few assignments, then click 'Next' to create your first timetable!",
+      content: "Your active homework shows up here, sorted by due date. Add a few assignments, then click 'Next' to create your first AI-powered timetable!",
       placement: "top",
+      spotlightPadding: 10,
     },
   ];
 
   const timetableCreateSteps: Step[] = [
     {
-      target: "[data-tour='timetables-page']",
-      content: "Excellent! Now for the exciting part - creating your personalized AI-powered study timetable!",
-      disableBeacon: true,
-      placement: "center",
-    },
-    {
       target: "[data-tour='new-timetable']",
-      content: "Click here to start the timetable creation wizard. We'll walk you through each step to create the perfect study plan. Take your time filling in all the details!",
+      content: "Excellent! Now for the exciting part - creating your AI-powered study timetable! Click 'New Timetable' and we'll walk you through each step to create the perfect personalized study plan.",
+      disableBeacon: true,
       placement: "bottom",
+      spotlightPadding: 10,
     },
   ];
 
   const timetableFeaturesSteps: Step[] = [
     {
-      target: "[data-tour='calendar-page']",
-      content: "Amazing! Your timetable is ready. Let's explore the powerful features that make Vistari special.",
-      disableBeacon: true,
-      placement: "center",
-    },
-    {
       target: "[data-tour='session-card']",
-      content: "Click on any study session to start a timer. The timer will count down and automatically prompt you for feedback when done.",
+      content: "Amazing! Your timetable is ready. Click on any study session to start a timer. The timer counts down and automatically asks for feedback when you're done.",
+      disableBeacon: true,
       placement: "top",
+      spotlightPadding: 10,
     },
     {
       target: "[data-tour='calendar-legend']",
-      content: "Each color represents a different type of activity. Red = events, Blue = revision, Green = homework, Yellow = test prep.",
+      content: "Each color represents a different activity type: Red = events, Blue = revision, Green = homework, Yellow = test prep. This helps you see your day at a glance!",
       placement: "bottom",
+      spotlightPadding: 10,
     },
     {
       target: "[data-tour='daily-insights']",
-      content: "Check your daily insights to see how you're progressing. The AI analyzes your feedback to improve future schedules.",
+      content: "Check your daily insights panel to see your progress. The AI learns from your feedback and adapts future schedules to match your needs!",
       placement: "left",
+      spotlightPadding: 10,
     },
     {
       target: "body",
-      content: "That's it! You're all set to start your study journey. Context-sensitive tours for other sections (Social, Groups, etc.) will appear when you visit them. Good luck!",
+      content: "Perfect! You're all set to begin your study journey with Vistari. Explore other sections like Social and Groups to connect with friends. Good luck! 🎉",
       placement: "center",
     },
   ];
@@ -223,9 +212,12 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       showProgress
       showSkipButton
       scrollToFirstStep
+      scrollOffset={100}
       disableScrolling={false}
       spotlightClicks
       disableOverlayClose
+      disableCloseOnEsc
+      hideBackButton={false}
       callback={handleJoyrideCallback}
       styles={{
         options: {
@@ -304,8 +296,6 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         },
       }}
       disableScrollParentFix
-      hideBackButton={false}
-      disableCloseOnEsc
       disableOverlay={false}
       spotlightPadding={8}
     />
