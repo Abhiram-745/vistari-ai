@@ -10,10 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User, Camera } from "lucide-react";
+import { Loader2, User, Camera, RotateCcw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { useTourReset } from "@/hooks/useTourReset";
 
 interface ProfileSettingsProps {
   open: boolean;
@@ -27,6 +28,7 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const { resetAllTours } = useTourReset();
 
   useEffect(() => {
     if (open) {
@@ -238,6 +240,27 @@ const ProfileSettings = ({ open, onOpenChange, onProfileUpdate }: ProfileSetting
             ) : (
               "Save Changes"
             )}
+          </Button>
+        </div>
+
+        <Separator className="my-6" />
+
+        {/* Tutorial Reset Section */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-display font-semibold">Reset Tutorials</h3>
+            <p className="text-sm text-muted-foreground">
+              Restart all interactive tutorials to see the guided tours again when you visit each section.
+            </p>
+          </div>
+          
+          <Button
+            onClick={resetAllTours}
+            variant="outline"
+            className="w-full gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset All Tutorials
           </Button>
         </div>
 

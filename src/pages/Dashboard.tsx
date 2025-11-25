@@ -144,7 +144,7 @@ const Dashboard = () => {
         ) : (
           <div className="space-y-10 animate-fade-in">
             {/* Welcome Section - More prominent and personal */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-warm border border-primary/20 p-8 md:p-10 shadow-lg">
+            <div className="dashboard-greeting relative overflow-hidden rounded-2xl bg-gradient-warm border border-primary/20 p-8 md:p-10 shadow-lg">
               <div className="relative z-10">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                   <div className="space-y-4 flex-1">
@@ -159,7 +159,9 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <DashboardCustomizer onSettingsChange={setDashboardSections} />
+                    <div className="dashboard-customizer">
+                      <DashboardCustomizer onSettingsChange={setDashboardSections} />
+                    </div>
                     <div className="hidden lg:flex items-center gap-3">
                       <div className="flex flex-col items-center p-5 bg-card/80 backdrop-blur-sm rounded-xl border border-border/60 shadow-sm hover:-translate-y-1 transition-all duration-300">
                         <Target className="h-7 w-7 text-primary mb-2" />
@@ -189,7 +191,7 @@ const Dashboard = () => {
               .map((section) => {
                 if (section.id === "progress") {
                   return (
-                    <div key="progress" className="space-y-6">
+                    <div key="progress" className="progress-section space-y-6">
                       <div className="section-header">
                         <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md">
                           <Sparkles className="h-5 w-5 text-white" />
@@ -204,7 +206,9 @@ const Dashboard = () => {
                         <WeeklyGoalsWidget userId={user?.id || ""} />
                         <RecentActivityWidget userId={user?.id || ""} />
                       </div>
-                      <UpcomingDeadlines userId={user?.id || ""} />
+                      <div className="upcoming-deadlines">
+                        <UpcomingDeadlines userId={user?.id || ""} />
+                      </div>
                     </div>
                   );
                 }
@@ -228,7 +232,7 @@ const Dashboard = () => {
                 
                 if (section.id === "analytics") {
                   return (
-                    <div key="analytics" className="space-y-6">
+                    <div key="analytics" className="daily-insights space-y-6">
                       <DashboardAnalytics userId={user?.id || ""} />
                     </div>
                   );

@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import LogoGenerator from "./pages/LogoGenerator";
 import ImportAccount from "./pages/ImportAccount";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import TourManager from "./components/tours/TourManager";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
       <Sonner />
       <PWAInstallPrompt />
       <BrowserRouter>
+        <TourManager />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<Dashboard />} />
