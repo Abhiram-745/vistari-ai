@@ -188,9 +188,9 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
         </div>
 
         <div className="space-y-3">
-          <Label>Study Time During School (Optional)</Label>
+          <Label>Morning Sessions (Before School)</Label>
           <p className="text-sm text-muted-foreground">
-            Select if you'd like short study sessions before/during school hours
+            Do you want to include morning study sessions in your timetable?
           </p>
           <Card className="p-3 space-y-3">
             <div className="space-y-2">
@@ -209,7 +209,7 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
                   htmlFor="before-school"
                   className="text-sm font-medium leading-none cursor-pointer"
                 >
-                  Study before school (short homework sessions)
+                  Yes, create morning sessions before school (short homework sessions only)
                 </label>
               </div>
               
@@ -311,7 +311,7 @@ const PreferencesStep = ({ preferences, setPreferences }: PreferencesStepProps) 
             </div>
             
             <p className="text-xs text-muted-foreground pt-2 border-t">
-              These will only schedule quick homework assignments, not full revision sessions
+              Morning, lunch, and free period sessions will only schedule quick homework tasks (15-25 mins), not full revision sessions. If unchecked, no sessions will be scheduled during these times.
             </p>
           </Card>
         </div>
