@@ -349,26 +349,39 @@ SCHOOL-TIME STUDY RULES:
 🔴 BLOCKED EVENT TIMES - ABSOLUTE NO-SCHEDULE ZONES 🔴
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+⚠️ CRITICAL: These events are ONLY for BLOCKING time - DO NOT include them in your generated schedule!
+⚠️ Events like "Badminton", "Football", etc. are USER COMMITMENTS that block study time
+⚠️ DO NOT generate study sessions with these event names - they are already scheduled by the user!
+
 These time slots are COMPLETELY UNAVAILABLE for study sessions:
 
 ${events.map((evt: any) => {
   const startDate = new Date(evt.start_time);
   const endDate = new Date(evt.end_time);
   const durationMins = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-  return `⛔ EVENT: ${evt.title}
+  return `⛔ BLOCKED TIME: ${evt.title}
    📅 Date: ${startDate.toLocaleDateString()}
    ⏰ Time: ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} → ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
    ⏱️  Duration: ${durationMins} minutes BLOCKED
    ${evt.description ? `📝 ${evt.description}` : ''}
-   ⚠️  DO NOT SCHEDULE ANYTHING FROM ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} TO ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+   🚫 DO NOT CREATE ANY STUDY SESSIONS DURING THIS TIME
+   ⚠️  SKIP FROM ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} TO ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 }).join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **CRITICAL EVENT BLOCKING RULES - MUST FOLLOW EXACTLY:**
+
+🚫 WHAT YOU MUST NOT DO:
+✗ DO NOT create study sessions with event names (e.g., "Badminton", "Football")
+✗ DO NOT schedule anything during blocked times
 ✗ If event is 18:00-21:00 (180 mins), the ENTIRE 3-hour block is BLOCKED
 ✗ You cannot schedule at 18:00, 18:15, 18:30, 19:00, 19:30, 20:00, 20:30, 20:45
-✓ Next available time slot is 21:00 or later
+
+✓ WHAT YOU MUST DO:
+✓ ONLY schedule study sessions for TOPICS and HOMEWORK from the provided lists
+✓ Skip over event times completely - leave them empty in your schedule
+✓ Next available time slot after 18:00-21:00 event is 21:00 or later
 ✓ Schedule work BEFORE event starts OR AFTER event ends
 ✓ Events take ABSOLUTE PRIORITY over all study activities
 ✓ **RESUME SCHEDULING AFTER EVENTS END**: After an event finishes, you MUST continue scheduling study sessions until the user's requested end time
@@ -876,6 +889,30 @@ ${preferences.duration_mode === "fixed"
   ? `1. Focus topics have 4-6 sessions EACH, all using FIXED ${preferences.session_duration} minute duration, with mix of practice and exam question sessions\n2. Regular (non-focus) topics have 1-2 sessions EACH using FIXED ${preferences.session_duration} minute duration\n3. ALL breaks are EXACTLY ${preferences.break_duration} minutes`
   : "1. Focus topics have 4-6 sessions EACH with LONGER durations (60-90 mins per session), with mix of practice and exam question sessions\n2. Regular (non-focus) topics have 1-2 sessions EACH with appropriate duration (30-45 mins)\n3. Session durations are VARIED and appropriate for each task type\n4. Breaks are 10-15 minutes"}
 
+**🚨 CRITICAL OUTPUT REQUIREMENTS - WHAT TO INCLUDE IN SCHEDULE 🚨**
+
+⚠️ YOUR SCHEDULE OUTPUT MUST ONLY CONTAIN STUDY ACTIVITIES - NOT EVENTS ⚠️
+
+✓ INCLUDE IN YOUR SCHEDULE:
+- Study sessions for topics from the topics list
+- Homework sessions for homework from the homework list
+- Break sessions
+- Practice sessions
+- Exam question sessions
+- Revision sessions
+
+✗ DO NOT INCLUDE IN YOUR SCHEDULE:
+- Events (like "Badminton", "Football", "School", etc.)
+- Any activities from the events list above
+- User commitments that block time
+- Events are ONLY for telling you which times are unavailable
+- You should SKIP OVER event times, not add them to your schedule
+
+**CORRECT APPROACH**: Events create gaps in your schedule where you don't generate anything.
+**WRONG APPROACH**: Adding events as sessions in your output.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Return a JSON object with the following structure:
 {
   "schedule": {
@@ -894,6 +931,8 @@ Return a JSON object with the following structure:
     ]
   }
 }
+
+⚠️ REMEMBER: Only include STUDY/HOMEWORK/BREAK sessions in your output. NEVER include events from the blocked times list!
 
 **IMPORTANT**: Add "mode": "${timetableMode || 'balanced'}" field to EVERY session in the schedule. This helps the UI display mode-specific styling and indicators.
 
