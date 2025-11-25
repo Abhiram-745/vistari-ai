@@ -892,24 +892,44 @@ ${preferences.duration_mode === "fixed"
 **🚨 CRITICAL OUTPUT REQUIREMENTS - WHAT TO INCLUDE IN SCHEDULE 🚨**
 
 ⚠️ YOUR SCHEDULE OUTPUT MUST ONLY CONTAIN STUDY ACTIVITIES - NOT EVENTS ⚠️
+⚠️ YOU MUST ONLY USE TOPICS AND HOMEWORK FROM THE PROVIDED LISTS - NO HALLUCINATIONS ⚠️
 
-✓ INCLUDE IN YOUR SCHEDULE:
-- Study sessions for topics from the topics list
-- Homework sessions for homework from the homework list
-- Break sessions
-- Practice sessions
-- Exam question sessions
-- Revision sessions
+✓ INCLUDE IN YOUR SCHEDULE (ONLY USING PROVIDED DATA):
+- Study sessions for topics ONLY from the "ALL TOPICS TO COVER" list above
+- Homework sessions for homework ONLY from the "HOMEWORK ASSIGNMENTS" list above
+- Break sessions (type: "break")
+- Practice sessions (type: "practice") - but ONLY for topics from the topics list
+- Exam question sessions (type: "exam_questions") - but ONLY for topics from the topics list
+- Revision sessions (type: "revision") - but ONLY for topics from the topics list
 
-✗ DO NOT INCLUDE IN YOUR SCHEDULE:
-- Events (like "Badminton", "Football", "School", etc.)
-- Any activities from the events list above
-- User commitments that block time
+✗ ABSOLUTELY FORBIDDEN - WILL BE REJECTED:
+- Events (like "Badminton", "Football", "School", etc.) - THESE ARE BLOCKING INFORMATION ONLY
+- Any activities from the events list above - NEVER ADD THESE AS SESSIONS
+- Made-up activities not in the topics or homework lists (e.g., random sports, hobbies, made-up topics)
+- ANY session topic that doesn't exactly match a topic from "ALL TOPICS TO COVER"
+- ANY homework that doesn't exactly match a homework from "HOMEWORK ASSIGNMENTS"
+- User commitments that block time - these are ONLY for creating gaps
 - Events are ONLY for telling you which times are unavailable
-- You should SKIP OVER event times, not add them to your schedule
 
-**CORRECT APPROACH**: Events create gaps in your schedule where you don't generate anything.
-**WRONG APPROACH**: Adding events as sessions in your output.
+**VALIDATION RULES - YOUR OUTPUT WILL BE CHECKED**:
+1. Every session with type="study"|"practice"|"exam_questions"|"revision" MUST have a topic field that EXACTLY MATCHES a topic from the "ALL TOPICS TO COVER" list
+2. Every session with type="homework" MUST have a topic field that EXACTLY MATCHES a homework title from the "HOMEWORK ASSIGNMENTS" list
+3. NO sessions with topics like "Badminton", "Football", "Gaming", or any activity from the events list
+4. If you include a topic not in the provided lists, the entire generation will FAIL
+5. ONLY use the exact topic names and homework titles provided - do not paraphrase or create variations
+
+**CORRECT APPROACH**: 
+- Read the "ALL TOPICS TO COVER" list carefully
+- Read the "HOMEWORK ASSIGNMENTS" list carefully
+- ONLY use these exact topics and homework titles in your schedule
+- Events create gaps/empty time where you don't schedule anything
+- If time remains after all topics/homework, repeat important topics with additional sessions
+
+**WRONG APPROACH**: 
+- Adding events as sessions in your output
+- Making up new topics or activities not in the lists
+- Adding sessions for "Badminton" or other events
+- Creating homework that wasn't provided
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1204,6 +1224,15 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       if (events && events.length > 0 && scheduleData.schedule && typeof scheduleData.schedule === 'object') {
         console.log(`Validating schedule to remove any sessions overlapping with ${events.length} events`);
         
+        // CRITICAL: Create validation sets for topics and homework
+        const validTopicNames = new Set(topics.map((t: any) => t.name.toLowerCase().trim()));
+        const validHomeworkTitles = new Set(homeworks.map((hw: any) => hw.title.toLowerCase().trim()));
+        const eventTitles = new Set(events.map((e: any) => e.title.toLowerCase().trim()));
+        
+        console.log('Valid topics:', Array.from(validTopicNames));
+        console.log('Valid homework:', Array.from(validHomeworkTitles));
+        console.log('Events (should NOT appear as sessions):', Array.from(eventTitles));
+        
         // Create a map of events by date for efficient lookup
         const eventsByDate = new Map<string, any[]>();
         events.forEach((event: any) => {
@@ -1239,8 +1268,10 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           });
         };
 
-        // Filter out overlapping sessions from schedule
+        // Filter out overlapping sessions AND hallucinated topics from schedule
         let removedCount = 0;
+        let hallucinationCount = 0;
+        
         for (const [date, sessions] of Object.entries(scheduleData.schedule)) {
           if (!Array.isArray(sessions)) continue;
           
@@ -1248,9 +1279,36 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           scheduleData.schedule[date] = (sessions as any[]).filter((session: any) => {
             if (!session || !session.time || !session.duration) return true;
             
-            // Keep non-study sessions and check study sessions for overlaps
-            if (session.type === 'event') return false; // Remove any event sessions (we'll add fresh ones from frontend)
+            // CRITICAL: Validate that this isn't a hallucinated topic or event
+            if (session.type !== 'break') {
+              const sessionTopic = (session.topic || '').toLowerCase().trim();
+              
+              // Check if this is an event being added as a session (FORBIDDEN)
+              if (eventTitles.has(sessionTopic)) {
+                console.log(`🚨 REJECTED: Event "${session.topic}" added as ${session.type} session on ${date} ${session.time}`);
+                hallucinationCount++;
+                return false;
+              }
+              
+              // Check if this topic exists in provided lists
+              const isValidTopic = validTopicNames.has(sessionTopic);
+              const isValidHomework = session.type === 'homework' && validHomeworkTitles.has(sessionTopic);
+              
+              if (!isValidTopic && !isValidHomework) {
+                console.log(`🚨 REJECTED: Invalid topic "${session.topic}" (type: ${session.type}) on ${date} ${session.time} - not in provided lists`);
+                hallucinationCount++;
+                return false;
+              }
+            }
             
+            // Remove any event-type sessions
+            if (session.type === 'event') {
+              console.log(`🚨 REJECTED: Event-type session "${session.topic || session.title}" on ${date} ${session.time}`);
+              hallucinationCount++;
+              return false;
+            }
+            
+            // Check for event overlap
             const isOverlapping = overlapsWithEvent(date, session.time, session.duration);
             if (isOverlapping) {
               console.log(`Removed overlapping session: ${date} ${session.time} ${session.subject} - ${session.topic}`);
@@ -1261,14 +1319,20 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           
           const removedFromThisDay = originalLength - scheduleData.schedule[date].length;
           if (removedFromThisDay > 0) {
-            console.log(`Removed ${removedFromThisDay} sessions from ${date} due to event overlaps`);
+            console.log(`Removed ${removedFromThisDay} sessions from ${date} (overlaps + hallucinations)`);
           }
         }
         
         if (removedCount > 0) {
           console.log(`Total removed: ${removedCount} sessions that overlapped with events`);
-        } else {
-          console.log('No session-event overlaps detected - schedule is clean');
+        }
+        
+        if (hallucinationCount > 0) {
+          console.log(`🚨 Total hallucinations removed: ${hallucinationCount} invalid/event sessions`);
+        }
+        
+        if (removedCount === 0 && hallucinationCount === 0) {
+          console.log('✓ Schedule validation passed - no overlaps or hallucinations detected');
         }
       }
     } catch (parseError) {
