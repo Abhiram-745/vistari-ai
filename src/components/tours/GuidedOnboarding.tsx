@@ -43,6 +43,9 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
 
     const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
     const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
+    
+    console.log("Tour: checkOnboardingStatus", { savedStage, completedFlag, completedStages });
     
     // If onboarding is completed, don't start the tour
     if (completedFlag === "true") {
@@ -68,10 +71,11 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     
     // Only start tour automatically for new users who haven't completed it
     if (savedStage && savedStage !== "completed") {
+      console.log("Tour: Resuming at saved stage:", savedStage);
       setStage(savedStage as OnboardingStage);
-      setRunTour(false); // Reset to trigger update
     } else if (!savedStage && !completedFlag) {
       // New user - start at events stage
+      console.log("Tour: New user, starting at events");
       setStage("events");
       localStorage.setItem(`onboarding_stage_${user.id}`, "events");
     } else {
@@ -113,8 +117,20 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     }
   };
 
-  const updateTourForStage = () => {
+  const updateTourForStage = async () => {
     console.log("Tour: updateTourForStage called, stage:", stage, "path:", location.pathname);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
+    
+    // Don't show tour for stages already completed
+    if (completedStages.includes(stage)) {
+      console.log("Tour: Stage already completed, skipping");
+      return;
+    }
+
     switch (stage) {
       case "events":
         if (location.pathname === "/events") {
@@ -157,6 +173,13 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Mark current stage as completed
+    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
+    if (!completedStages.includes(stage)) {
+      completedStages.push(stage);
+      localStorage.setItem(`onboarding_completed_stages_${user.id}`, JSON.stringify(completedStages));
+    }
+
     let nextStage: OnboardingStage;
     switch (stage) {
       case "welcome":
@@ -178,6 +201,7 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
         nextStage = "completed";
     }
 
+    console.log("Tour: Advancing from", stage, "to", nextStage);
     setStage(nextStage);
     localStorage.setItem(`onboarding_stage_${user.id}`, nextStage);
 
