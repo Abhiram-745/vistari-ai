@@ -295,7 +295,8 @@ SCHOOL-TIME STUDY RULES:
             const dueDate = new Date(hw.due_date);
             const formattedDueDate = dueDate.toISOString().split('T')[0];
             const dueTime = dueDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            return `- "${hw.title}" (${hw.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${hw.duration || 60} minutes - 🚨 MUST COMPLETE BEFORE DUE DATE - NEVER SCHEDULE ON ${formattedDueDate}`;
+            const daysUntilDue = Math.ceil((dueDate.getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+            return `- "${hw.title}" (${hw.subject}) - DUE: ${formattedDueDate} at ${dueTime}, DURATION: ${hw.duration || 60} minutes - Days until due: ${daysUntilDue} - 🚨 MUST SCHEDULE ${Math.max(1, daysUntilDue - 2)} DAYS BEFORE DUE DATE - NEVER SCHEDULE ON ${formattedDueDate}`;
           })
           .join("\n") + 
           `\n\n**🚨 ABSOLUTE HOMEWORK DEADLINE REQUIREMENTS 🚨**: 
@@ -303,11 +304,13 @@ SCHOOL-TIME STUDY RULES:
 1. You MUST schedule ALL ${relevantHomework.length} homework assignments listed above
 2. 🔴 CRITICAL: Homework MUST be completed BEFORE the due date - NEVER ON the due date
 3. Homework is submitted/handed in on the due date, so it must be DONE BEFORE THEN
-4. If homework is due on 2024-01-15, it MUST be scheduled on 2024-01-14 or earlier
+4. If homework is due on 2024-01-15, it MUST be scheduled on 2024-01-14 or earlier (preferably 2024-01-13 or 2024-01-12)
 5. IDEAL: Schedule homework 2-3 days before the due date for best time management
 6. MINIMUM: Schedule at least 1 full day before the due date (never on the due date itself)
-7. Count and verify you've created exactly ${relevantHomework.length} homework sessions
-8. Each homework session MUST be scheduled with enough time to complete before due date
+7. **PRIORITY BY DUE DATE**: Schedule homework with sooner due dates FIRST to avoid last-minute cramming
+8. **ALLOCATE EXACT DURATION**: Each homework session must be scheduled with its EXACT specified duration (${relevantHomework.map((hw: any) => `${hw.title}: ${hw.duration || 60} mins`).join(', ')})
+9. Count and verify you've created exactly ${relevantHomework.length} homework sessions
+10. Each homework session MUST be scheduled with enough time to complete before due date
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
       : "\n\nNo homework assignments";
 
@@ -362,12 +365,15 @@ ${events.map((evt: any) => {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-CRITICAL EVENT BLOCKING RULES:
+**CRITICAL EVENT BLOCKING RULES - MUST FOLLOW EXACTLY:**
 ✗ If event is 18:00-21:00 (180 mins), the ENTIRE 3-hour block is BLOCKED
 ✗ You cannot schedule at 18:00, 18:15, 18:30, 19:00, 19:30, 20:00, 20:30, 20:45
 ✓ Next available time slot is 21:00 or later
 ✓ Schedule work BEFORE event starts OR AFTER event ends
 ✓ Events take ABSOLUTE PRIORITY over all study activities
+✓ **RESUME SCHEDULING AFTER EVENTS END**: After an event finishes, you MUST continue scheduling study sessions until the user's requested end time
+✓ Example: If event ends at 21:00 and user wants to study until 23:00, schedule 2 hours of work from 21:00-23:00
+✓ **FILL THE ENTIRE DAY**: Events create gaps, but you must fill the time BEFORE and AFTER events
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `
@@ -803,7 +809,15 @@ Create a detailed, balanced study schedule that:
      * Add "General Revision" sessions covering multiple topics
    - The schedule MUST fill the ENTIRE time window from start to end for EVERY enabled study day
    - **VERIFICATION**: Check that the last session on each day ends at or near the user's requested end time
-   - Work around blocked event times - schedule before events or after events end
+   - **WORK AROUND EVENTS - MANDATORY**: If an event blocks time (e.g., 18:00-21:00):
+     * Schedule sessions BEFORE the event starts (use time before 18:00)
+     * Schedule sessions AFTER the event ends (use time after 21:00 until day's end time)
+     * Example: If day is 09:00-23:00 with event 18:00-21:00, schedule 09:00-18:00 AND 21:00-23:00
+     * **DO NOT STOP** after an event - CONTINUE SCHEDULING until the day's requested end time
+   - **SCHOOL HOURS BLOCKING**: School events (e.g., 08:00-16:00 weekdays) work the same way:
+     * If user's study window is 09:00-22:00 and school is 08:00-16:00, schedule ONLY 16:00-22:00 on weekdays
+     * Weekends are NOT affected by school hours - fill the entire requested time window
+     * Before-school and lunch slots are OPTIONAL additions if user enabled them
 3. **IMPLEMENTS TWO-SESSION STRUCTURE**: For each topic, intelligently create appropriate sessions:
    - **Most topics**: 2 sessions (Practice with recommended tools + Exam questions)
    - **First topic in non-maths subjects**: 2 sessions (Revision notes + Exam questions)
