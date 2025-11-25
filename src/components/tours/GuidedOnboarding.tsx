@@ -50,6 +50,21 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       setRunTour(false);
       return;
     }
+
+    // Check if this is an existing user (has timetables already)
+    const { data: existingTimetables } = await supabase
+      .from("timetables")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    // If user has existing timetables, mark onboarding as completed
+    if (existingTimetables && existingTimetables.length > 0) {
+      localStorage.setItem(`onboarding_completed_${user.id}`, "true");
+      setStage("completed");
+      setRunTour(false);
+      return;
+    }
     
     // Only start tour automatically for new users who haven't completed it
     if (savedStage && savedStage !== "completed") {
