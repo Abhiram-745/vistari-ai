@@ -261,7 +261,10 @@ const CalendarView = () => {
   const fetchTimetables = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("timetables")
@@ -274,10 +277,14 @@ const CalendarView = () => {
       setTimetables(data || []);
       if (data && data.length > 0) {
         setSelectedTimetableId(data[0].id);
+      } else {
+        // No timetables found, stop loading
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching timetables:", error);
       toast.error("Failed to load timetables");
+      setLoading(false);
     }
   };
 
