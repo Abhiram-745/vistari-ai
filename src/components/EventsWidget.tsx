@@ -488,7 +488,7 @@ export const EventsWidget = () => {
   ).slice(0, 5);
 
   return (
-    <Card>
+    <Card data-tour="events-list">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Calendar className="h-5 w-5" />
@@ -496,7 +496,7 @@ export const EventsWidget = () => {
         </CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
+            <Button size="sm" className="gap-2" data-tour="add-event">
               <Plus className="h-4 w-4" />
               Add Event
             </Button>

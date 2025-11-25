@@ -1,0 +1,271 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import Joyride, { Step, CallBackProps, STATUS, ACTIONS } from "react-joyride";
+import { supabase } from "@/integrations/supabase/client";
+
+type OnboardingStage = 
+  | "welcome"
+  | "events"
+  | "homework"
+  | "timetable-create"
+  | "timetable-features"
+  | "completed";
+
+interface GuidedOnboardingProps {
+  onComplete?: () => void;
+}
+
+const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
+  const [stage, setStage] = useState<OnboardingStage>("welcome");
+  const [runTour, setRunTour] = useState(false);
+  const [steps, setSteps] = useState<Step[]>([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  useEffect(() => {
+    if (stage !== "welcome" && stage !== "completed") {
+      updateTourForStage();
+    }
+  }, [stage, location.pathname]);
+
+  const checkOnboardingStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
+    if (savedStage && savedStage !== "completed") {
+      setStage(savedStage as OnboardingStage);
+    }
+  };
+
+  const updateTourForStage = () => {
+    switch (stage) {
+      case "events":
+        if (location.pathname === "/events") {
+          setSteps(eventsOnboardingSteps);
+          setRunTour(true);
+        } else {
+          navigate("/events");
+        }
+        break;
+      case "homework":
+        if (location.pathname === "/homework") {
+          setSteps(homeworkOnboardingSteps);
+          setRunTour(true);
+        } else {
+          navigate("/homework");
+        }
+        break;
+      case "timetable-create":
+        if (location.pathname === "/timetables") {
+          setSteps(timetableCreateSteps);
+          setRunTour(true);
+        } else {
+          navigate("/timetables");
+        }
+        break;
+      case "timetable-features":
+        if (location.pathname === "/calendar") {
+          setSteps(timetableFeaturesSteps);
+          setRunTour(true);
+        } else {
+          navigate("/calendar");
+        }
+        break;
+    }
+  };
+
+  const advanceStage = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    let nextStage: OnboardingStage;
+    switch (stage) {
+      case "welcome":
+        nextStage = "events";
+        break;
+      case "events":
+        nextStage = "homework";
+        break;
+      case "homework":
+        nextStage = "timetable-create";
+        break;
+      case "timetable-create":
+        nextStage = "timetable-features";
+        break;
+      case "timetable-features":
+        nextStage = "completed";
+        break;
+      default:
+        nextStage = "completed";
+    }
+
+    setStage(nextStage);
+    localStorage.setItem(`onboarding_stage_${user.id}`, nextStage);
+
+    if (nextStage === "completed") {
+      localStorage.setItem(`onboarding_completed_${user.id}`, "true");
+      onComplete?.();
+    }
+  };
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, action, index, type } = data;
+
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      setRunTour(false);
+      advanceStage();
+    }
+  };
+
+  const eventsOnboardingSteps: Step[] = [
+    {
+      target: "[data-tour='events-page']",
+      content: "Welcome to Events! Let's start by setting up your schedule. This helps Vistari know when you're busy so it won't schedule study sessions during these times.",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour='school-schedule']",
+      content: "First, set your school hours. Click here to tell Vistari when you leave for school and when you get back home.",
+    },
+    {
+      target: "[data-tour='add-event']",
+      content: "Now add any recurring events like sports practice, music lessons, or clubs. Click 'Add Event' and fill in the details. Don't worry, you can add more later!",
+    },
+    {
+      target: "[data-tour='events-list']",
+      content: "All your events will appear here. You can edit or delete them anytime. Once you've added at least one event, we'll move on to homework!",
+    },
+  ];
+
+  const homeworkOnboardingSteps: Step[] = [
+    {
+      target: "[data-tour='homework-page']",
+      content: "Great job! Now let's add your homework assignments. Vistari will automatically schedule time to complete them before the due dates.",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour='add-homework']",
+      content: "Click 'Add Homework' to get started. Enter the subject, title, due date, and how long you think it will take.",
+    },
+    {
+      target: "[data-tour='active-homework']",
+      content: "Your active homework will show up here, sorted by due date. Add a few assignments, then we'll create your first timetable!",
+    },
+  ];
+
+  const timetableCreateSteps: Step[] = [
+    {
+      target: "[data-tour='timetables-page']",
+      content: "Excellent! Now for the exciting part - creating your personalized AI-powered study timetable!",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour='new-timetable']",
+      content: "Click here to start the timetable creation wizard. We'll walk you through each step to create the perfect study plan.",
+    },
+  ];
+
+  const timetableFeaturesSteps: Step[] = [
+    {
+      target: "[data-tour='calendar-page']",
+      content: "Amazing! Your timetable is ready. Let's explore the powerful features that make Vistari special.",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour='session-card']",
+      content: "Click on any study session to start a timer. The timer will count down and automatically prompt you for feedback when done.",
+    },
+    {
+      target: "[data-tour='calendar-legend']",
+      content: "Each color represents a different type of activity. Red = events, Blue = revision, Green = homework, Yellow = test prep.",
+    },
+    {
+      target: "body",
+      content: "That's it! You're all set to start your study journey. The tour for other sections (Social, Groups, etc.) will appear when you visit them. Good luck!",
+      placement: "center",
+    },
+  ];
+
+  return (
+    <Joyride
+      steps={steps}
+      run={runTour}
+      continuous
+      showProgress
+      showSkipButton
+      scrollToFirstStep
+      disableScrolling={false}
+      spotlightClicks
+      disableOverlayClose
+      callback={handleJoyrideCallback}
+      styles={{
+        options: {
+          primaryColor: "hsl(var(--primary))",
+          textColor: "hsl(var(--foreground))",
+          backgroundColor: "hsl(var(--card))",
+          overlayColor: "rgba(0, 0, 0, 0.75)",
+          arrowColor: "hsl(var(--card))",
+          zIndex: 10000,
+        },
+        overlay: {
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
+        },
+        spotlight: {
+          borderRadius: "8px",
+          boxShadow: "0px 0px 0px 9999px rgba(0, 0, 0, 0.75)",
+        },
+        tooltip: {
+          borderRadius: "16px",
+          padding: "24px",
+          boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.4)",
+          fontSize: "15px",
+        },
+        tooltipContainer: {
+          textAlign: "left",
+        },
+        tooltipTitle: {
+          fontSize: "18px",
+          fontWeight: 700,
+          marginBottom: "8px",
+        },
+        tooltipContent: {
+          fontSize: "14px",
+          lineHeight: "1.6",
+        },
+        buttonNext: {
+          backgroundColor: "hsl(var(--primary))",
+          borderRadius: "10px",
+          padding: "10px 20px",
+          fontSize: "14px",
+          fontWeight: 600,
+          transition: "all 0.2s ease",
+        },
+        buttonBack: {
+          color: "hsl(var(--muted-foreground))",
+          marginRight: "12px",
+          fontSize: "14px",
+        },
+        buttonSkip: {
+          color: "hsl(var(--muted-foreground))",
+          fontSize: "14px",
+        },
+      }}
+      floaterProps={{
+        disableAnimation: false,
+        styles: {
+          arrow: {
+            length: 12,
+            spread: 24,
+          },
+        },
+      }}
+    />
+  );
+};
+
+export default GuidedOnboarding;

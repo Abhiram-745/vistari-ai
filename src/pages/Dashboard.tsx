@@ -20,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
 import WelcomeModal from "@/components/WelcomeModal";
+import GuidedOnboarding from "@/components/tours/GuidedOnboarding";
 
 const Dashboard = () => {
   const navigate = useNavigate();

@@ -159,13 +159,13 @@ export const HomeworkList = ({ userId }: HomeworkListProps) => {
   }
 
   return (
-    <Card>
+    <Card data-tour="active-homework">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Homework Tracker</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
+              <Button size="sm" className="gap-2" data-tour="add-homework">
                 <Plus className="h-4 w-4" />
                 Add Homework
               </Button>
