@@ -29,9 +29,11 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
   useEffect(() => {
     if (stage !== "welcome" && stage !== "completed") {
       // Small delay to ensure DOM elements are ready
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         updateTourForStage();
-      }, 100);
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [stage, location.pathname]);
 
@@ -40,8 +42,16 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     if (!user) return;
 
     const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
+    const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+    
+    if (completedFlag === "true") {
+      setStage("completed");
+      return;
+    }
+    
     if (savedStage && savedStage !== "completed") {
       setStage(savedStage as OnboardingStage);
+      setRunTour(false); // Reset to trigger update
     } else if (!savedStage) {
       // Start at events stage by default
       setStage("events");
@@ -50,36 +60,45 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
   };
 
   const updateTourForStage = () => {
+    console.log("Tour: updateTourForStage called, stage:", stage, "path:", location.pathname);
     switch (stage) {
       case "events":
         if (location.pathname === "/events") {
+          console.log("Tour: Setting events steps, runTour = true");
           setSteps(eventsOnboardingSteps);
           setRunTour(true);
         } else {
+          console.log("Tour: Navigating to /events");
           navigate("/events");
         }
         break;
       case "homework":
         if (location.pathname === "/homework") {
+          console.log("Tour: Setting homework steps, runTour = true");
           setSteps(homeworkOnboardingSteps);
           setRunTour(true);
         } else {
+          console.log("Tour: Navigating to /homework");
           navigate("/homework");
         }
         break;
       case "timetable-create":
         if (location.pathname === "/timetables") {
+          console.log("Tour: Setting timetable create steps, runTour = true");
           setSteps(timetableCreateSteps);
           setRunTour(true);
         } else {
+          console.log("Tour: Navigating to /timetables");
           navigate("/timetables");
         }
         break;
       case "timetable-features":
         if (location.pathname === "/calendar") {
+          console.log("Tour: Setting timetable features steps, runTour = true");
           setSteps(timetableFeaturesSteps);
           setRunTour(true);
         } else {
+          console.log("Tour: Navigating to /calendar");
           navigate("/calendar");
         }
         break;
@@ -122,8 +141,10 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, index, type } = data;
+    console.log("Tour: Joyride callback", { status, action, index, type, stage });
 
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      console.log("Tour: Tour finished/skipped, advancing stage");
       setRunTour(false);
       advanceStage();
     }
@@ -208,16 +229,15 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
     <Joyride
       steps={steps}
       run={runTour}
-      continuous
-      showProgress
-      showSkipButton
-      scrollToFirstStep
+      continuous={true}
+      showProgress={true}
+      showSkipButton={true}
+      scrollToFirstStep={true}
       scrollOffset={100}
       disableScrolling={false}
-      spotlightClicks
-      disableOverlayClose
-      disableCloseOnEsc
-      hideBackButton={false}
+      spotlightClicks={true}
+      disableOverlayClose={true}
+      disableCloseOnEsc={false}
       callback={handleJoyrideCallback}
       styles={{
         options: {

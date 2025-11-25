@@ -103,6 +103,9 @@ const Dashboard = () => {
       {/* Welcome Modal for first-time users */}
       <WelcomeModal />
       
+      {/* Guided Onboarding Tour */}
+      <GuidedOnboarding />
+      
       {/* Floating background elements - just like landing page */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="floating-blob top-20 -left-32 w-96 h-96 bg-primary/10 animate-float"></div>

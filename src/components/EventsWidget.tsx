@@ -483,9 +483,10 @@ export const EventsWidget = () => {
     }
   };
 
-  const upcomingEvents = events.filter(
-    (event) => new Date(event.start_time) > new Date()
-  ).slice(0, 5);
+  // Show all events, sorted by start time
+  const displayEvents = events.slice().sort(
+    (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+  );
 
   return (
     <Card data-tour="events-list">
@@ -577,13 +578,13 @@ export const EventsWidget = () => {
       <CardContent>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading events...</p>
-        ) : upcomingEvents.length === 0 ? (
+        ) : displayEvents.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No upcoming events. Add events so the AI can schedule around them!
+            No events yet. Add events so the AI can schedule around them!
           </p>
         ) : (
           <div className="space-y-3">
-            {upcomingEvents.map((event) => (
+            {displayEvents.map((event) => (
               <div
                 key={event.id}
                 className="flex items-start justify-between p-3 rounded-lg border bg-card"
