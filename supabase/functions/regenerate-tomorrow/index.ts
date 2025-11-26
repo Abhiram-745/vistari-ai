@@ -397,12 +397,12 @@ Return ONLY valid JSON:
             "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: "gpt-5-mini-2025-08-07",
+            model: "gpt-4o-mini",
             messages: [
               { role: "system", content: "You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON." },
               { role: "user", content: prompt }
             ],
-            max_completion_tokens: 4096,
+            max_tokens: 4096,
           }),
           signal: controller.signal,
         }

@@ -1067,12 +1067,12 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
             "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: "gpt-5-mini-2025-08-07",
+            model: "gpt-4o-mini",
             messages: [
               { role: "system", content: "You are an expert educational planner specializing in GCSE revision strategies. Return ONLY valid JSON with no markdown formatting, no code fences, no additional text. Your response must start with { and end with }. CRITICAL: Ensure the JSON is complete with all closing braces and brackets." },
               { role: "user", content: prompt }
             ],
-            max_completion_tokens: 8192,
+            max_tokens: 8192,
           }),
           signal: controller.signal,
         }

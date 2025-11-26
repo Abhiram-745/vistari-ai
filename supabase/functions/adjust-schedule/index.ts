@@ -229,12 +229,12 @@ Return ONLY valid JSON:
           "Authorization": `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: "gpt-5-mini-2025-08-07",
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          max_completion_tokens: 4096,
+          max_tokens: 4096,
         }),
       }
     );
