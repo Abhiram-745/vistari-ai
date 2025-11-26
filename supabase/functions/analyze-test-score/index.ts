@@ -76,7 +76,7 @@ Be constructive, specific, and focused on GCSE exam success. Return ONLY valid J
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
