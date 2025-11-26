@@ -1056,12 +1056,12 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     const sdk = new Bytez(BYTEZ_API_KEY);
     const model = sdk.model("google/gemini-2.5-flash");
 
-    let aiResult;
+    let bytezResult;
     try {
-      aiResult = await model.run([
+      bytezResult = await model.run([
         {
           role: "system",
-          content: "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. CRITICAL: Ensure the JSON is complete with all closing braces and brackets. If approaching token limit, reduce the number of study sessions per day rather than returning incomplete JSON.",
+          content: "You are an expert educational planner specializing in GCSE revision strategies. Return ONLY valid JSON with no markdown formatting, no code fences, no additional text. Your response must start with { and end with }. CRITICAL: Ensure the JSON is complete with all closing braces and brackets.",
         },
         { role: "user", content: prompt },
       ]);
@@ -1075,10 +1075,12 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       clearTimeout(timeoutId);
     }
 
-    if (aiResult.error) {
-      console.error("Bytez AI error:", JSON.stringify(aiResult.error, null, 2));
+    console.log("Bytez raw result:", JSON.stringify(bytezResult, null, 2));
+
+    if (bytezResult.error) {
+      console.error("Bytez AI error:", JSON.stringify(bytezResult.error, null, 2));
       return new Response(
-        JSON.stringify({ error: "AI processing failed", details: aiResult.error }),
+        JSON.stringify({ error: "AI processing failed", details: bytezResult.error }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -1086,122 +1088,39 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       );
     }
 
-    console.log("Full aiResult structure:", JSON.stringify(aiResult, null, 2));
-
-    const data = aiResult.output;
-    console.log("Output data:", JSON.stringify(data, null, 2));
-    
+    // Extract content from Bytez response
     let aiResponse: string | undefined;
+    const output = bytezResult.output;
 
-    // Support both OpenAI-style and simple { role, content } Bytez responses
-    if (typeof data === "string") {
-      aiResponse = data;
-      console.log("Extracted as string");
-    } else if (data?.choices?.[0]?.message?.content) {
-      aiResponse = data.choices[0].message.content as string;
-      console.log("Extracted from choices[0].message.content");
-    } else if (data?.message?.content) {
-      aiResponse = data.message.content as string;
-      console.log("Extracted from message.content");
-    } else if (typeof data?.content === "string") {
-      aiResponse = data.content as string;
-      console.log("Extracted from content");
-    } else if (data?.role && data?.content) {
-      // Direct { role, content } object
-      aiResponse = data.content as string;
-      console.log("Extracted from direct role/content object");
+    if (typeof output === "string") {
+      aiResponse = output;
+    } else if (output?.content) {
+      // Direct { role, content } format from Gemini via Bytez
+      aiResponse = output.content;
+    } else if (output?.choices?.[0]?.message?.content) {
+      // OpenAI-style fallback
+      aiResponse = output.choices[0].message.content;
     }
 
-    // Validate that we got a response
     if (!aiResponse || aiResponse.trim() === "") {
-      console.error("Empty AI response received. Raw output:", JSON.stringify(data, null, 2));
-      console.error("Full aiResult:", JSON.stringify(aiResult, null, 2));
-      throw new Error("AI did not generate a response. Please try again or simplify your request.");
+      console.error("Empty AI response. Raw output:", JSON.stringify(output, null, 2));
+      throw new Error("AI did not generate a response. Please try again.");
     }
 
-    console.log("AI Response:", aiResponse.substring(0, 200) + "...");
+    console.log("Extracted AI response (first 300 chars):", aiResponse.substring(0, 300));
 
     // Extract JSON from markdown code blocks if present
     let scheduleData;
     try {
-      // Try multiple patterns for markdown code fences
       let jsonString = aiResponse.trim();
       
-      // Remove markdown code fences if present (supports various formats)
-      if (jsonString.includes('```')) {
-        jsonString = jsonString
-          .replace(/^```(?:json)?\s*/i, '') // Remove opening fence
-          .replace(/\s*```\s*$/i, '')        // Remove closing fence
-          .trim();
+      // Extract JSON from markdown fences if AI ignored instructions
+      const fenceMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      if (fenceMatch) {
+        jsonString = fenceMatch[1].trim();
+        console.log("Extracted JSON from markdown fence");
       }
-      
-      // Advanced JSON repair for truncated responses
-      if (!jsonString.endsWith('}')) {
-        console.log('JSON appears truncated, attempting comprehensive repair...');
-        
-        // Find the last complete day entry by looking for the last occurrence of a complete date key
-        const datePattern = /"20\d{2}-\d{2}-\d{2}":\s*\[/g;
-        const matches = [...jsonString.matchAll(datePattern)];
-        
-        if (matches.length > 0) {
-          // Start from the end and find the last complete day
-          let workingString = jsonString;
-          let foundComplete = false;
-          
-          // Try to find the last complete array closing bracket
-          for (let i = jsonString.length - 1; i >= 0; i--) {
-            if (jsonString[i] === ']') {
-              // Found a closing bracket, try to parse up to here
-              const testString = jsonString.substring(0, i + 1);
-              
-              // Check if this closes a complete day by counting braces
-              const openBrackets = (testString.match(/\[/g) || []).length;
-              const closeBrackets = (testString.match(/\]/g) || []).length;
-              
-              if (openBrackets === closeBrackets) {
-                workingString = testString;
-                foundComplete = true;
-                console.log('Found last complete day at position', i);
-                break;
-              }
-            }
-          }
-          
-          if (!foundComplete) {
-            // Fallback: remove everything after the last complete object
-            const lastCompleteObject = jsonString.lastIndexOf('},');
-            if (lastCompleteObject > -1) {
-              workingString = jsonString.substring(0, lastCompleteObject + 1) + '\n    ]';
-            }
-          }
-          
-          jsonString = workingString;
-        }
-        
-        // Count and balance braces/brackets
-        let openBraces = (jsonString.match(/{/g) || []).length;
-        let closeBraces = (jsonString.match(/}/g) || []).length;
-        let openBrackets = (jsonString.match(/\[/g) || []).length;
-        let closeBrackets = (jsonString.match(/\]/g) || []).length;
-        
-        console.log(`Balancing JSON: { ${openBraces} vs } ${closeBraces}, [ ${openBrackets} vs ] ${closeBrackets}`);
-        
-        // Close any open arrays
-        while (closeBrackets < openBrackets) {
-          jsonString += '\n    ]';
-          closeBrackets++;
-        }
-        
-        // Close any open objects  
-        while (closeBraces < openBraces) {
-          jsonString += '\n  }';
-          closeBraces++;
-        }
-        
-        console.log('JSON repair complete');
-      }
-      
-      // Additional validation that we have some JSON-like content
+
       if (!jsonString || jsonString.length < 10) {
         throw new Error("AI response is too short to be valid JSON");
       }
