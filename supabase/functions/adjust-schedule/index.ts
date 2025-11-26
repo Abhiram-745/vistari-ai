@@ -223,18 +223,32 @@ Return ONLY valid JSON:
       { role: 'user', content: prompt }
     ]);
 
+    console.log('Bytez AI response:', JSON.stringify(output, null, 2));
+
     if (aiError) {
-      console.error('Bytez AI error:', aiError);
+      console.error('Bytez AI error:', JSON.stringify(aiError, null, 2));
       return new Response(
-        JSON.stringify({ error: 'AI processing failed' }),
+        JSON.stringify({ error: 'AI processing failed', details: aiError }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    let responseText = output.choices?.[0]?.message?.content;
+    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
+    let responseText: string | undefined;
 
-    if (!responseText) {
-      throw new Error('No content in AI response');
+    if (typeof output === "string") {
+      responseText = output;
+    } else if (output?.content) {
+      // Direct { role, content } format from Gemini via Bytez
+      responseText = output.content;
+    } else if (output?.choices?.[0]?.message?.content) {
+      // OpenAI-style fallback
+      responseText = output.choices[0].message.content;
+    }
+
+    if (!responseText || responseText.trim() === "") {
+      console.error('Empty AI response. Raw output:', JSON.stringify(output, null, 2));
+      throw new Error('AI did not generate a response. Please try again.');
     }
 
     // Extract JSON from markdown if present
