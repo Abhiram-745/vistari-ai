@@ -1,12 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const OPENROUTER_API_KEY = "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";
+const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,37 +17,22 @@ serve(async (req) => {
   try {
     const { text, subjectName, images } = await req.json();
 
-    // Build content array for OpenRouter
-    const contentArray: any[] = [];
-    
-    // Add text instruction
-    let instructionText = `Subject: ${subjectName}\n\nExtract ALL distinct study topics from `;
-    if (text && images && images.length > 0) {
-      instructionText += `the following text and ${images.length} image(s):\n\n${text}`;
-    } else if (text) {
-      instructionText += `the following text:\n\n${text}`;
-    } else if (images && images.length > 0) {
-      instructionText += `the ${images.length} image(s) provided.`;
+    // Build user message
+    let userMessage = `Subject: ${subjectName}\n\n`;
+    if (text) {
+      userMessage += `Extract topics from this text:\n${text}`;
     }
-    
-    contentArray.push({
-      type: "text",
-      text: instructionText
-    });
-
-    // Add images to content array
     if (images && Array.isArray(images) && images.length > 0) {
-      for (const imageUrl of images) {
-        contentArray.push({
-          type: "image_url",
-          image_url: {
-            url: imageUrl
-          }
-        });
-      }
+      userMessage += (text ? "\n\n" : "") + `Also extract topics from ${images.length} image(s) provided.`;
     }
 
-    const systemPrompt = `You are an expert at extracting study topics from text and images. 
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
+
+    const { error, output } = await model.run([
+      {
+        role: 'system',
+        content: `You are an expert at extracting study topics from text and images. 
 
 Your task:
 1. Carefully analyze the provided text and/or images
@@ -61,81 +47,49 @@ Return ONLY valid JSON in this format:
     {"name": "Topic 1"},
     {"name": "Topic 2"}
   ]
-}`;
-
-    // Call OpenRouter API with proper headers
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://vistari-ai.lovable.app",
-        "X-Title": "Vistari AI Topic Parser"
+}`
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: contentArray
-          }
-        ]
-      })
-    });
+      {
+        role: 'user',
+        content: userMessage
+      }
+    ]);
 
-    if (!response.ok) {
-      let errorText;
-      try {
-        errorText = await response.text();
-        console.error('OpenRouter API error:', response.status, errorText);
-      } catch (e) {
-        errorText = "Could not parse error response";
-        console.error('OpenRouter API error:', response.status);
-      }
-      
-      // Provide more specific error messages
-      let userMessage = "AI processing failed";
-      if (response.status === 401) {
-        userMessage = "API authentication failed. Please check API key.";
-      } else if (response.status === 402) {
-        userMessage = "API credits exhausted. Please add credits to your OpenRouter account.";
-      } else if (response.status === 429) {
-        userMessage = "Rate limit exceeded. Please try again later.";
-      }
-      
-      return new Response(JSON.stringify({ 
-        error: userMessage, 
-        details: errorText,
-        status: response.status 
-      }), {
+    console.log('Bytez AI response:', JSON.stringify(output, null, 2));
+
+    if (error) {
+      console.error('Bytez AI error:', JSON.stringify(error, null, 2));
+      return new Response(JSON.stringify({ error: "AI processing failed", details: error }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const data = await response.json();
-    console.log('OpenRouter AI response:', JSON.stringify(data, null, 2));
-
-    // Extract content from OpenRouter response
-    const responseText = data.choices?.[0]?.message?.content;
+    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
+    let responseText: string | undefined;
+    
+    if (typeof output === "string") {
+      responseText = output;
+    } else if (output?.content) {
+      // Direct { role, content } format from Gemini via Bytez
+      responseText = output.content;
+    } else if (output?.choices?.[0]?.message?.content) {
+      // OpenAI-style fallback
+      responseText = output.choices[0].message.content;
+    }
 
     if (!responseText || responseText.trim() === "") {
-      console.error('Empty AI response. Raw output:', JSON.stringify(data, null, 2));
+      console.error('Empty AI response. Raw output:', JSON.stringify(output, null, 2));
       throw new Error('AI did not generate a response. Please try again.');
     }
 
     // Extract JSON from markdown if present
-    let jsonString = responseText;
-    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
     if (jsonMatch) {
-      jsonString = jsonMatch[1];
+      responseText = jsonMatch[1];
     }
 
-    const parsedTopics = JSON.parse(jsonString);
+    const parsedTopics = JSON.parse(responseText);
 
     return new Response(JSON.stringify({ topics: parsedTopics.topics }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
