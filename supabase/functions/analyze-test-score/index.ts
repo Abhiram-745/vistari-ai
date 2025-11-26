@@ -68,7 +68,7 @@ Be constructive, specific, and focused on GCSE exam success. Return ONLY valid J
     console.log("Calling Bytez AI for test score analysis...");
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-flash");
+    const model = sdk.model("google/gemini-2.5-pro");
 
     const { error: aiError, output } = await model.run([
       {
