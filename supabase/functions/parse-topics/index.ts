@@ -27,7 +27,7 @@ serve(async (req) => {
     }
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-flash");
+    const model = sdk.model("google/gemini-2.5-pro");
 
     const { error, output } = await model.run([
       {
