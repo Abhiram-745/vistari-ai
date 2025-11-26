@@ -193,7 +193,6 @@ ${peak.recommendation}
       dateRange: `${startDate} to ${endDate}`,
     });
 
-    console.log("Generating timetable with:", {
     const subjectsContext = subjects
       .map((s: any) => {
         const modeLabel = s.mode === "short-term-exam" ? "Short-Term Exam Prep" 
@@ -1054,31 +1053,18 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for large timetables
 
-    let response;
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
+
+    let aiResult;
     try {
-      response = await fetch(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
+      aiResult = await model.run([
         {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. CRITICAL: Ensure the JSON is complete with all closing braces and brackets. If approaching token limit, reduce the number of study sessions per day rather than returning incomplete JSON.",
-              },
-              { role: "user", content: prompt },
-            ],
-            max_completion_tokens: 16000, // Balanced limit for comprehensive timetables
-          }),
-          signal: controller.signal,
-        }
-      );
+          role: "system",
+          content: "You are an expert educational planner specializing in GCSE revision strategies. Always return valid JSON only, no additional text or markdown. CRITICAL: Ensure the JSON is complete with all closing braces and brackets. If approaching token limit, reduce the number of study sessions per day rather than returning incomplete JSON.",
+        },
+        { role: "user", content: prompt },
+      ]);
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof Error && err.name === 'AbortError') {
@@ -1089,36 +1075,18 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       clearTimeout(timeoutId);
     }
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: "Rate limits exceeded, please try again later.",
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({
-            error:
-              "Payment required, please add funds to your Lovable AI workspace.",
-          }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+    if (aiResult.error) {
+      console.error("Bytez AI error:", aiResult.error);
+      return new Response(
+        JSON.stringify({ error: "AI processing failed" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    const data = await response.json();
+    const data = aiResult.output;
     const aiResponse = data.choices?.[0]?.message?.content;
 
     // Validate that we got a response
