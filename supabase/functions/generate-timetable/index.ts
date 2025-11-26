@@ -10,7 +10,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const BYTEZ_API_KEY = "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";
+const BYTEZ_API_KEY = "476fe6c6dd44210bfce5aba310beb8cb";
 
 // Input validation schema
 const inputSchema = z.object({
