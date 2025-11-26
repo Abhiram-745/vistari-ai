@@ -159,7 +159,7 @@ Format your response as JSON with this structure:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-nano-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },
           { role: 'user', content: prompt }
