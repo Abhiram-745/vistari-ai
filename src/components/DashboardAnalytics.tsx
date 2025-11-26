@@ -820,7 +820,9 @@ export const DashboardAnalytics = ({ userId }: { userId: string }) => {
                 )}
 
                 {/* Peak Study Hours */}
-                {insights.peakStudyHours && (
+                {insights.peakStudyHours && 
+                 insights.peakStudyHours.completionRateByWindow && 
+                 insights.peakStudyHours.avgDifficultyByWindow && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2">
