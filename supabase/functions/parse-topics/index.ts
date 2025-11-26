@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,8 +25,8 @@ serve(async (req) => {
       userMessage += (text ? "\n\n" : "") + `Also extract topics from ${images.length} image(s) provided.`;
     }
 
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY not configured");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY not configured");
     }
 
     const systemPrompt = `You are an expert at extracting study topics from images and text.
@@ -54,35 +54,38 @@ Return ONLY valid JSON in this format:
 }`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `${systemPrompt}\n\n${userMessage}` }]
-          }],
-          generationConfig: {
-            temperature: 1,
-            maxOutputTokens: 2048,
-          },
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage }
+          ],
+          temperature: 1,
+          max_tokens: 2048,
         }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
-      throw new Error(`Gemini API request failed: ${response.status}`);
+      console.error("Lovable AI error:", response.status, errorText);
+      throw new Error(`Lovable AI request failed: ${response.status}`);
     }
 
-    const geminiResult = await response.json();
-    console.log('Gemini AI response:', JSON.stringify(geminiResult, null, 2));
+    const result = await response.json();
+    console.log('Lovable AI response:', JSON.stringify(result, null, 2));
 
-    // Extract content from Gemini response
+    // Extract content from Lovable AI response
     let responseText: string | undefined;
-    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-      responseText = geminiResult.candidates[0].content.parts[0].text;
+    if (result.choices?.[0]?.message?.content) {
+      responseText = result.choices[0].message.content;
     }
 
     if (!responseText || responseText.trim() === "") {
