@@ -32,14 +32,21 @@ serve(async (req) => {
     const { error, output } = await model.run([
       {
         role: 'system',
-        content: `You are an expert at extracting study topics from text and images. 
+        content: `You are an expert at extracting study topics from images and text.
+
+CRITICAL RULES - READ CAREFULLY:
+1. Extract ONLY topics that are explicitly visible in the provided images/text
+2. DO NOT generate, infer, or add ANY topics that are not directly shown
+3. DO NOT expand topic names beyond what is written
+4. DO NOT add related topics, subtopics, or chapters that are not explicitly listed
+5. Copy the exact topic names as they appear in the images/text
+6. If a checklist, bullet list, or numbered list is shown, extract ONLY those items
 
 Your task:
-1. Carefully analyze the provided text and/or images
-2. Extract ALL distinct study topics, chapters, or subtopics mentioned
-3. Look for: checklists, bullet points, numbered lists, topic headers, chapter names, subject content
-4. Return ONLY the topic names - be concise but clear
-5. Each topic should be a distinct learning unit
+- Look at the images/text provided
+- Find topic names, chapter titles, checklist items, or bullet points
+- Extract them EXACTLY as written
+- Return ONLY what you can see - nothing more, nothing less
 
 Return ONLY valid JSON in this format:
 {
