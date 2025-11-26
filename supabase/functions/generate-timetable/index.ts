@@ -2,12 +2,15 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const BYTEZ_API_KEY = "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";
 
 // Input validation schema
 const inputSchema = z.object({
@@ -190,12 +193,7 @@ ${peak.recommendation}
       dateRange: `${startDate} to ${endDate}`,
     });
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
-    // Build context for AI
+    console.log("Generating timetable with:", {
     const subjectsContext = subjects
       .map((s: any) => {
         const modeLabel = s.mode === "short-term-exam" ? "Short-Term Exam Prep" 

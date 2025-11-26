@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const BYTEZ_API_KEY = "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";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -92,11 +95,6 @@ serve(async (req) => {
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     // Build comprehensive context for AI
@@ -215,51 +213,25 @@ Return ONLY valid JSON:
 5. Write clear summary explaining what changed and why`;
 
 
-    console.log('Calling AI for schedule adjustment...');
+    console.log('Calling Bytez AI for schedule adjustment...');
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },
-          { role: 'user', content: prompt }
-        ],
-        max_completion_tokens: 4000,
-      }),
-    });
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded. Please try again in a moment.' 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'Payment required. Please add credits to your Lovable AI workspace.' 
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+    const { error: aiError, output } = await model.run([
+      { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
 
-      throw new Error(`AI API error: ${aiResponse.status}`);
+    if (aiError) {
+      console.error('Bytez AI error:', aiError);
+      return new Response(
+        JSON.stringify({ error: 'AI processing failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const aiData = await aiResponse.json();
-    let responseText = aiData.choices?.[0]?.message?.content;
+    let responseText = output.choices?.[0]?.message?.content;
 
     if (!responseText) {
       throw new Error('No content in AI response');
