@@ -1087,11 +1087,22 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     }
 
     const data = aiResult.output;
-    const aiResponse = data.choices?.[0]?.message?.content;
+    let aiResponse: string | undefined;
+
+    // Support both OpenAI-style and simple { role, content } Bytez responses
+    if (typeof data === "string") {
+      aiResponse = data;
+    } else if (data?.choices?.[0]?.message?.content) {
+      aiResponse = data.choices[0].message.content as string;
+    } else if (data?.message?.content) {
+      aiResponse = data.message.content as string;
+    } else if (typeof data?.content === "string") {
+      aiResponse = data.content as string;
+    }
 
     // Validate that we got a response
-    if (!aiResponse || aiResponse.trim() === '') {
-      console.error("Empty AI response received");
+    if (!aiResponse || aiResponse.trim() === "") {
+      console.error("Empty AI response received. Raw output:", JSON.stringify(data));
       throw new Error("AI did not generate a response. Please try again or simplify your request.");
     }
 
