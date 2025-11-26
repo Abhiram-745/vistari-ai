@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BYTEZ_API_KEY = "4519d93600448098ebd2fd7572320bda";
+const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -384,7 +384,7 @@ Return ONLY valid JSON:
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("openai/gpt-5");
+    const model = sdk.model("google/gemini-2.5-flash");
 
     let bytezResult;
     try {

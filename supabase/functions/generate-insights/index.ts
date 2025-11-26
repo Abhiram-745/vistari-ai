@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BYTEZ_API_KEY = "4519d93600448098ebd2fd7572320bda";
+const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -152,7 +152,7 @@ Format your response as JSON with this structure:
 }`;
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("openai/gpt-5");
+    const model = sdk.model("google/gemini-2.5-flash");
 
     const { error: aiError, output } = await model.run([
       { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },
