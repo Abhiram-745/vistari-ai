@@ -11,26 +11,23 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured');
 
     console.log('Generating enhanced Vistari logo...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image',
-        messages: [
-          {
-            role: 'user',
-            content: 'Create a premium, modern app icon for "Vistari" - a student revision planning app. The design should feature: a stylized calendar icon integrated with the letter "V", vibrant cyan-to-lime gradient background (from #0EA5E9 to #84CC16), smooth rounded square shape with subtle depth, clean white icon design, professional and trustworthy aesthetic, suitable for app icons. Make it sharp, high-quality, with soft shadows for depth. Size: 512x512px, ultra high resolution.',
-          },
-        ],
-        modalities: ['image', 'text'],
+        model: 'dall-e-3',
+        prompt: 'Create a premium, modern app icon for "Vistari" - a student revision planning app. The design should feature: a stylized calendar icon integrated with the letter "V", vibrant cyan-to-lime gradient background (from #0EA5E9 to #84CC16), smooth rounded square shape with subtle depth, clean white icon design, professional and trustworthy aesthetic, suitable for app icons. Make it sharp, high-quality, with soft shadows for depth. Size: 512x512px, ultra high resolution.',
+        size: '1024x1024',
+        quality: 'hd',
+        n: 1,
       }),
     });
 
@@ -43,7 +40,7 @@ serve(async (req) => {
     const data = await response.json();
     console.log('Logo generated successfully');
 
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const imageUrl = data.data?.[0]?.url;
     
     if (!imageUrl) {
       throw new Error('No image returned from AI');
