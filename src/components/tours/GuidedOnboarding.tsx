@@ -27,32 +27,44 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
   }, []);
 
   useEffect(() => {
-    if (stage !== "welcome" && stage !== "completed") {
-      // Small delay to ensure DOM elements are ready
-      const timer = setTimeout(() => {
-        updateTourForStage();
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [stage, location.pathname]);
+    const checkAndStartTour = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+      if (completedFlag === "true") return;
+
+      const visitedTabs = JSON.parse(localStorage.getItem(`onboarding_visited_tabs_${user.id}`) || "[]");
+      const currentPath = location.pathname;
+
+      // Map paths to tour stages
+      let tourStage: OnboardingStage | null = null;
+      if (currentPath === "/events" && !visitedTabs.includes("events")) {
+        tourStage = "events";
+      } else if (currentPath === "/homework" && !visitedTabs.includes("homework")) {
+        tourStage = "homework";
+      } else if (currentPath === "/timetables" && !visitedTabs.includes("timetables")) {
+        tourStage = "timetable-create";
+      } else if (currentPath === "/calendar" && !visitedTabs.includes("calendar")) {
+        tourStage = "timetable-features";
+      }
+
+      if (tourStage) {
+        setStage(tourStage);
+        // Small delay to ensure DOM elements are ready
+        setTimeout(() => {
+          setSteps(getStepsForStage(tourStage!));
+          setRunTour(true);
+        }, 500);
+      }
+    };
+
+    checkAndStartTour();
+  }, [location.pathname]);
 
   const checkOnboardingStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    const savedStage = localStorage.getItem(`onboarding_stage_${user.id}`);
-    const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
-    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
-    
-    console.log("Tour: checkOnboardingStatus", { savedStage, completedFlag, completedStages });
-    
-    // If onboarding is completed, don't start the tour
-    if (completedFlag === "true") {
-      setStage("completed");
-      setRunTour(false);
-      return;
-    }
 
     // Check if this is an existing user (has timetables already)
     const { data: existingTimetables } = await supabase
@@ -61,164 +73,68 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
       .eq("user_id", user.id)
       .limit(1);
 
-    // If user has existing timetables, mark onboarding as completed
+    // If user has existing timetables, mark as completed and don't show tour
     if (existingTimetables && existingTimetables.length > 0) {
       localStorage.setItem(`onboarding_completed_${user.id}`, "true");
       setStage("completed");
       setRunTour(false);
       return;
     }
-    
-    // Only start tour automatically for new users who haven't completed it
-    if (savedStage && savedStage !== "completed") {
-      console.log("Tour: Resuming at saved stage:", savedStage);
-      setStage(savedStage as OnboardingStage);
-    } else if (!savedStage && !completedFlag) {
-      // New user - start at events stage
-      console.log("Tour: New user, starting at events");
-      setStage("events");
-      localStorage.setItem(`onboarding_stage_${user.id}`, "events");
-    } else {
-      // User has completed or should not see tour
+
+    // Check if onboarding already completed
+    const completedFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+    if (completedFlag === "true") {
       setStage("completed");
-      setRunTour(false);
-    }
-  };
-
-  const checkTimetableAndStartTour = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Check if user has any timetables
-    const { data: timetables } = await supabase
-      .from("timetables")
-      .select("id")
-      .eq("user_id", user.id)
-      .limit(1);
-
-    if (!timetables || timetables.length === 0) {
-      // No timetables - skip features tour and mark as completed
-      console.log("Tour: No timetables found, skipping features tour");
-      setStage("completed");
-      localStorage.setItem(`onboarding_stage_${user.id}`, "completed");
-      localStorage.setItem(`onboarding_completed_${user.id}`, "true");
       setRunTour(false);
       return;
     }
-
-    // Has timetables - proceed with features tour
-    if (location.pathname === "/calendar") {
-      console.log("Tour: Setting timetable features steps, runTour = true");
-      setSteps(timetableFeaturesSteps);
-      setRunTour(true);
-    } else {
-      console.log("Tour: Navigating to /calendar");
-      navigate("/calendar");
-    }
+    
+    // New user without timetables - don't auto-start, wait for tab clicks
+    setStage("completed");
+    setRunTour(false);
   };
 
-  const updateTourForStage = async () => {
-    console.log("Tour: updateTourForStage called, stage:", stage, "path:", location.pathname);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
-    
-    // Don't show tour for stages already completed
-    if (completedStages.includes(stage)) {
-      console.log("Tour: Stage already completed, skipping");
-      return;
-    }
 
-    switch (stage) {
+  const getStepsForStage = (tourStage: OnboardingStage): Step[] => {
+    switch (tourStage) {
       case "events":
-        if (location.pathname === "/events") {
-          console.log("Tour: Setting events steps, runTour = true");
-          setSteps(eventsOnboardingSteps);
-          setRunTour(true);
-        } else {
-          console.log("Tour: Navigating to /events");
-          navigate("/events");
-        }
-        break;
+        return eventsOnboardingSteps;
       case "homework":
-        if (location.pathname === "/homework") {
-          console.log("Tour: Setting homework steps, runTour = true");
-          setSteps(homeworkOnboardingSteps);
-          setRunTour(true);
-        } else {
-          console.log("Tour: Navigating to /homework");
-          navigate("/homework");
-        }
-        break;
+        return homeworkOnboardingSteps;
       case "timetable-create":
-        if (location.pathname === "/timetables") {
-          console.log("Tour: Setting timetable create steps, runTour = true");
-          setSteps(timetableCreateSteps);
-          setRunTour(true);
-        } else {
-          console.log("Tour: Navigating to /timetables");
-          navigate("/timetables");
-        }
-        break;
+        return timetableCreateSteps;
       case "timetable-features":
-        // Check if user has a timetable before starting features tour
-        checkTimetableAndStartTour();
-        break;
-    }
-  };
-
-  const advanceStage = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Mark current stage as completed
-    const completedStages = JSON.parse(localStorage.getItem(`onboarding_completed_stages_${user.id}`) || "[]");
-    if (!completedStages.includes(stage)) {
-      completedStages.push(stage);
-      localStorage.setItem(`onboarding_completed_stages_${user.id}`, JSON.stringify(completedStages));
-    }
-
-    let nextStage: OnboardingStage;
-    switch (stage) {
-      case "welcome":
-        nextStage = "events";
-        break;
-      case "events":
-        nextStage = "homework";
-        break;
-      case "homework":
-        nextStage = "timetable-create";
-        break;
-      case "timetable-create":
-        nextStage = "timetable-features";
-        break;
-      case "timetable-features":
-        nextStage = "completed";
-        break;
+        return timetableFeaturesSteps;
       default:
-        nextStage = "completed";
+        return [];
     }
+  };
 
-    console.log("Tour: Advancing from", stage, "to", nextStage);
-    setStage(nextStage);
-    localStorage.setItem(`onboarding_stage_${user.id}`, nextStage);
+  const markTabAsVisited = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    if (nextStage === "completed") {
-      localStorage.setItem(`onboarding_completed_${user.id}`, "true");
-      onComplete?.();
+    const visitedTabs = JSON.parse(localStorage.getItem(`onboarding_visited_tabs_${user.id}`) || "[]");
+    
+    // Map stage to tab name
+    let tabName = "";
+    if (stage === "events") tabName = "events";
+    else if (stage === "homework") tabName = "homework";
+    else if (stage === "timetable-create") tabName = "timetables";
+    else if (stage === "timetable-features") tabName = "calendar";
+
+    if (tabName && !visitedTabs.includes(tabName)) {
+      visitedTabs.push(tabName);
+      localStorage.setItem(`onboarding_visited_tabs_${user.id}`, JSON.stringify(visitedTabs));
     }
   };
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, action, index, type } = data;
-    console.log("Tour: Joyride callback", { status, action, index, type, stage });
+    const { status } = data;
 
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      console.log("Tour: Tour finished/skipped, advancing stage");
       setRunTour(false);
-      advanceStage();
+      markTabAsVisited();
     }
   };
   const eventsOnboardingSteps: Step[] = [
@@ -301,7 +217,7 @@ const GuidedOnboarding = ({ onComplete }: GuidedOnboardingProps) => {
 
   return (
     <>
-      {stage !== "completed" && (
+      {runTour && (
         <Joyride
           steps={steps}
           run={runTour}
