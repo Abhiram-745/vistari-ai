@@ -61,7 +61,7 @@ export const calculateFeasibility = (
     if (slot.startTime && slot.endTime) {
       const [startHour, startMin] = slot.startTime.split(':').map(Number);
       const [endHour, endMin] = slot.endTime.split(':').map(Number);
-      const slotHours = (endHour + endMin / 60) - (startHour + startMin / 60);
+      const slotHours = Math.max(0, (endHour + endMin / 60) - (startHour + startMin / 60));
       weeklyAvailableHours += slotHours;
     }
   });
@@ -70,15 +70,31 @@ export const calculateFeasibility = (
   const weeks = totalDays / 7;
   let totalAvailableHours = weeklyAvailableHours * weeks;
 
-  // Subtract event durations from available hours
+  // Subtract UNIQUE event durations that fall within the timetable range
   if (events && events.length > 0) {
+    const uniqueEvents = new Map();
     events.forEach((event) => {
       const eventStart = new Date(event.start_time);
       const eventEnd = new Date(event.end_time);
-      const eventDuration = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60); // hours
-      totalAvailableHours -= eventDuration;
+      
+      // Only count events within the timetable date range
+      if (eventStart >= start && eventStart <= end) {
+        const eventKey = `${event.title}-${event.start_time}-${event.end_time}`;
+        if (!uniqueEvents.has(eventKey)) {
+          const eventDuration = Math.max(0, (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60));
+          uniqueEvents.set(eventKey, eventDuration);
+        }
+      }
+    });
+    
+    // Sum up unique event hours
+    uniqueEvents.forEach((duration) => {
+      totalAvailableHours -= duration;
     });
   }
+
+  // Ensure available hours never goes negative
+  totalAvailableHours = Math.max(0, totalAvailableHours);
 
   // Calculate weekly distribution
   const weeklyDistribution = [];
@@ -94,8 +110,9 @@ export const calculateFeasibility = (
     const weeksInPeriod = daysInWeek / 7;
     let weekHours = weeklyAvailableHours * weeksInPeriod;
 
-    // Subtract events in this week
+    // Subtract UNIQUE events in this week
     if (events) {
+      const uniqueWeekEvents = new Map();
       events.forEach((event) => {
         const eventDate = new Date(event.start_time);
         if (
@@ -104,17 +121,27 @@ export const calculateFeasibility = (
             end: actualWeekEnd,
           })
         ) {
-          const eventStart = new Date(event.start_time);
-          const eventEnd = new Date(event.end_time);
-          const eventDuration = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60);
-          weekHours -= eventDuration;
+          const eventKey = `${event.title}-${event.start_time}-${event.end_time}`;
+          if (!uniqueWeekEvents.has(eventKey)) {
+            const eventStart = new Date(event.start_time);
+            const eventEnd = new Date(event.end_time);
+            const eventDuration = Math.max(0, (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60));
+            uniqueWeekEvents.set(eventKey, eventDuration);
+          }
         }
+      });
+      
+      uniqueWeekEvents.forEach((duration) => {
+        weekHours -= duration;
       });
     }
 
+    // Ensure week hours never goes negative
+    weekHours = Math.max(0, weekHours);
+
     // Estimate hours needed per week (distribute evenly)
     const estimatedHoursNeeded = (totalHoursNeeded / weeks) * weeksInPeriod;
-    const utilization = estimatedHoursNeeded / weekHours;
+    const utilization = weekHours > 0 ? estimatedHoursNeeded / weekHours : 0;
 
     let status: "manageable" | "busy" | "overwhelming";
     if (utilization < 0.6) status = "manageable";
@@ -133,7 +160,7 @@ export const calculateFeasibility = (
 
   // Determine overall status
   const difference = totalAvailableHours - totalHoursNeeded;
-  const utilization = totalHoursNeeded / totalAvailableHours;
+  const utilization = totalAvailableHours > 0 ? totalHoursNeeded / totalAvailableHours : 1;
 
   let status: "over-scheduled" | "balanced" | "under-utilized" | "optimal";
   if (utilization > 1.05) status = "over-scheduled";
