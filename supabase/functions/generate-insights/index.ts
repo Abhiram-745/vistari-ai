@@ -1,14 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -151,43 +150,45 @@ Format your response as JSON with this structure:
   "overallSummary": "string"
 }`;
 
-    const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-pro");
-
-    const { error: aiError, output } = await model.run([
-      { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },
-      { role: 'user', content: prompt }
-    ]);
-
-    console.log('Bytez AI response:', JSON.stringify(output, null, 2));
-
-    if (aiError) {
-      console.error('Bytez AI error:', JSON.stringify(aiError, null, 2));
-      return new Response(
-        JSON.stringify({ error: 'AI processing failed', details: aiError }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY not configured");
     }
 
-    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
-    let insightsText: string | undefined;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `You are an expert educational analyst who creates personalized learning insights.\n\n${prompt}` }]
+          }],
+          generationConfig: {
+            temperature: 1,
+            maxOutputTokens: 4096,
+          },
+        }),
+      }
+    );
 
-    if (typeof output === "string") {
-      insightsText = output;
-    } else if (output?.content) {
-      // Direct { role, content } format from Gemini via Bytez
-      insightsText = output.content;
-    } else if (output?.choices?.[0]?.message?.content) {
-      // OpenAI-style fallback
-      insightsText = output.choices[0].message.content;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API error:", response.status, errorText);
+      throw new Error(`Gemini API request failed: ${response.status}`);
+    }
+
+    const geminiResult = await response.json();
+    console.log('Gemini AI response:', JSON.stringify(geminiResult, null, 2));
+
+    // Extract content from Gemini response
+    let insightsText: string | undefined;
+    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
+      insightsText = geminiResult.candidates[0].content.parts[0].text;
     }
 
     if (!insightsText || insightsText.trim() === "") {
-      console.error('Empty AI response. Raw output:', JSON.stringify(output, null, 2));
-      return new Response(
-        JSON.stringify({ error: 'No content in AI response', rawOutput: output }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.error('Empty AI response. Raw result:', JSON.stringify(geminiResult, null, 2));
+      throw new Error('AI did not generate a response. Please try again.');
     }
 
     // Extract JSON from markdown code blocks if present
