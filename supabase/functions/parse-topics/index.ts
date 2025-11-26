@@ -1,10 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const BYTEZ_API_KEY = "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";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,55 +16,23 @@ serve(async (req) => {
 
   try {
     const { text, subjectName, images } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
-
-    // Build the user message content
-    const userContent: any[] = [];
-    
-    // Add text if provided
+    // Build user message
+    let userMessage = `Subject: ${subjectName}\n\n`;
     if (text) {
-      userContent.push({
-        type: "text",
-        text: `Subject: ${subjectName}\n\nExtract topics from this text:\n${text}`
-      });
+      userMessage += `Extract topics from this text:\n${text}`;
     }
-    
-    // Add images if provided
-    if (images && Array.isArray(images)) {
-      images.forEach((imageData: string) => {
-        userContent.push({
-          type: "image_url",
-          image_url: {
-            url: imageData
-          }
-        });
-      });
-      
-      // Add instruction for images
-      userContent.push({
-        type: "text",
-        text: images.length > 0 && !text 
-          ? `Subject: ${subjectName}\n\nExtract all study topics visible in the provided images. Look for checklists, notes, topic lists, or any educational content.` 
-          : "\n\nAlso extract any additional topics from the images provided."
-      });
+    if (images && Array.isArray(images) && images.length > 0) {
+      userMessage += (text ? "\n\n" : "") + `Also extract topics from ${images.length} image(s) provided.`;
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert at extracting study topics from text and images. 
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
+
+    const { error, output } = await model.run([
+      {
+        role: 'system',
+        content: `You are an expert at extracting study topics from text and images. 
 
 Your task:
 1. Carefully analyze the provided text and/or images
@@ -70,73 +41,42 @@ Your task:
 4. Return ONLY the topic names - be concise but clear
 5. Each topic should be a distinct learning unit
 
-For images: Look for handwritten notes, typed checklists, textbook pages, revision guides, or any educational content.`
-          },
-          {
-            role: 'user',
-            content: userContent
-          }
-        ],
-        max_completion_tokens: 2000,
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_topics",
-              description: "Extract study topics from text and images",
-              parameters: {
-                type: "object",
-                properties: {
-                  topics: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" }
-                      },
-                      required: ["name"],
-                      additionalProperties: false
-                    }
-                  }
-                },
-                required: ["topics"],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "extract_topics" } }
-      }),
-    });
+Return ONLY valid JSON in this format:
+{
+  "topics": [
+    {"name": "Topic 1"},
+    {"name": "Topic 2"}
+  ]
+}`
+      },
+      {
+        role: 'user',
+        content: userMessage
+      }
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Lovable AI credits exhausted. Please add credits in Settings → Workspace → Usage." }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const errorText = await response.text();
-      console.error('Lovable AI Gateway error:', response.status, errorText);
-      throw new Error(`Lovable AI Gateway error: ${response.status}`);
+    if (error) {
+      console.error('Bytez AI error:', error);
+      return new Response(JSON.stringify({ error: "AI processing failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const data = await response.json();
-    console.log('AI Response:', JSON.stringify(data, null, 2));
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    console.log('AI Response:', JSON.stringify(output, null, 2));
+    let responseText = output.choices?.[0]?.message?.content;
     
-    if (!toolCall) {
-      console.error('No tool call in response. Full response:', data);
-      throw new Error('No topics extracted from AI response');
+    if (!responseText) {
+      throw new Error('No content in AI response');
     }
 
-    const parsedTopics = JSON.parse(toolCall.function.arguments);
+    // Extract JSON from markdown if present
+    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      responseText = jsonMatch[1];
+    }
+
+    const parsedTopics = JSON.parse(responseText);
 
     return new Response(JSON.stringify({ topics: parsedTopics.topics }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

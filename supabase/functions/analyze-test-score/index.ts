@@ -1,11 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const BYTEZ_API_KEY = "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";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,11 +40,6 @@ serve(async (req) => {
 
     const { scoreId, subject, percentage, correctQuestions, incorrectQuestions, testType } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY not configured");
-    }
-
     // Build AI analysis prompt
     const prompt = `Analyze this GCSE test performance and provide actionable insights:
 
@@ -67,38 +65,28 @@ Be constructive, specific, and focused on GCSE exam success. Return ONLY valid J
   "recommendations": ["recommendation 1", "recommendation 2", ...]
 }`;
 
-    console.log("Calling AI for test score analysis...");
+    console.log("Calling Bytez AI for test score analysis...");
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
+
+    const { error: aiError, output } = await model.run([
+      {
+        role: "system",
+        content: "You are an expert GCSE tutor analyzing student test performance. Provide specific, actionable feedback. Always return valid JSON.",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert GCSE tutor analyzing student test performance. Provide specific, actionable feedback. Always return valid JSON.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_completion_tokens: 2000,
-      }),
-    });
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]);
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", aiResponse.status, errorText);
+    if (aiError) {
+      console.error("Bytez AI error:", aiError);
       throw new Error("AI analysis failed");
     }
 
-    const aiData = await aiResponse.json();
-    let responseText = aiData.choices?.[0]?.message?.content;
+    let responseText = output.choices?.[0]?.message?.content;
 
     if (!responseText) {
       throw new Error("No content in AI response");

@@ -1,11 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const BYTEZ_API_KEY = "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";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -132,12 +135,7 @@ serve(async (req) => {
       .eq('completed', false)
       .gt('due_date', tomorrowEndOfDay); // Only homework due AFTER tomorrow (next day or later)
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
-
-    // Get day of week for tomorrow
+    const homeworkList = homeworkList && homeworkList.length > 0 ?
     const tomorrowDayOfWeek = targetDateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
     // Fetch school schedule from preferences
