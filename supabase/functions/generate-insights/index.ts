@@ -159,10 +159,20 @@ Format your response as JSON with this structure:
       { role: 'user', content: prompt }
     ]);
 
+    console.log('Bytez AI response:', JSON.stringify(output, null, 2));
+
     if (aiError) {
       console.error('Bytez AI error:', aiError);
       return new Response(
-        JSON.stringify({ error: 'AI processing failed' }),
+        JSON.stringify({ error: 'AI processing failed', details: aiError }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!output) {
+      console.error('No output from Bytez AI');
+      return new Response(
+        JSON.stringify({ error: 'No output from AI', rawResponse: output }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -170,7 +180,11 @@ Format your response as JSON with this structure:
     let insightsText = output.choices?.[0]?.message?.content;
 
     if (!insightsText) {
-      throw new Error('No content in AI response');
+      console.error('No content in AI response. Full output:', JSON.stringify(output, null, 2));
+      return new Response(
+        JSON.stringify({ error: 'No content in AI response', rawOutput: output }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Extract JSON from markdown code blocks if present
