@@ -13,10 +13,10 @@ serve(async (req) => {
 
   try {
     const { text, subjectName, images } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
     // Build the user message content
@@ -50,14 +50,14 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-5-mini-2025-08-07',
         messages: [
           {
             role: 'system',
@@ -77,7 +77,7 @@ For images: Look for handwritten notes, typed checklists, textbook pages, revisi
             content: userContent
           }
         ],
-        max_tokens: 2000,
+        max_completion_tokens: 2000,
         tools: [
           {
             type: "function",
