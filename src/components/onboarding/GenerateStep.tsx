@@ -39,8 +39,14 @@ const GenerateStep = ({
   const [loading, setLoading] = useState(false);
   const [generationStage, setGenerationStage] = useState<string>("");
   const [timetableName, setTimetableName] = useState("My Study Timetable");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // Default dates: start tomorrow, end in 1 week
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const oneWeekLater = new Date(tomorrow);
+  oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+  
+  const [startDate, setStartDate] = useState(tomorrow.toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(oneWeekLater.toISOString().split('T')[0]);
   const [showPaywall, setShowPaywall] = useState(false);
   const [feasibility, setFeasibility] = useState<FeasibilityResult | null>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -106,6 +112,14 @@ const GenerateStep = ({
   const handleGenerate = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select start and end dates");
+      return;
+    }
+
+    // Validate that end date is after start date
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end <= start) {
+      toast.error("End date must be after start date");
       return;
     }
 
@@ -363,7 +377,16 @@ const GenerateStep = ({
               id="start-date"
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                // If end date is before new start date, adjust it
+                if (endDate && new Date(endDate) <= new Date(e.target.value)) {
+                  const newEnd = new Date(e.target.value);
+                  newEnd.setDate(newEnd.getDate() + 7);
+                  setEndDate(newEnd.toISOString().split('T')[0]);
+                }
+              }}
+              min={new Date().toISOString().split('T')[0]}
             />
           </div>
 
@@ -374,6 +397,11 @@ const GenerateStep = ({
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              min={startDate ? (() => {
+                const minEnd = new Date(startDate);
+                minEnd.setDate(minEnd.getDate() + 1);
+                return minEnd.toISOString().split('T')[0];
+              })() : undefined}
             />
           </div>
         </div>
