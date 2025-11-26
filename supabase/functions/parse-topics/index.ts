@@ -63,12 +63,14 @@ Return ONLY valid JSON in this format:
   ]
 }`;
 
-    // Call OpenRouter API
+    // Call OpenRouter API with proper headers
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://vistari-ai.lovable.app",
+        "X-Title": "Vistari AI Topic Parser"
       },
       body: JSON.stringify({
         model: "google/gemini-2.0-flash-exp:free",
@@ -86,9 +88,30 @@ Return ONLY valid JSON in this format:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenRouter API error:', response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI processing failed", details: errorText }), {
+      let errorText;
+      try {
+        errorText = await response.text();
+        console.error('OpenRouter API error:', response.status, errorText);
+      } catch (e) {
+        errorText = "Could not parse error response";
+        console.error('OpenRouter API error:', response.status);
+      }
+      
+      // Provide more specific error messages
+      let userMessage = "AI processing failed";
+      if (response.status === 401) {
+        userMessage = "API authentication failed. Please check API key.";
+      } else if (response.status === 402) {
+        userMessage = "API credits exhausted. Please add credits to your OpenRouter account.";
+      } else if (response.status === 429) {
+        userMessage = "Rate limit exceeded. Please try again later.";
+      }
+      
+      return new Response(JSON.stringify({ 
+        error: userMessage, 
+        details: errorText,
+        status: response.status 
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
