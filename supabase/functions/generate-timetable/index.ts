@@ -1144,10 +1144,13 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
         }
       }
 
-      // CRITICAL: Filter out any sessions that overlap with events
-      // This ensures AI mistakes don't cause study sessions during event times
+      // CRITICAL: Validate schedule against events and topic/homework lists
+      // We REMOVE obvious hallucinations and event-type sessions, but we DO NOT
+      // delete sessions that simply overlap with events anymore. Instead we log
+      // overlaps so the UI still has a usable timetable even if the AI makes
+      // timing mistakes.
       if (events && events.length > 0 && scheduleData.schedule && typeof scheduleData.schedule === 'object') {
-        console.log(`Validating schedule to remove any sessions overlapping with ${events.length} events`);
+        console.log(`Validating schedule to remove hallucinated/event sessions and check overlaps with ${events.length} events`);
         
         // CRITICAL: Create validation sets for topics and homework
         const validTopicNames = new Set(topics.map((t: any) => t.name.toLowerCase().trim()));
@@ -1185,22 +1188,19 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
           const sessionEnd = new Date(sessionStart);
           sessionEnd.setMinutes(sessionEnd.getMinutes() + sessionDuration);
 
-          // Check if session overlaps with any event
+          // Sessions overlap if they start before event ends AND end after event starts
           return eventsOnDate.some((event) => {
-            // Sessions overlap if:
-            // Session starts before event ends AND session ends after event starts
             return sessionStart < event.endTime && sessionEnd > event.startTime;
           });
         };
 
-        // Filter out overlapping sessions AND hallucinated topics from schedule
-        let removedCount = 0;
         let hallucinationCount = 0;
+        let eventSessionCount = 0;
+        let overlapWarningCount = 0;
         
         for (const [date, sessions] of Object.entries(scheduleData.schedule)) {
           if (!Array.isArray(sessions)) continue;
           
-          const originalLength = sessions.length;
           scheduleData.schedule[date] = (sessions as any[]).filter((session: any) => {
             if (!session || !session.time || !session.duration) return true;
             
@@ -1226,38 +1226,36 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
               }
             }
             
-            // Remove any event-type sessions
+            // Remove any event-type sessions completely
             if (session.type === 'event') {
               console.log(`🚨 REJECTED: Event-type session "${session.topic || session.title}" on ${date} ${session.time}`);
-              hallucinationCount++;
+              eventSessionCount++;
               return false;
             }
             
-            // Check for event overlap
+            // Check for event overlap but DO NOT remove; just log for debugging
             const isOverlapping = overlapsWithEvent(date, session.time, session.duration);
             if (isOverlapping) {
-              console.log(`Removed overlapping session: ${date} ${session.time} ${session.subject} - ${session.topic}`);
-              removedCount++;
+              console.log(`⚠️ Session overlaps event but kept in schedule: ${date} ${session.time} ${session.subject || ''} - ${session.topic || ''}`);
+              overlapWarningCount++;
             }
-            return !isOverlapping;
+            
+            return true;
           });
-          
-          const removedFromThisDay = originalLength - scheduleData.schedule[date].length;
-          if (removedFromThisDay > 0) {
-            console.log(`Removed ${removedFromThisDay} sessions from ${date} (overlaps + hallucinations)`);
-          }
-        }
-        
-        if (removedCount > 0) {
-          console.log(`Total removed: ${removedCount} sessions that overlapped with events`);
         }
         
         if (hallucinationCount > 0) {
-          console.log(`🚨 Total hallucinations removed: ${hallucinationCount} invalid/event sessions`);
+          console.log(`🚨 Total hallucinations removed: ${hallucinationCount} invalid/event-title sessions`);
         }
         
-        if (removedCount === 0 && hallucinationCount === 0) {
-          console.log('✓ Schedule validation passed - no overlaps or hallucinations detected');
+        if (eventSessionCount > 0) {
+          console.log(`🚨 Total event-type sessions removed: ${eventSessionCount}`);
+        }
+
+        if (overlapWarningCount > 0) {
+          console.log(`⚠️ Detected ${overlapWarningCount} sessions that overlap events (kept for now to avoid empty schedules).`);
+        } else {
+          console.log('✓ Schedule validation passed - no overlaps detected');
         }
       }
     } catch (parseError) {
