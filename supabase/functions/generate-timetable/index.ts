@@ -1076,9 +1076,9 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     }
 
     if (aiResult.error) {
-      console.error("Bytez AI error:", aiResult.error);
+      console.error("Bytez AI error:", JSON.stringify(aiResult.error, null, 2));
       return new Response(
-        JSON.stringify({ error: "AI processing failed" }),
+        JSON.stringify({ error: "AI processing failed", details: aiResult.error }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -1086,23 +1086,36 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       );
     }
 
+    console.log("Full aiResult structure:", JSON.stringify(aiResult, null, 2));
+
     const data = aiResult.output;
+    console.log("Output data:", JSON.stringify(data, null, 2));
+    
     let aiResponse: string | undefined;
 
     // Support both OpenAI-style and simple { role, content } Bytez responses
     if (typeof data === "string") {
       aiResponse = data;
+      console.log("Extracted as string");
     } else if (data?.choices?.[0]?.message?.content) {
       aiResponse = data.choices[0].message.content as string;
+      console.log("Extracted from choices[0].message.content");
     } else if (data?.message?.content) {
       aiResponse = data.message.content as string;
+      console.log("Extracted from message.content");
     } else if (typeof data?.content === "string") {
       aiResponse = data.content as string;
+      console.log("Extracted from content");
+    } else if (data?.role && data?.content) {
+      // Direct { role, content } object
+      aiResponse = data.content as string;
+      console.log("Extracted from direct role/content object");
     }
 
     // Validate that we got a response
     if (!aiResponse || aiResponse.trim() === "") {
-      console.error("Empty AI response received. Raw output:", JSON.stringify(data));
+      console.error("Empty AI response received. Raw output:", JSON.stringify(data, null, 2));
+      console.error("Full aiResult:", JSON.stringify(aiResult, null, 2));
       throw new Error("AI did not generate a response. Please try again or simplify your request.");
     }
 
