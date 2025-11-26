@@ -9,7 +9,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
 // Input validation schema
 const inputSchema = z.object({
@@ -1052,29 +1052,27 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for large timetables
 
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY not configured");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY not configured");
     }
 
-    let geminiResult;
+    let openaiResult;
     try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `You are an expert educational planner specializing in GCSE revision strategies. Return ONLY valid JSON with no markdown formatting, no code fences, no additional text. Your response must start with { and end with }. CRITICAL: Ensure the JSON is complete with all closing braces and brackets.\n\n${prompt}`
-              }]
-            }],
-            generationConfig: {
-              temperature: 1,
-              maxOutputTokens: 8192,
-            },
+            model: "gpt-5-mini-2025-08-07",
+            messages: [
+              { role: "system", content: "You are an expert educational planner specializing in GCSE revision strategies. Return ONLY valid JSON with no markdown formatting, no code fences, no additional text. Your response must start with { and end with }. CRITICAL: Ensure the JSON is complete with all closing braces and brackets." },
+              { role: "user", content: prompt }
+            ],
+            max_completion_tokens: 8192,
           }),
           signal: controller.signal,
         }
@@ -1082,11 +1080,11 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Gemini API error:", response.status, errorText);
-        throw new Error(`Gemini API request failed: ${response.status}`);
+        console.error("OpenAI API error:", response.status, errorText);
+        throw new Error(`OpenAI API request failed: ${response.status}`);
       }
 
-      geminiResult = await response.json();
+      openaiResult = await response.json();
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof Error && err.name === 'AbortError') {
@@ -1097,17 +1095,17 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
       clearTimeout(timeoutId);
     }
 
-    console.log("Gemini raw result:", JSON.stringify(geminiResult, null, 2));
+    console.log("OpenAI raw result:", JSON.stringify(openaiResult, null, 2));
 
-    // Extract content from Gemini response
+    // Extract content from OpenAI response
     let aiResponse: string | undefined;
     
-    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-      aiResponse = geminiResult.candidates[0].content.parts[0].text;
+    if (openaiResult.choices?.[0]?.message?.content) {
+      aiResponse = openaiResult.choices[0].message.content;
     }
 
     if (!aiResponse || aiResponse.trim() === "") {
-      console.error("Empty AI response. Raw result:", JSON.stringify(geminiResult, null, 2));
+      console.error("Empty AI response. Raw result:", JSON.stringify(openaiResult, null, 2));
       throw new Error("AI did not generate a response. Please try again.");
     }
 
