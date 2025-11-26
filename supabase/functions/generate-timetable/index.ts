@@ -1066,8 +1066,8 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
             Authorization: `Bearer ${OPENAI_API_KEY}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            model: "gpt-5-mini-2025-08-07",
+      body: JSON.stringify({
+        model: "gpt-5-nano-2025-08-07",
             messages: [
               {
                 role: "system",
