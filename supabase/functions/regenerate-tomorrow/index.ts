@@ -135,7 +135,6 @@ serve(async (req) => {
       .eq('completed', false)
       .gt('due_date', tomorrowEndOfDay); // Only homework due AFTER tomorrow (next day or later)
 
-    const homeworkList = homeworkList && homeworkList.length > 0 ?
     const tomorrowDayOfWeek = targetDateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
     // Fetch school schedule from preferences
@@ -384,27 +383,18 @@ Return ONLY valid JSON:
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-    let aiResponse: Response;
+    const sdk = new Bytez(BYTEZ_API_KEY);
+    const model = sdk.model("google/gemini-2.5-flash");
+
+    let bytezResult;
     try {
-      aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
+      bytezResult = await model.run([
+        { 
+          role: 'system', 
+          content: 'You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON.' 
         },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { 
-              role: 'system', 
-              content: 'You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON.' 
-            },
-            { role: 'user', content: prompt }
-          ],
-          max_completion_tokens: 4000,
-        }),
-        signal: controller.signal,
-      });
+        { role: 'user', content: prompt }
+      ]);
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
@@ -415,33 +405,18 @@ Return ONLY valid JSON:
 
     clearTimeout(timeoutId);
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded. Please try again in a moment.' 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'Payment required. Please add credits to your Lovable AI workspace.' 
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      throw new Error(`AI API error: ${aiResponse.status}`);
+    if (bytezResult.error) {
+      console.error('Bytez AI error:', bytezResult.error);
+      return new Response(
+        JSON.stringify({ error: "AI processing failed" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    const aiData = await aiResponse.json();
-    let responseText = aiData.choices?.[0]?.message?.content;
+    let responseText = bytezResult.output.choices?.[0]?.message?.content;
 
     if (!responseText) {
       throw new Error('No content in AI response');
