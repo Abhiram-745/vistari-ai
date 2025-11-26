@@ -162,25 +162,28 @@ Format your response as JSON with this structure:
     console.log('Bytez AI response:', JSON.stringify(output, null, 2));
 
     if (aiError) {
-      console.error('Bytez AI error:', aiError);
+      console.error('Bytez AI error:', JSON.stringify(aiError, null, 2));
       return new Response(
         JSON.stringify({ error: 'AI processing failed', details: aiError }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!output) {
-      console.error('No output from Bytez AI');
-      return new Response(
-        JSON.stringify({ error: 'No output from AI', rawResponse: output }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
+    let insightsText: string | undefined;
+
+    if (typeof output === "string") {
+      insightsText = output;
+    } else if (output?.content) {
+      // Direct { role, content } format from Gemini via Bytez
+      insightsText = output.content;
+    } else if (output?.choices?.[0]?.message?.content) {
+      // OpenAI-style fallback
+      insightsText = output.choices[0].message.content;
     }
 
-    let insightsText = output.choices?.[0]?.message?.content;
-
-    if (!insightsText) {
-      console.error('No content in AI response. Full output:', JSON.stringify(output, null, 2));
+    if (!insightsText || insightsText.trim() === "") {
+      console.error('Empty AI response. Raw output:', JSON.stringify(output, null, 2));
       return new Response(
         JSON.stringify({ error: 'No content in AI response', rawOutput: output }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
