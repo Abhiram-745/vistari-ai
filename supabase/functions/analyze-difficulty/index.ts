@@ -23,7 +23,7 @@ serve(async (req) => {
     ).join('\n');
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-flash");
+    const model = sdk.model("openai/gpt-5-mini");
 
     const { error, output } = await model.run([
       {
