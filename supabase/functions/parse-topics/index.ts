@@ -16,13 +16,28 @@ serve(async (req) => {
   try {
     const { text, subjectName, images } = await req.json();
 
-    // Build user message
-    let userMessage = `Subject: ${subjectName}\n\n`;
+    // Build user message content array for vision API
+    const contentParts: any[] = [];
+    
+    // Add text instruction
+    let textPrompt = `Subject: ${subjectName}\n\n`;
     if (text) {
-      userMessage += `Extract topics from this text:\n${text}`;
+      textPrompt += `Extract topics from this text:\n${text}\n\n`;
     }
     if (images && Array.isArray(images) && images.length > 0) {
-      userMessage += (text ? "\n\n" : "") + `Also extract topics from ${images.length} image(s) provided.`;
+      textPrompt += `Extract topics from the provided ${images.length} image(s).`;
+    }
+    
+    contentParts.push({ type: "text", text: textPrompt });
+    
+    // Add images if provided
+    if (images && Array.isArray(images) && images.length > 0) {
+      for (const image of images) {
+        contentParts.push({
+          type: "image_url",
+          image_url: { url: image }
+        });
+      }
     }
 
     if (!OPENAI_API_KEY) {
@@ -65,7 +80,7 @@ Return ONLY valid JSON in this format:
           model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: userMessage }
+            { role: "user", content: contentParts }
           ],
           max_tokens: 2048,
         }),
