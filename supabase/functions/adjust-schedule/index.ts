@@ -224,7 +224,7 @@ Return ONLY valid JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },
           { role: 'user', content: prompt }
