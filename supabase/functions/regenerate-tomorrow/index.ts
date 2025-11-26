@@ -1,14 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -380,21 +379,40 @@ Return ONLY valid JSON:
 
     console.log('Calling AI to generate tomorrow\'s schedule...');
 
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY not configured");
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-    const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-pro");
-
-    let bytezResult;
+    let geminiResult;
     try {
-      bytezResult = await model.run([
-        { 
-          role: 'system', 
-          content: 'You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON.' 
-        },
-        { role: 'user', content: prompt }
-      ]);
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: `You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON.\n\n${prompt}` }]
+            }],
+            generationConfig: {
+              temperature: 1,
+              maxOutputTokens: 4096,
+            },
+          }),
+          signal: controller.signal,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Gemini API error:", response.status, errorText);
+        throw new Error(`Gemini API request failed: ${response.status}`);
+      }
+
+      geminiResult = await response.json();
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
@@ -405,35 +423,16 @@ Return ONLY valid JSON:
 
     clearTimeout(timeoutId);
 
-    console.log('Bytez AI response:', JSON.stringify(bytezResult.output, null, 2));
+    console.log('Gemini AI response:', JSON.stringify(geminiResult, null, 2));
 
-    if (bytezResult.error) {
-      console.error('Bytez AI error:', JSON.stringify(bytezResult.error, null, 2));
-      return new Response(
-        JSON.stringify({ error: "AI processing failed", details: bytezResult.error }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
+    // Extract content from Gemini response
     let responseText: string | undefined;
-    const output = bytezResult.output;
-
-    if (typeof output === "string") {
-      responseText = output;
-    } else if (output?.content) {
-      // Direct { role, content } format from Gemini via Bytez
-      responseText = output.content;
-    } else if (output?.choices?.[0]?.message?.content) {
-      // OpenAI-style fallback
-      responseText = output.choices[0].message.content;
+    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
+      responseText = geminiResult.candidates[0].content.parts[0].text;
     }
 
     if (!responseText || responseText.trim() === "") {
-      console.error('Empty AI response. Raw output:', JSON.stringify(output, null, 2));
+      console.error('Empty AI response. Raw result:', JSON.stringify(geminiResult, null, 2));
       throw new Error('AI did not generate a response. Please try again.');
     }
 

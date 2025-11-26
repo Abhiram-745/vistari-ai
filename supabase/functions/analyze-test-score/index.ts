@@ -1,14 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Bytez from "https://esm.sh/bytez.js@latest";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BYTEZ_API_KEY = "840ecbd12ca7f2cfd93354ebb304535e";
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -65,44 +64,48 @@ Be constructive, specific, and focused on GCSE exam success. Return ONLY valid J
   "recommendations": ["recommendation 1", "recommendation 2", ...]
 }`;
 
-    console.log("Calling Bytez AI for test score analysis...");
+    console.log("Calling Gemini AI for test score analysis...");
 
-    const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-pro");
-
-    const { error: aiError, output } = await model.run([
-      {
-        role: "system",
-        content: "You are an expert GCSE tutor analyzing student test performance. Provide specific, actionable feedback. Always return valid JSON.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]);
-
-    console.log("Bytez AI response:", JSON.stringify(output, null, 2));
-
-    if (aiError) {
-      console.error("Bytez AI error:", JSON.stringify(aiError, null, 2));
-      throw new Error("AI analysis failed");
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY not configured");
     }
 
-    // Extract content from Bytez response (handles both direct { role, content } and OpenAI-style formats)
-    let responseText: string | undefined;
+    const systemPrompt = "You are an expert GCSE tutor analyzing student test performance. Provide specific, actionable feedback. Always return valid JSON.";
 
-    if (typeof output === "string") {
-      responseText = output;
-    } else if (output?.content) {
-      // Direct { role, content } format from Gemini via Bytez
-      responseText = output.content;
-    } else if (output?.choices?.[0]?.message?.content) {
-      // OpenAI-style fallback
-      responseText = output.choices[0].message.content;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+          }],
+          generationConfig: {
+            temperature: 1,
+            maxOutputTokens: 2048,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API error:", response.status, errorText);
+      throw new Error(`Gemini API request failed: ${response.status}`);
+    }
+
+    const geminiResult = await response.json();
+    console.log("Gemini AI response:", JSON.stringify(geminiResult, null, 2));
+
+    // Extract content from Gemini response
+    let responseText: string | undefined;
+    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
+      responseText = geminiResult.candidates[0].content.parts[0].text;
     }
 
     if (!responseText || responseText.trim() === "") {
-      console.error("Empty AI response. Raw output:", JSON.stringify(output, null, 2));
+      console.error("Empty AI response. Raw result:", JSON.stringify(geminiResult, null, 2));
       throw new Error("AI did not generate a response. Please try again.");
     }
 
