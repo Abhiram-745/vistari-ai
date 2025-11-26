@@ -152,7 +152,7 @@ Format your response as JSON with this structure:
 }`;
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("openai/gpt-5-mini");
+    const model = sdk.model("openai/gpt-5");
 
     const { error: aiError, output } = await model.run([
       { role: 'system', content: 'You are an expert educational analyst who creates personalized learning insights.' },

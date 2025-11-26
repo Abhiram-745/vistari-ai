@@ -384,7 +384,7 @@ Return ONLY valid JSON:
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("openai/gpt-5-mini");
+    const model = sdk.model("openai/gpt-5");
 
     let bytezResult;
     try {
