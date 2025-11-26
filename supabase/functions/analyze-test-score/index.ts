@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BYTEZ_API_KEY = "476fe6c6dd44210bfce5aba310beb8cb";
+const BYTEZ_API_KEY = "4519d93600448098ebd2fd7572320bda";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
