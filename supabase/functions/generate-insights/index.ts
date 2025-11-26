@@ -163,20 +163,20 @@ Format your response as JSON with this structure:
           "Authorization": `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: "gpt-5-mini-2025-08-07",
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: "You are an expert educational analyst who creates personalized learning insights." },
             { role: "user", content: prompt }
           ],
-          max_completion_tokens: 4096,
+          max_tokens: 4096,
         }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
-      throw new Error(`Gemini API request failed: ${response.status}`);
+      console.error("OpenAI API error:", response.status, errorText);
+      throw new Error(`OpenAI API request failed: ${response.status}`);
     }
 
     const openaiResult = await response.json();
