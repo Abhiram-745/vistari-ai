@@ -216,7 +216,7 @@ Return ONLY valid JSON:
     console.log('Calling Bytez AI for schedule adjustment...');
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-flash");
+    const model = sdk.model("openai/gpt-5-mini");
 
     const { error: aiError, output } = await model.run([
       { role: 'system', content: 'You are an expert study scheduling assistant. Always return valid JSON.' },

@@ -1054,7 +1054,7 @@ Make the schedule practical, achievable, and effective for GCSE exam preparation
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for large timetables
 
     const sdk = new Bytez(BYTEZ_API_KEY);
-    const model = sdk.model("google/gemini-2.5-flash");
+    const model = sdk.model("openai/gpt-5-mini");
 
     let aiResult;
     try {
