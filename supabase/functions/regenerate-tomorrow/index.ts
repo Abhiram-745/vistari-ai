@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -377,30 +377,32 @@ Return ONLY valid JSON:
 12:30 - Topic 3 (medium priority) - 60 min
 = 3 topics + 1 homework + 1 strategic break`;
 
-    console.log('Calling AI to generate tomorrow\'s schedule...');
+    console.log('Calling OpenAI to generate tomorrow\'s schedule...');
 
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY not configured");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY not configured");
     }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-    let geminiResult;
+    let openaiResult;
     try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
+          },
           body: JSON.stringify({
-            contents: [{
-              parts: [{ text: `You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON.\n\n${prompt}` }]
-            }],
-            generationConfig: {
-              temperature: 1,
-              maxOutputTokens: 4096,
-            },
+            model: "gpt-5-mini-2025-08-07",
+            messages: [
+              { role: "system", content: "You are an expert study scheduling assistant. Create realistic, balanced schedules that respect student preferences and time constraints. Always return valid JSON." },
+              { role: "user", content: prompt }
+            ],
+            max_completion_tokens: 4096,
           }),
           signal: controller.signal,
         }
@@ -408,11 +410,11 @@ Return ONLY valid JSON:
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Gemini API error:", response.status, errorText);
-        throw new Error(`Gemini API request failed: ${response.status}`);
+        console.error("OpenAI API error:", response.status, errorText);
+        throw new Error(`OpenAI API request failed: ${response.status}`);
       }
 
-      geminiResult = await response.json();
+      openaiResult = await response.json();
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
@@ -423,16 +425,16 @@ Return ONLY valid JSON:
 
     clearTimeout(timeoutId);
 
-    console.log('Gemini AI response:', JSON.stringify(geminiResult, null, 2));
+    console.log('OpenAI response:', JSON.stringify(openaiResult, null, 2));
 
-    // Extract content from Gemini response
+    // Extract content from OpenAI response
     let responseText: string | undefined;
-    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-      responseText = geminiResult.candidates[0].content.parts[0].text;
+    if (openaiResult.choices?.[0]?.message?.content) {
+      responseText = openaiResult.choices[0].message.content;
     }
 
     if (!responseText || responseText.trim() === "") {
-      console.error('Empty AI response. Raw result:', JSON.stringify(geminiResult, null, 2));
+      console.error('Empty AI response. Raw result:', JSON.stringify(openaiResult, null, 2));
       throw new Error('AI did not generate a response. Please try again.');
     }
 

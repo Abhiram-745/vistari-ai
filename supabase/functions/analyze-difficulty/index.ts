@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,8 +21,8 @@ serve(async (req) => {
       `${i + 1}. ${t.name} (Subject: ${t.subject}, Current Difficulty: ${t.difficulty}, Confidence: ${t.confidence_level}/5)`
     ).join('\n');
 
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY not configured");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY not configured");
     }
 
     const systemPrompt = `You are an expert GCSE study advisor. Analyze the provided topics and identify which ones should be prioritized in the study timetable based on:
@@ -44,18 +44,20 @@ Return ONLY valid JSON in this format:
 }`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      'https://api.openai.com/v1/chat/completions',
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${OPENAI_API_KEY}`
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `${systemPrompt}\n\nAnalyze these GCSE topics and assign priority scores:\n\n${topicsList}` }]
-          }],
-          generationConfig: {
-            temperature: 1,
-            maxOutputTokens: 2048,
-          },
+          model: "gpt-5-mini-2025-08-07",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Analyze these GCSE topics and assign priority scores:\n\n${topicsList}` }
+          ],
+          max_completion_tokens: 2048,
         }),
       }
     );
@@ -66,17 +68,17 @@ Return ONLY valid JSON in this format:
       throw new Error(`Gemini API request failed: ${response.status}`);
     }
 
-    const geminiResult = await response.json();
-    console.log('Gemini AI response:', JSON.stringify(geminiResult, null, 2));
+    const openaiResult = await response.json();
+    console.log('OpenAI response:', JSON.stringify(openaiResult, null, 2));
 
-    // Extract content from Gemini response
+    // Extract content from OpenAI response
     let responseText: string | undefined;
-    if (geminiResult.candidates?.[0]?.content?.parts?.[0]?.text) {
-      responseText = geminiResult.candidates[0].content.parts[0].text;
+    if (openaiResult.choices?.[0]?.message?.content) {
+      responseText = openaiResult.choices[0].message.content;
     }
 
     if (!responseText || responseText.trim() === "") {
-      console.error('Empty AI response. Raw result:', JSON.stringify(geminiResult, null, 2));
+      console.error('Empty AI response. Raw result:', JSON.stringify(openaiResult, null, 2));
       throw new Error('AI did not generate a response. Please try again.');
     }
 
